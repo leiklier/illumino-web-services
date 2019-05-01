@@ -88,6 +88,31 @@ const userResolvers = {
 			}
 		);
 		return { userId: user.id, token, tokenExpiration: 1 };
+	},
+
+	grantAdmin: async (obj, { email }, context, info) => {
+		if (!context.user) {
+			throw new Error('User not logged in!');
+		}
+
+		if(!context.user.roles.includes('admin')) {
+			throw new Error('Requires admin privileges!')
+		}
+
+		const user = await User.findOne({ email })
+
+		if(!user) {
+			throw new Error('User does not exist!')
+		}
+	
+		if(!user.roles.includes('admin')) {
+			user.roles.push('admin')
+		}
+
+		await user.save()
+
+		// Admin context, so allow infinite nesting
+		return await getUserById(user.id)
 	}
 };
 
