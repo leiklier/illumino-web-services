@@ -1,26 +1,42 @@
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 
-const getUserByToken = async token => {
+const getUserIdByToken = token => {
     if(!token || token === '') {
-        return await Promise.resolve(false)
+        return false
     }
 
-    let decodedToken, user
+    let decodedToken
     try {
         decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-        
-        user = await User.findOne({_id: decodedToken.userId})
     } catch(err) {
-        return await Promise.resolve(false)
+        return false
     }
     if(!decodedToken) {
-        return await Promise.resolve(false)
+        return false
     }
 
-    return user
+    return decodedToken.userId
+}
+
+const getTokenByUserId = async userId => {
+    const user = await User.findOne({ _id: userId })
+    if (!user) {
+        throw new Error('User does not exist!');
+    }
+
+    const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: '1h'
+        }
+    )
+
+    return token
 }
 
 module.exports = {
-    getUserByToken
+    getTokenByUserId,
+    getUserIdByToken
 }

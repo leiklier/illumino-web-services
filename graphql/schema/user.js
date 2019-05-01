@@ -1,10 +1,10 @@
 const { gql } = require('apollo-server')
 const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 
 const User = require('../../models/user')
 const { getUserById } = require('../../getters')
+const { getTokenByUserId } = require('../../helpers')
 
 const userTypeDefs = gql`
 	type User {
@@ -75,19 +75,22 @@ const userResolvers = {
 		}
 
 		const passwordIsEqual = await bcrypt.compare(password, user.password);
+    if (!passwordIsEqual) {
+        throw new Error('Password is incorrect!');
+    }
 
-		if (!passwordIsEqual) {
-			throw new Error('Password is incorrect!');
-		}
-
-		const token = jwt.sign(
-			{ userId: user.id, email: user.email },
-			process.env.JWT_SECRET,
-			{
-				expiresIn: '1h'
-			}
-		);
+		const token = getTokenByUserId(user._id)
+		
 		return { userId: user.id, token, tokenExpiration: 1 };
+	},
+
+	reAuth: async (obj, args, context, info) => {
+		const token = getTokenByUserId(context.user._id)
+		return {userId: context.user._id, token, tokenExpiration: 1}
+	},
+
+	isAuth: async (obj, args, context, info) => {
+			return context.user ? true : false
 	},
 
 	grantAdmin: async (obj, { email }, context, info) => {

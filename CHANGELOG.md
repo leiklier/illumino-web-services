@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * `user` context which provides information about the authorized `User`.
 * `me` GraphQL query which lets the user query information about himself, up to three levels down.
+* `reAuth` GraphQL query which generates a new token if previous still is valid. 
+* `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 * `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
 * `Device` mongoose model with `owners` and `managers`.
 * `createDevice` GraphQL mutation which lets a `User` with `admin` privileges create a new `Device`.

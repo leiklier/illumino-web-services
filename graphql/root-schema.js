@@ -9,6 +9,8 @@ const rootTypeDefs = gql`
     type RootQuery {
         me: User!
         login(email: String!, password: String!): AuthData!
+        reAuth: AuthData!
+        isAuth: Boolean!
     }
 
     type RootMutation {
@@ -30,7 +32,9 @@ const rootSchema = {
     resolvers: {
         RootQuery: {
             me: userResolvers.me,
-            login: userResolvers.login
+            login: userResolvers.login,
+            reAuth: userResolvers.reAuth,
+            isAuth: userResolvers.isAuth
         },
         RootMutation: {
             createUser: userResolvers.createUser,

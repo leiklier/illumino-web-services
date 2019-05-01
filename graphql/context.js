@@ -1,4 +1,5 @@
-const { getUserByToken } = require('../helpers')
+const User = require('../models/user')
+const { getUserIdByToken } = require('../helpers')
 
 const context = async ({req}) => {
     // Format of header Authorization: Bearer <token>
@@ -10,7 +11,14 @@ const context = async ({req}) => {
 
     const token = authHeader.split(' ')[1]
     
-    const user = await getUserByToken(token)
+    const userId = getUserIdByToken(token)
+    
+    if(!userId) {
+        // Token has expired
+        return false
+    }
+
+    const user = await User.findOne({_id: userId})
 
     if(!user) {
         return false
