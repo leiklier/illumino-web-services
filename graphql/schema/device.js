@@ -12,9 +12,44 @@ const deviceTypeDefs = gql`
 `
 
 const deviceResolvers = {
+    createDevice: async (obj, { ownerEmail }, context, info) => {
+        if(!context.user) {
+            throw new Error('User not logged in!')
+        }
+
+        if(!context.user.roles.includes('admin')) {
+            throw new Error('Requires admin privileges!')
+        }
+
+        if(!ownerEmail) {
+            const device = new Device()
+            return result = await device.save()
+        }
+
+        const owner = await User.findOne({email: ownerEmail})
+        if(!owner) {
+            throw new Error('Owner does not exist!')
+        }
+
+        // Need to do to operations concurrently, so use transaction
+        const session = await Device.startSession()
+        session.startTransaction()
+        try {
+            const device = new Device({ owner: owner._id })
+            owner.ownedDevices.push(device._id)
+            await owner.save()
+            return result = await device.save()
+
+        } catch(err) {
+            await session.abortTransaction()
+            session.endSession()
+            throw err
+        }
+
+    },
     activateDevice: async (obj, { deviceId }, context, info) => {
         if(!context.user) {
-            throw new Error('Not authorized')
+            throw new Error('User not logged in!')
         }
     
         const ownerId = context.user._id

@@ -12,6 +12,8 @@ const rootTypeDefs = gql`
 
     type RootMutation {
         createUser(userInput: UserInput): User!
+
+        createDevice(ownerEmail: String): Device!
         activateDevice(deviceId: String!): Device!
     }
 
@@ -29,6 +31,8 @@ const rootSchema = {
         },
         RootMutation: {
             createUser: userResolvers.createUser,
+
+            createDevice: deviceResolvers.createDevice,
             activateDevice: deviceResolvers.activateDevice
         }
     },
