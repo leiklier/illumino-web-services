@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* `user` context which provides information about the authorized `User`.
+* `Device` mongoose model with `owners` and `managers`.
+* `activateDevice` GraphQL mutation which lets a `User` own an existing device.
+
+### Changed
+* `User` mongoose model requires `firstName` and `lastName`.
+* `createUser` GraphQL mutation checks if email is valid.
+
 ## [v0.1.0] - 2019-05-01
 
 ### Added

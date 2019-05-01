@@ -1,23 +1,21 @@
 {
   "name": "ambientalarm-api",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "repository": "https://github.com/leiklier/ambientalarm-api.git",
   "author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
   "license": "MIT",
   "dependencies": {
-    "apollo-server-express": "^2.4.8",
+    "apollo-server": "^2.4.8",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.19.0",
-    "express": "^4.16.4",
     "graphql": "^14.2.1",
-    "graphql-tools": "^4.0.4",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.11",
-    "mongoose": "^5.5.5"
+    "mongoose": "^5.5.5",
+    "validator": "^10.11.0"
   },
   "devDependencies": {
     "nodemon": "^1.18.11"

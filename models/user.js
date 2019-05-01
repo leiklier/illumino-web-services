@@ -10,7 +10,32 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true
-  }
+  },
+  roles: {
+    // Valid types: user, admin
+    type: [String],
+    required: true
+  },
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String,
+    required: true
+  },
+  ownedDevices: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Device'
+    }
+  ],
+  managedDevices: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Device'
+    }
+  ]
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -1,14 +1,18 @@
-const { gql } = require('apollo-server-express')
+const { gql } = require('apollo-server')
+const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-const User = require('../models/user')
+const User = require('../../models/user')
 
 const userTypeDefs = gql`
 	type User {
 		_id: ID!
 		email: String!
 		password: String
+		roles: [String!]
+		firstName: String!
+		lastName: String!
 	}
 	type AuthData {
 		userId: ID!
@@ -19,40 +23,47 @@ const userTypeDefs = gql`
 	input UserInput {
 		email: String!
 		password: String!
+		firstName: String!
+		lastName: String!
 	}
 `
 
 const userResolvers = {
-	createUser: async (obj, args, context, info) => {
+	createUser: async (obj, { userInput }, context, info) => {
 		try {
-			const existingUser = await User.findOne({ email: args.userInput.email })
+
+			if(!isEmail(userInput.email)) {
+				throw new Error('Invalid email.')
+			}
+
+			const existingUser = await User.findOne({ email: userInput.email })
 			if (existingUser) {
 				throw new Error('User exists already.')
 			}
-			const hashedPassword = await bcrypt.hash(args.userInput.password, 12)
 
+			const hashedPassword = await bcrypt.hash(userInput.password, 12)
 			const user = new User({
-				email: args.userInput.email,
-				password: hashedPassword
+				...userInput,
+				password: hashedPassword,
+				roles: ['user'] // default
 			})
-
 			const result = await user.save()
 
-			return { ...result._doc, password: null, _id: result.id }
+			return { ...result.toObject(), password: null}
 		} catch (err) {
 			throw err
 		}
 	},
 	login: async (obj, { email, password }, context, info) => {
-    const user = await User.findOne({ email: email })
+    const user = await User.findOne({ email })
 
 		if (!user) {
 			throw new Error('User does not exist!')
     }
     
-    const isEqual = await bcrypt.compare(password, user.password)
+    const passwordIsEqual = await bcrypt.compare(password, user.password)
     
-		if (!isEqual) {
+		if (!passwordIsEqual) {
 			throw new Error('Password is incorrect!')
     }
     
