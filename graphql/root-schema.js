@@ -7,6 +7,7 @@ const { deviceTypeDefs, deviceResolvers } = require('./schema/device')
 const rootTypeDefs = gql`
 
     type RootQuery {
+        me: User!
         login(email: String!, password: String!): AuthData!
     }
 
@@ -27,6 +28,7 @@ const rootSchema = {
     typeDefs: [userTypeDefs, deviceTypeDefs, rootTypeDefs],
     resolvers: {
         RootQuery: {
+            me: userResolvers.me,
             login: userResolvers.login
         },
         RootMutation: {

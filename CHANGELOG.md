@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * `user` context which provides information about the authorized `User`.
+* `me` GraphQL query which lets the user query information about himself, up to three levels down.
 * `Device` mongoose model with `owners` and `managers`.
 * `createDevice` GraphQL mutation which lets a `User` with `admin` privileges create a new `Device`.
 * `activateDevice` GraphQL mutation which lets a `User` own an existing `Device`.
