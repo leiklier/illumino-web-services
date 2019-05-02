@@ -26,7 +26,7 @@ const context = async ({req}) => {
 
     return {
         user: {
-            _id: user._id,
+            _id: user.id,
             roles: user.roles,
             isAdmin: Boolean(user.roles.includes('admin'))
         }

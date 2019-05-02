@@ -19,8 +19,9 @@ const rootTypeDefs = gql`
         createUser(userInput: UserInput): User!
         grantAdmin(email: String!): User!
 
-        createDevice(ownerEmail: String): Device!
+        createDevice(deviceInput: DeviceInput): Device!
         claimDevice(deviceId: String!): Device!
+        setDeviceName(deviceId: String!, name: String!): Device!
     }
 
     schema {
@@ -44,7 +45,8 @@ const rootSchema = {
             grantAdmin: userResolvers.grantAdmin,
 
             createDevice: deviceResolvers.createDevice,
-            claimDevice: deviceResolvers.claimDevice
+            claimDevice: deviceResolvers.claimDevice,
+            setDeviceName: deviceResolvers.setDeviceName
         }
     },
     context

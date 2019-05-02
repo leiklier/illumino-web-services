@@ -13,6 +13,7 @@ const authTypeDefs = gql`
 
 const authResolvers = {
     login: async (obj, { email, password }, context, info) => {
+        // Permittable by all
 		const user = await User.findOne({ email });
 
 		if (!user) {
@@ -30,12 +31,18 @@ const authResolvers = {
     },
 
     reAuth: async (obj, args, context, info) => {
+        // Permittable by users
+        if(!context.user) {
+            throw new Error('User not logged in!')
+        }
+
 		const token = getTokenByUserId(context.user._id)
 		return {userId: context.user._id, token, tokenExpiration: 1}
 	},
 
 	isAuth: async (obj, args, context, info) => {
-			return context.user ? true : false
+        // Permittable by all
+		return context.user ? true : false
 	},
 
 }

@@ -27,6 +27,7 @@ const userTypeDefs = gql`
 
 const userResolvers = {
 	me: async (obj, args, context, info) => {
+		// Permittable by users
 		if (!context.user) {
 			throw new Error('User not logged in!');
 		}
@@ -37,6 +38,7 @@ const userResolvers = {
 	},
 
 	createUser: async (obj, { userInput }, context, info) => {
+		// Permittable by everyone
 		try {
 			if (!isEmail(userInput.email)) {
 				throw new Error('Invalid email.');
@@ -62,6 +64,7 @@ const userResolvers = {
 	},
 
 	grantAdmin: async (obj, { email }, context, info) => {
+		// Permittable by admins
 		if (!context.user) {
 			throw new Error('User not logged in!');
 		}
