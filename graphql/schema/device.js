@@ -1,4 +1,6 @@
 const { gql } = require('apollo-server')
+const bcrypt = require('bcryptjs')
+const { isMACAddress } = require('validator')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
@@ -7,12 +9,18 @@ const { loadDeviceById } = require('../loaders')
 const deviceTypeDefs = gql`
     type Device {
         _id: ID!
+        mac: String!
+        authKey: String
+        pin: String
         name: String
         owner: User
         managers: [User]!
     }
 
     input DeviceInput {
+        mac: String!
+        authKey: String!
+        pin: Int
         ownerEmail: String
         name: String
     }
@@ -20,21 +28,30 @@ const deviceTypeDefs = gql`
 
 const deviceResolvers = {
     createDevice: async (obj, { deviceInput }, context, info) => {
-        // Permittable by admins
-        if(!context.user) {
-            throw new Error('User not logged in!')
+        // Permittable by all users
+
+        // [TODO]: Require some type of key
+        // in Authorization header in order
+        // to allow operation.
+
+        if(!isMACAddress(deviceInput.mac)) {
+            throw new Error('Invalid MAC address')
         }
 
-        if(!context.user.isAdmin) {
-            throw new Error('Requires admin privileges!')
+        const existingDevice = await Device.findOne({ mac: deviceInput.mac })
+        if(existingDevice) {
+            throw new Error('Device exists already.')
         }
 
         const device = new Device()
+        device.mac = deviceInput.mac
+        device.authKey = await bcrypt.hash(deviceInput.authKey, 12)
 
-        if(!deviceInput) {
-            await device.save()
-            // Admin context, so allow infinite nesting:
-            return loadDeviceById(device.id)
+        if(deviceInput.pin) {
+            if(deviceInput.pin.toString().length > 4) {
+                throw new Error('Pin too long. Should be 4 digits.')
+            }
+            device.pin = await bcrypt.hash(deviceInput.pin, 12)
         }
 
         if(deviceInput.name) {
@@ -43,8 +60,10 @@ const deviceResolvers = {
 
         if(!deviceInput.ownerEmail) {
             await device.save()
-            // Admin context, so allow infinite nesting:
-            return loadDeviceById(device.id)
+
+            return context.isAdmin ? 
+                loadDeviceById(device.id) :
+                loadDeviceById(device.id, 2)
         }
 
         const owner = await User.findOne({email: deviceInput.ownerEmail})
@@ -60,9 +79,10 @@ const deviceResolvers = {
             owner.devicesOwning.push(device._id)
             await owner.save()
             await device.save()
-            // Admin context, so allow infinite nesting:
-            return loadDeviceById(device.id)
 
+            return context.isAdmin ?
+                loadDeviceById(device.id) :
+                loadDeviceById(device.id, 2)
         } catch(err) {
             await session.abortTransaction()
             session.endSession()

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 * `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
 * `Device` mongoose model with `owners` and `managers`.
-* `createDevice` GraphQL mutation which lets a `User` with `admin` privileges create a new `Device`.
+* `createDevice` GraphQL mutation which lets a `Device` self register.
 * `claimDevice` GraphQL mutation which lets a `User` own an existing `Device` which currently has no `owner`.
 * `setDeviceName` GraphQL mutation which lets the `owner` of a `Device` or an `admin` set its `name`.
 

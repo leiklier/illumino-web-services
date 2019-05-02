@@ -19,7 +19,7 @@ const rootTypeDefs = gql`
         createUser(userInput: UserInput): User!
         grantAdmin(email: String!): User!
 
-        createDevice(deviceInput: DeviceInput): Device!
+        createDevice(deviceInput: DeviceInput!): Device!
         claimDevice(deviceId: String!): Device!
         setDeviceName(deviceId: String!, name: String!): Device!
     }

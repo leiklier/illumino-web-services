@@ -65,6 +65,8 @@ const populateUser = (user, nestingLevel) => {
 const populateDevice = (device, nestingLevel) => {
     return {
         ...device.toObject(),
+        authKey: null,
+        pin: null,
         owner: () => loadUserById(device.owner, nestingLevel),
         managers: () => loadUsersById(device.managers, nestingLevel)
     }
