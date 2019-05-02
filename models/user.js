@@ -24,13 +24,13 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-  ownedDevices: [
+  devicesOwning: [
     {
       type: Schema.Types.ObjectId,
       ref: 'Device'
     }
   ],
-  managedDevices: [
+  devicesManaging: [
     {
       type: Schema.Types.ObjectId,
       ref: 'Device'

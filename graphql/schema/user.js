@@ -3,8 +3,7 @@ const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
-const { getUserById } = require('../../getters')
-const { getTokenByUserId } = require('../../helpers')
+const { loadUserById } = require('../loaders')
 
 const userTypeDefs = gql`
 	type User {
@@ -14,13 +13,8 @@ const userTypeDefs = gql`
 		roles: [String!]
 		firstName: String!
 		lastName: String!
-		ownedDevices: [Device]!
-		managedDevices: [Device]!
-	}
-	type AuthData {
-		userId: ID!
-		token: String!
-		tokenExpiration: Int!
+		devicesOwning: [Device]!
+		devicesManaging: [Device]!
 	}
 
 	input UserInput {
@@ -36,10 +30,10 @@ const userResolvers = {
 		if (!context.user) {
 			throw new Error('User not logged in!');
 		}
-		// Should only be able to get info down to 
-		// firstName, lastName, etc. of others managing/owning
-		// himself's ownedDevices/managedDevices:
-		return user = await getUserById(context.user._id, 3)
+
+		return user = context.user.isAdmin ? 
+			await loadUserById(context.user._id) :
+			await loadUserById (context.user._id, 3)
 	},
 
 	createUser: async (obj, { userInput }, context, info) => {
@@ -67,38 +61,12 @@ const userResolvers = {
 		}
 	},
 
-	login: async (obj, { email, password }, context, info) => {
-		const user = await User.findOne({ email });
-
-		if (!user) {
-			throw new Error('User does not exist!');
-		}
-
-		const passwordIsEqual = await bcrypt.compare(password, user.password);
-    if (!passwordIsEqual) {
-        throw new Error('Password is incorrect!');
-    }
-
-		const token = getTokenByUserId(user._id)
-		
-		return { userId: user.id, token, tokenExpiration: 1 };
-	},
-
-	reAuth: async (obj, args, context, info) => {
-		const token = getTokenByUserId(context.user._id)
-		return {userId: context.user._id, token, tokenExpiration: 1}
-	},
-
-	isAuth: async (obj, args, context, info) => {
-			return context.user ? true : false
-	},
-
 	grantAdmin: async (obj, { email }, context, info) => {
 		if (!context.user) {
 			throw new Error('User not logged in!');
 		}
 
-		if(!context.user.roles.includes('admin')) {
+		if(!context.user.isAdmin) {
 			throw new Error('Requires admin privileges!')
 		}
 
@@ -115,7 +83,7 @@ const userResolvers = {
 		await user.save()
 
 		// Admin context, so allow infinite nesting
-		return await getUserById(user.id)
+		return await loadUserById(user.id)
 	}
 };
 

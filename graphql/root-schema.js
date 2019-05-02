@@ -1,6 +1,8 @@
 const { gql } = require('apollo-server')
 
 const context = require('./context')
+
+const { authTypeDefs, authResolvers } = require('./schema/auth')
 const { userTypeDefs, userResolvers } = require('./schema/user')
 const { deviceTypeDefs, deviceResolvers } = require('./schema/device')
 
@@ -18,7 +20,7 @@ const rootTypeDefs = gql`
         grantAdmin(email: String!): User!
 
         createDevice(ownerEmail: String): Device!
-        activateDevice(deviceId: String!): Device!
+        claimDevice(deviceId: String!): Device!
     }
 
     schema {
@@ -28,20 +30,21 @@ const rootTypeDefs = gql`
 `
 
 const rootSchema = {
-    typeDefs: [userTypeDefs, deviceTypeDefs, rootTypeDefs],
+    typeDefs: [authTypeDefs, userTypeDefs, deviceTypeDefs, rootTypeDefs],
     resolvers: {
         RootQuery: {
-            me: userResolvers.me,
-            login: userResolvers.login,
-            reAuth: userResolvers.reAuth,
-            isAuth: userResolvers.isAuth
+            login: authResolvers.login,
+            reAuth: authResolvers.reAuth,
+            isAuth: authResolvers.isAuth,
+
+            me: userResolvers.me
         },
         RootMutation: {
             createUser: userResolvers.createUser,
             grantAdmin: userResolvers.grantAdmin,
 
             createDevice: deviceResolvers.createDevice,
-            activateDevice: deviceResolvers.activateDevice
+            claimDevice: deviceResolvers.claimDevice
         }
     },
     context

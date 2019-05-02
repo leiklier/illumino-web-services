@@ -1,7 +1,7 @@
-const User = require('./models/user')
-const Device = require('./models/device')
+const User = require('../models/user')
+const Device = require('../models/device')
 
-const getUserById = async (userId, nestingLevel) => {
+const loadUserById = async (userId, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
         return userId
     }
@@ -14,7 +14,7 @@ const getUserById = async (userId, nestingLevel) => {
     }
 }
 
-const getUsersById = async (userIds, nestingLevel) => {
+const loadUsersById = async (userIds, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
         return userIds
     }
@@ -27,7 +27,7 @@ const getUsersById = async (userIds, nestingLevel) => {
     }
 }
 
-const getDeviceById = async (deviceId, nestingLevel) => {
+const loadDeviceById = async (deviceId, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
         return deviceId
     }
@@ -40,7 +40,7 @@ const getDeviceById = async (deviceId, nestingLevel) => {
     }
 }
 
-const getDevicesById = async (deviceIds, nestingLevel) => {
+const loadDevicesById = async (deviceIds, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
         return deviceIds
     }
@@ -57,22 +57,22 @@ const populateUser = (user, nestingLevel) => {
     return {
         ...user.toObject(),
         password: null,
-        ownedDevices: () => getDevicesById(user.ownedDevices, nestingLevel),
-        managedDevices: () => getDevicesById(user.managedDevices, nestingLevel)
+        devicesOwning: () => loadDevicesById(user.devicesOwning, nestingLevel),
+        devicesManaging: () => loadDevicesById(user.devicesManaging, nestingLevel)
     }
 }
 
 const populateDevice = (device, nestingLevel) => {
     return {
         ...device.toObject(),
-        owner: () => getUserById(device.owner, nestingLevel),
-        managers: () => getUsersById(device.managers, nestingLevel)
+        owner: () => loadUserById(device.owner, nestingLevel),
+        managers: () => loadUsersById(device.managers, nestingLevel)
     }
 }
 
 module.exports = {
-    getUserById,
-    getUsersById,
-    getDeviceById,
-    getDevicesById
+    loadUserById,
+    loadUsersById,
+    loadDeviceById,
+    loadDevicesById
 }

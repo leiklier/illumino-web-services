@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
 * `Device` mongoose model with `owners` and `managers`.
 * `createDevice` GraphQL mutation which lets a `User` with `admin` privileges create a new `Device`.
-* `activateDevice` GraphQL mutation which lets a `User` own an existing `Device`.
+* `claimDevice` GraphQL mutation which lets a `User` own an existing `Device` which currently has no `owner`.
 
 ### Changed
 * `User` mongoose model requires `firstName` and `lastName`.

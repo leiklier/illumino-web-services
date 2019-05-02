@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node .",
-    "dev": "nodemon ."
+    "start": "NODE_ENV=production node .",
+    "stag": "NODE_ENV=staging node .",
+    "dev": "NODE_ENV=development nodemon ."
   },
   "repository": "https://github.com/leiklier/ambientalarm-api.git",
   "author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",

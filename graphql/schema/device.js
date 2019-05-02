@@ -2,12 +2,13 @@ const { gql } = require('apollo-server')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
+const { loadDeviceById } = require('../loaders')
 
 const deviceTypeDefs = gql`
     type Device {
         _id: ID!
-        owner: User!
-        managers: [User!]!
+        owner: User
+        managers: [User]!
     }
 `
 
@@ -17,13 +18,15 @@ const deviceResolvers = {
             throw new Error('User not logged in!')
         }
 
-        if(!context.user.roles.includes('admin')) {
+        if(!context.user.isAdmin) {
             throw new Error('Requires admin privileges!')
         }
 
         if(!ownerEmail) {
             const device = new Device()
-            return result = await device.save()
+            await device.save()
+            // Admin context, so allow infinite nesting:
+            return loadDeviceById(device.id)
         }
 
         const owner = await User.findOne({email: ownerEmail})
@@ -36,9 +39,11 @@ const deviceResolvers = {
         session.startTransaction()
         try {
             const device = new Device({ owner: owner._id })
-            owner.ownedDevices.push(device._id)
+            owner.devicesOwning.push(device._id)
             await owner.save()
-            return result = await device.save()
+            await device.save()
+            // Admin context, so allow infinite nesting:
+            return loadDeviceById(device.id)
 
         } catch(err) {
             await session.abortTransaction()
@@ -47,7 +52,7 @@ const deviceResolvers = {
         }
 
     },
-    activateDevice: async (obj, { deviceId }, context, info) => {
+    claimDevice: async (obj, { deviceId }, context, info) => {
         if(!context.user) {
             throw new Error('User not logged in!')
         }
@@ -66,10 +71,10 @@ const deviceResolvers = {
         }
 
         if(device.owner) {
-            throw new Error('Device has already been activated!')
+            throw new Error('Device has already been claimed!')
         }
 
-        owner.ownedDevices.push(deviceId)
+        owner.devicesOwning.push(deviceId)
         device.owner = ownerId
 
 
@@ -78,7 +83,10 @@ const deviceResolvers = {
         session.startTransaction()
         try {
             await owner.save()
-            return activatedDevice = await device.save()
+            await device.save()
+            return context.user.isAdmin ?
+                loadDeviceById(device.id) :
+                loadDeviceById(device.id, 2)
 
         } catch(err) {
             await session.abortTransaction()
