@@ -92,7 +92,7 @@ const deviceResolvers = {
     },
     claimDevice: async (obj, { mac }, context, info) => {
         // Permittable by users
-        if(!context.user) {
+        if(!context.user.isAuth) {
             throw new Error('User not logged in!')
         }
     
@@ -161,7 +161,7 @@ const deviceResolvers = {
     },
     setDeviceName: async (obj, { mac, name }, context, info) => {
         // Permittable by deviceOwners and admins
-        if(!context.user) {
+        if(!context.user.isAuth) {
             throw new Error('User not logged in!')
         }
         

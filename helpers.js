@@ -19,24 +19,43 @@ const getUserIdByToken = token => {
     return decodedToken.userId
 }
 
-const getTokenByUserId = async userId => {
-    const user = await User.findOne({ _id: userId })
-    if (!user) {
-        throw new Error('User does not exist!');
+const getTokenByUserId = userId => {
+    return token = jwt.sign(
+        { userId },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    )
+}
+
+const getDeviceIdByToken = token => {
+    if(!token || token === '') {
+        return false
     }
 
-    const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        {
-            expiresIn: '1h'
-        }
-    )
+    let decodedToken
+    try {
+        decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+    } catch(err) {
+        return false
+    }
+    if(!decodedToken) {
+        return false
+    }
 
-    return token
+    return decodedToken.deviceId
+}
+
+const getTokenByDeviceId = deviceId => {
+    return token = jwt.sign(
+        { deviceId },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+    )   
 }
 
 module.exports = {
     getTokenByUserId,
-    getUserIdByToken
+    getUserIdByToken,
+    getTokenByDeviceId,
+    getDeviceIdByToken
 }

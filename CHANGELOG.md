@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * `user` context which provides information about the authorized `User`.
+* `device` context which provides information about the authorized `Device`.
 * `me` GraphQL query which lets the user query information about himself, up to three levels down.
-* `reAuth` GraphQL query which generates a new token if previous still is valid. 
+* `refreshToken` GraphQL query which generates a new token if previous still is valid. 
 * `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 * `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
 * `Device` mongoose model with `owner` and `managers`.
@@ -17,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `claimDevice` GraphQL mutation which lets a `User` own an existing `Device` which currently has no `owner`.
 * `setDevicePin` GraphQL mutation which lets the `owner` of a `Device` or an `admin`set its `pin` (or anyone if the `Device` has not been claimed).
 * `setDeviceName` GraphQL mutation which lets the `owner` of a `Device` or an `admin` set its `name`.
+* `loginDevice` GraphQL query for logging in a `Device` using `mac` and `pin`.
 
 ### Changed
 * `User` mongoose model requires `firstName` and `lastName`.
 * `createUser` GraphQL mutation checks if email is valid.
+* `login` GraphQL query has been renamed to `loginUser`.
 
 ## [v0.1.0] - 2019-05-01
 
@@ -28,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * `User` mongoose model with email and password.
 * `createUser` GraphQL mutation.
-* `login` GraphQL query.
+* `login` GraphQL query for logging in a `User`.
 
 [Unreleased]: https://github.com/leiklier/ambientalarm-api/compare/v0.1.0...HEAD
 [v0.1.0]: https://github.com/leiklier/ambientalarm-api/releases/tag/v0.1.0
