@@ -4,15 +4,20 @@ const User = require('../../models/user')
 const { getTokenByUserId } = require('../../helpers')
 
 const authTypeDefs = gql`
-    type AuthData {
-		userId: ID!
+    interface AuthData {
 		token: String!
 		tokenExpiration: Int!
+	}
+
+	type UserAuthData implements AuthData {
+		token: String!
+		tokenExpiration: Int!
+		userId: ID!
 	}
 `
 
 const authResolvers = {
-    login: async (obj, { email, password }, context, info) => {
+    loginUser: async (obj, { email, password }, context, info) => {
         // Permittable by all
 		const user = await User.findOne({ email });
 

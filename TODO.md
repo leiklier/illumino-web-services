@@ -17,8 +17,6 @@
 * In `loaders.js`, add a `requestor={deviceId, userId, isAdmin}` parameter for figuring out recursion level /  `nestingLevel` (or maybe just pass down the whole `context`?).
 * Refactor all `Error`s into `ApolloError`s.
 * Rename `reAuth` to `refreshToken`.
-* Rename `login` to `loginUser`.
-* Make `AuthData` into an `interface`, and derive `UserAuthData` from it.
 
 ## Security fixes
 * Verify `pin` on unclaimed `Device` if set when a `User` is trying to `claimDevice`.

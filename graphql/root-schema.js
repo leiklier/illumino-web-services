@@ -10,7 +10,7 @@ const rootTypeDefs = gql`
 
     type RootQuery {
         me: User!
-        login(email: String!, password: String!): AuthData!
+        loginUser(email: String!, password: String!): UserAuthData!
         reAuth: AuthData!
         isAuth: Boolean!
     }
@@ -34,8 +34,17 @@ const rootTypeDefs = gql`
 const rootSchema = {
     typeDefs: [authTypeDefs, userTypeDefs, deviceTypeDefs, rootTypeDefs],
     resolvers: {
+        AuthData: {
+            __resolveType(authData, context, info) {
+                if(authData.userId) {
+                    return 'UserAuthData'
+                }
+
+                return null
+            }
+        },
         RootQuery: {
-            login: authResolvers.login,
+            loginUser: authResolvers.loginUser,
             reAuth: authResolvers.reAuth,
             isAuth: authResolvers.isAuth,
 
