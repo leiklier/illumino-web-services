@@ -15,6 +15,10 @@ const deviceSchema = new Schema({
   },
   pin: String, // 4 digit number, used to unlock Device
   name: String,
+  lastSeenAt: {
+    type: Date,
+    required: true
+  },
   owner: {
     type: Schema.Types.ObjectId,
     ref: 'User'

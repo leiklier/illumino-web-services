@@ -1,7 +1,6 @@
 # TODO
 
 ## New Features
-* `Device` should have attribute `lastSeenAt`, implement `txBeacon` mutation which changes this.
 * Implement `active` query on `Device` which returns status `enum` : `CONNECTED` or `DISCONNECTED` based on `lastSeenAt`.
 * Device should have a `firmwareVersion` attribute.
 * `doAuth` or `authDevice` query for authenticating a `Device` by `authKey`.

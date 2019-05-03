@@ -44,6 +44,7 @@ const deviceResolvers = {
         }
 
         const device = new Device()
+        device.lastSeenAt = new Date()
         device.mac = deviceInput.mac
         device.authKey = await bcrypt.hash(deviceInput.authKey, 12)
 
@@ -182,6 +183,22 @@ const deviceResolvers = {
         return context.isAdmin ?
             loadDeviceById(device.id) :
             loadDeviceById(device.id, 2)
+    },
+    txBeacon: async (obj, args, context, info) => {
+        // Permittable by a Device
+        if(!context.device.isAuth) {
+            throw new Error('Device not logged in!')
+        }
+
+        const device = await Device.findOne({_id: context.device._id})
+        if(!device) {
+            throw new Error('Device does not exist!')
+        }
+
+        device.lastSeenAt = new Date()
+        await device.save()
+
+        return device.lastSeenAt.toISOString()
     }
 }
 

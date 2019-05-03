@@ -9,21 +9,37 @@ const { deviceTypeDefs, deviceResolvers } = require('./schema/device')
 const rootTypeDefs = gql`
 
     type RootQuery {
+        """ Requires context.user.isAuth """
         me: User!
         loginUser(email: String!, password: String!): UserAuthData!
+
+        """ Requires context.device.isAuth """
         loginDevice(mac: String!, pin: Int!): DeviceAuthData!
+
+        """ Requires context.user.isAuth || context.device.isAuth """
         refreshToken: AuthData!
+
+        """ Accessible for everyone """
         isAuth: Boolean!
     }
 
     type RootMutation {
-        createUser(userInput: UserInput): User!
-        grantAdmin(email: String!): User!
-
-        createDevice(deviceInput: DeviceInput!): Device!
+        """ Requires context.user.isAuth """
         claimDevice(mac: String!): Device!
+
+        """ Requires context.user.isAuth && device.owner """
         setDevicePin(mac: String!, pin: Int!): Device!
         setDeviceName(mac: String!, name: String!): Device!
+
+        """ Requires context.user.isAdmin """
+        grantAdmin(email: String!): User!
+
+        """ Requires context.device.isAuth """
+        txBeacon: String!
+
+        """ Accessible for everyone """
+        createUser(userInput: UserInput): User!
+        createDevice(deviceInput: DeviceInput!): Device!
     }
 
     schema {
@@ -63,7 +79,8 @@ const rootSchema = {
             createDevice: deviceResolvers.createDevice,
             claimDevice: deviceResolvers.claimDevice,
             setDeviceName: deviceResolvers.setDeviceName,
-            setDevicePin: deviceResolvers.setDevicePin
+            setDevicePin: deviceResolvers.setDevicePin,
+            txBeacon: deviceResolvers.txBeacon
         }
     },
     context
