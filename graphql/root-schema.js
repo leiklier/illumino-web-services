@@ -21,6 +21,7 @@ const rootTypeDefs = gql`
 
         createDevice(deviceInput: DeviceInput!): Device!
         claimDevice(deviceId: String!): Device!
+        setDevicePin(deviceId: String!, pin: Int!): Device!
         setDeviceName(deviceId: String!, name: String!): Device!
     }
 
@@ -46,7 +47,8 @@ const rootSchema = {
 
             createDevice: deviceResolvers.createDevice,
             claimDevice: deviceResolvers.claimDevice,
-            setDeviceName: deviceResolvers.setDeviceName
+            setDeviceName: deviceResolvers.setDeviceName,
+            setDevicePin: deviceResolvers.setDevicePin
         }
     },
     context

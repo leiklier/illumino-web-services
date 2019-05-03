@@ -12,9 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `reAuth` GraphQL query which generates a new token if previous still is valid. 
 * `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 * `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
-* `Device` mongoose model with `owners` and `managers`.
+* `Device` mongoose model with `owner` and `managers`.
 * `createDevice` GraphQL mutation which lets a `Device` self register.
 * `claimDevice` GraphQL mutation which lets a `User` own an existing `Device` which currently has no `owner`.
+* `setDevicePin` GraphQL mutation which lets the `owner` of a `Device` or an `admin`set its `pin` (or anyone if the `Device` has not been claimed).
 * `setDeviceName` GraphQL mutation which lets the `owner` of a `Device` or an `admin` set its `name`.
 
 ### Changed

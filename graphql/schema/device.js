@@ -117,7 +117,7 @@ const deviceResolvers = {
         device.owner = ownerId
 
 
-        // Need to update two fields concurrently
+        // Need to update two documents concurrently
         const session = await Device.startSession()
         session.startTransaction()
         try {
@@ -132,6 +132,32 @@ const deviceResolvers = {
             session.endSession()
             throw err
         }
+    },
+    setDevicePin: async (obj, { deviceId, pin }, context, info) => {
+        // Permittable by Device.owner, admins, 
+        // and on all Devices with no Device.owner
+
+        if(pin.toString().length > 4) {
+            throw new Error('Pin too long. Should be 4 digits.')
+        }
+
+        const device = await Device
+            .findOne({_id: deviceId})
+            .populate('owner', '_id')
+        if(!device) {
+            throw new Error('Device does not exist!')
+        }
+
+        device.pin = await bcrypt.hash(pin.toString(), 12)
+
+        if(device.owner && !(context.isAdmin || context.user._id === device.owner.id)) {
+            throw new Error('User not authorized!')
+        }
+
+        await device.save()
+        return context.isAdmin ?
+            loadDeviceById(device.id) :
+            loadDeviceById(device.id, 2)
     },
     setDeviceName: async (obj, { deviceId, name }, context, info) => {
         // Permittable by deviceOwners and admins
