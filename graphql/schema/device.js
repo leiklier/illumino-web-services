@@ -28,11 +28,10 @@ const deviceTypeDefs = gql`
 
 const deviceResolvers = {
     createDevice: async (obj, { deviceInput }, context, info) => {
-        // Permittable by all users
-
-        // [TODO]: Require some type of key
-        // in Authorization header in order
-        // to allow operation.
+        // Permittable by everyone with DEPLOY_KEY
+        if(!context.user.isAdmin && !context.isDeploying) {
+            throw new Error("Not Admin or no invalid DEPLOY_KEY!")
+        }
 
         if(!isMACAddress(deviceInput.mac)) {
             throw new Error('Invalid MAC address')

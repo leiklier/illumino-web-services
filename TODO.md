@@ -17,7 +17,6 @@
 
 ## Security fixes
 * Verify `pin` on unclaimed `Device` if set when a `User` is trying to `claimDevice`.
-* Add `DEPLOY_KEY` authorization when trying to `createDevice`. Should be set via header `Authorization: Mutual <DEPLOY_KEY>`. Correct `<DEPLOY_KEY>` sets `context.isDeploying` flag.
 
 ## Bug fixes
 

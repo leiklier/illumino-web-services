@@ -3,7 +3,7 @@ const Device = require('../models/device')
 const { getUserIdByToken, getDeviceIdByToken } = require('../helpers')
 
 const context = async ({req}) => {
-    // Format of header Authorization: Bearer <token>
+    // Format of header Authorization: <type> <content>
     const authHeader = req.headers.authorization
 
     const userContext = await getUserContextByAuthHeader(authHeader)
@@ -11,7 +11,8 @@ const context = async ({req}) => {
 
     const context = {
         user: userContext,
-        device: deviceContext
+        device: deviceContext,
+        isDeploying: isValidDeployKeyByAuthHeader(authHeader)
     }
 
     return context
@@ -78,6 +79,20 @@ const getDeviceContextByAuthHeader = async authHeader => {
     return {
         isAuth: true,
         _id: device.id
+    }
+}
+
+const isValidDeployKeyByAuthHeader = authHeader => {
+    try {
+        const [authType, deployKey] = authHeader.split(' ')
+        if(!authType === 'Mutual') {
+            return false
+        }
+
+        return deployKey === process.env.DEPLOY_KEY
+    } catch(err) {
+        // authHeader is empty
+        return false
     }
 }
 

@@ -37,9 +37,11 @@ const rootTypeDefs = gql`
         """ Requires context.device.isAuth """
         txBeacon: String!
 
+        """ Requires context.user.isAdmin || context.isDeploying """
+        createDevice(deviceInput: DeviceInput!): Device!
+
         """ Accessible for everyone """
         createUser(userInput: UserInput): User!
-        createDevice(deviceInput: DeviceInput!): Device!
     }
 
     schema {

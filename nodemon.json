@@ -2,6 +2,7 @@
     "env": {
         "PORT": 4000, 
         "MONGO_DB": "ambientalarm",
-        "JWT_SECRET": "fdfsodfijsdkfjsdklf"
+        "JWT_SECRET": "fdfsodfijsdkfjsdklf",
+        "DEPLOY_KEY": "fdsfsdfearoghosbnost"
     }
 }
