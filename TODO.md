@@ -19,7 +19,6 @@
 * Rename `reAuth` to `refreshToken`.
 * Rename `login` to `loginUser`.
 * Make `AuthData` into an `interface`, and derive `UserAuthData` from it.
-* All queries/mutations requesting `deviceId` should instead request `mac`, and all queries/mutations requesting `userId` should instead request `email`.
 
 ## Security fixes
 * Verify `pin` on unclaimed `Device` if set when a `User` is trying to `claimDevice`.

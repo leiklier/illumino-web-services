@@ -90,7 +90,7 @@ const deviceResolvers = {
         }
 
     },
-    claimDevice: async (obj, { deviceId }, context, info) => {
+    claimDevice: async (obj, { mac }, context, info) => {
         // Permittable by users
         if(!context.user) {
             throw new Error('User not logged in!')
@@ -98,7 +98,7 @@ const deviceResolvers = {
     
         const ownerId = context.user._id
 
-        const device = await Device.findOne({ _id: deviceId })
+        const device = await Device.findOne({ mac })
         const owner = await User.findOne({ _id: ownerId})
 
         if (!device) {
@@ -113,7 +113,7 @@ const deviceResolvers = {
             throw new Error('Device has already been claimed!')
         }
 
-        owner.devicesOwning.push(deviceId)
+        owner.devicesOwning.push(device.id)
         device.owner = ownerId
 
 
@@ -133,7 +133,7 @@ const deviceResolvers = {
             throw err
         }
     },
-    setDevicePin: async (obj, { deviceId, pin }, context, info) => {
+    setDevicePin: async (obj, { mac, pin }, context, info) => {
         // Permittable by Device.owner, admins, 
         // and on all Devices with no Device.owner
 
@@ -142,7 +142,7 @@ const deviceResolvers = {
         }
 
         const device = await Device
-            .findOne({_id: deviceId})
+            .findOne({ mac })
             .populate('owner', '_id')
         if(!device) {
             throw new Error('Device does not exist!')
@@ -159,14 +159,14 @@ const deviceResolvers = {
             loadDeviceById(device.id) :
             loadDeviceById(device.id, 2)
     },
-    setDeviceName: async (obj, { deviceId, name }, context, info) => {
+    setDeviceName: async (obj, { mac, name }, context, info) => {
         // Permittable by deviceOwners and admins
         if(!context.user) {
             throw new Error('User not logged in!')
         }
         
         const device = await Device
-            .findOne({_id: deviceId})
+            .findOne({ mac })
             .populate('owner', '_id')
         if(!device) {
             throw new Error('Device does not exist!')

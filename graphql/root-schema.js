@@ -20,9 +20,9 @@ const rootTypeDefs = gql`
         grantAdmin(email: String!): User!
 
         createDevice(deviceInput: DeviceInput!): Device!
-        claimDevice(deviceId: String!): Device!
-        setDevicePin(deviceId: String!, pin: Int!): Device!
-        setDeviceName(deviceId: String!, name: String!): Device!
+        claimDevice(mac: String!): Device!
+        setDevicePin(mac: String!, pin: Int!): Device!
+        setDeviceName(mac: String!, name: String!): Device!
     }
 
     schema {
