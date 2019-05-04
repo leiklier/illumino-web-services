@@ -1,13 +1,29 @@
+const DataLoader = require('dataloader')
+
 const User = require('../models/user')
 const Device = require('../models/device')
 
+const userLoader = new DataLoader(userIds => {
+    return User
+        .find({ _id: { $in: userIds } })
+        .populate('devicesOwning', '_id')
+        .populate('devicesManaging', '_id')
+})
+
+const deviceLoader = new DataLoader(deviceIds => {
+    return Device
+        .find({ _id: { $in: deviceIds } })
+        .populate('owner', '_id')
+        .populate('managers', '_id')
+})
+
 const loadUserById = async (userId, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
-        return userId
+        return null
     }
 
     try {
-        const user = await User.findOne({_id: userId})
+        const user = await userLoader.load(userId)
         return populateUser(user, --nestingLevel)
     } catch (err) {
         throw err
@@ -16,11 +32,11 @@ const loadUserById = async (userId, nestingLevel) => {
 
 const loadUsersById = async (userIds, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
-        return userIds
+        return null
     }
 
     try {
-        const users  = await User.find({ _id: { $in: userIds } })
+        const users = await userLoader.loadMany(userIds)
         return populatedUsers = users.map(user => populateUser(user, --nestingLevel))
     } catch(err) {
         throw err
@@ -29,11 +45,11 @@ const loadUsersById = async (userIds, nestingLevel) => {
 
 const loadDeviceById = async (deviceId, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
-        return deviceId
+        return null
     }
 
     try {
-        const device = await Device.findOne({_id: deviceId})
+        const device = await deviceLoader.load(deviceId)
         return populateDevice(device, --nestingLevel)
     } catch (err) {
         throw err
@@ -42,11 +58,11 @@ const loadDeviceById = async (deviceId, nestingLevel) => {
 
 const loadDevicesById = async (deviceIds, nestingLevel) => {
     if(typeof nestingLevel !== 'undefined' && nestingLevel === 0) {
-        return deviceIds
+        return null
     }
 
     try {
-        const devices  = await Device.find({ _id: { $in: deviceIds } })
+        const devices  = await deviceLoader.loadMany(deviceIds)
         return populatedDevices = devices.map(device => populateDevice(device, --nestingLevel))
     } catch(err) {
         throw err
@@ -57,8 +73,8 @@ const populateUser = (user, nestingLevel) => {
     return {
         ...user.toObject(),
         password: null,
-        devicesOwning: () => loadDevicesById(user.devicesOwning, nestingLevel),
-        devicesManaging: () => loadDevicesById(user.devicesManaging, nestingLevel)
+        devicesOwning: loadDevicesById.bind(this, user.devicesOwning.map(device => device.id), nestingLevel),
+        devicesManaging: loadDevicesById.bind(this, user.devicesManaging.map(device => device.id), nestingLevel)
     }
 }
 
@@ -67,8 +83,8 @@ const populateDevice = (device, nestingLevel) => {
         ...device.toObject(),
         authKey: null,
         pin: null,
-        owner: () => loadUserById(device.owner, nestingLevel),
-        managers: () => loadUsersById(device.managers, nestingLevel)
+        owner: loadUserById.bind(this, device.owner.id, nestingLevel),
+        managers: loadUsersById.bind(this, device.managers.map(user => user.id), nestingLevel)
     }
 }
 

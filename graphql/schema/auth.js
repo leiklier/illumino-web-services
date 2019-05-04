@@ -65,12 +65,12 @@ const authResolvers = {
 		// Permittable by Users and Devices
 		if(context.user.isAuth) {
 			const token = getTokenByUserId(context.user._id)
-			return { userId: context.user._id, token, tokenExpiration: 1 }
+			return { userId: context.user._id, token, tokenExpiration: 1 } // returns UserAuthData
 		}
 
         if(context.device.isAuth) {
 			const token = getTokenByUserId(context.user._id)
-			return { deviceId: context.device._id, token, tokenExpiration: 7 * 24 }
+			return { deviceId: context.device._id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
 		}
 		
 		throw new Error('Not logged in!')
