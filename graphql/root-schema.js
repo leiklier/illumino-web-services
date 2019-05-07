@@ -2,45 +2,32 @@ const { gql } = require('apollo-server')
 
 const context = require('./context')
 
-const { authTypeDefs, authResolvers } = require('./schema/auth')
+const { authTypeDefs, authResolvers, RequiresAuthDirective } = require('./schema/auth')
 const { userTypeDefs, userResolvers } = require('./schema/user')
 const { deviceTypeDefs, deviceResolvers } = require('./schema/device')
 
 const rootTypeDefs = gql`
 
     type RootQuery {
-        """ Requires context.user.isAuth """
-        me: User!
+        me: User! @requiresAuth(rolesAccepted: [USER])
         loginUser(email: String!, password: String!): UserAuthData!
-
-        """ Requires context.device.isAuth """
         loginDevice(mac: String!, pin: Int!): DeviceAuthData!
-
-        """ Requires context.user.isAuth || context.device.isAuth """
-        refreshToken: AuthData!
-
-        """ Accessible for everyone """
+        refreshToken: AuthData! @requiresAuth(rolesAccepted: [USER, DEVICE])
         isAuth: Boolean!
     }
 
     type RootMutation {
-        """ Requires context.user.isAuth """
-        claimDevice(mac: String!): Device!
+        claimDevice(mac: String!): Device! @requiresAuth(rolesAccepted: [USER])
 
-        """ Requires context.user.isAuth && device.owner """
-        setDevicePin(mac: String!, pin: Int!): Device!
-        setDeviceName(mac: String!, name: String!): Device!
+        setDevicePin(mac: String!, pin: Int!): Device! @requiresAuth(rolesAccepted: [DEVICE_OWNER, ADMIN])
+        setDeviceName(mac: String!, name: String!): Device! @requiresAuth(rolesAccepted: [DEVICE_OWNER, ADMIN])
 
-        """ Requires context.user.isAdmin """
-        grantAdmin(email: String!): User!
+        grantAdmin(email: String!): User! @requiresAuth(rolesAccepted: [ROOT])
 
-        """ Requires context.device.isAuth """
-        txBeacon: String!
+        txBeacon: String! @requiresAuth(rolesAccepted: [DEVICE])
 
-        """ Requires context.user.isAdmin || context.isDeploying """
-        createDevice(deviceInput: DeviceInput!): Device!
+        createDevice(deviceInput: DeviceInput!): Device! @requiresAuth(rolesAccepted: [DEPLOYER, ADMIN])
 
-        """ Accessible for everyone """
         createUser(userInput: UserInput): User!
     }
 
@@ -85,7 +72,10 @@ const rootSchema = {
             txBeacon: deviceResolvers.txBeacon
         }
     },
-    context
+    context,
+    schemaDirectives: {
+        requiresAuth: RequiresAuthDirective
+    }
 }
 
 module.exports = rootSchema

@@ -1,12 +1,25 @@
 const { gql } = require('apollo-server')
+const { SchemaDirectiveVisitor } = require('graphql-tools')
 const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
-const { getTokenByUserId, getTokenByDeviceId } = require('../../helpers')
+const { getTokenByUser, getTokenByDevice } = require('../../helpers/token')
 
 const authTypeDefs = gql`
-    interface AuthData {
+	directive @requiresAuth(rolesAccepted: [Role!]! = [USER]) on FIELD_DEFINITION
+
+	enum Role {
+		USER
+		DEVICE_OWNER
+		DEVICE_MANAGER
+		ADMIN
+		ROOT
+		DEPLOYER
+		DEVICE
+	}
+
+	interface AuthData {
 		token: String!
 		tokenExpiration: Int!
 	}
@@ -25,26 +38,25 @@ const authTypeDefs = gql`
 `
 
 const authResolvers = {
-    loginUser: async (obj, { email, password }, context, info) => {
-        // Permittable by all
-		const user = await User.findOne({ email });
+	loginUser: async (obj, { email, password }, context, info) => {
+		const user = await User.findOne({ email })
 
 		if (!user) {
-			throw new Error('User does not exist!');
+			throw new Error('User does not exist!')
 		}
 
-		const passwordIsEqual = await bcrypt.compare(password, user.password);
+		const passwordIsEqual = await bcrypt.compare(password, user.password)
 		if (!passwordIsEqual) {
-			throw new Error('Password is incorrect!');
+			throw new Error('Password is incorrect!')
 		}
 
-		const token = getTokenByUserId(user.id)
-		
-		return { userId: user.id, token, tokenExpiration: 1 };
+		const token = getTokenByUser(user)
+
+		return { userId: user.id, token, tokenExpiration: 1 }
 	},
-	
+
 	loginDevice: async (obj, { mac, pin }, context, info) => {
-        // Permittable by all
+		// Permittable by all
 		const device = await Device.findOne({ mac })
 
 		if (!device) {
@@ -56,34 +68,78 @@ const authResolvers = {
 			throw new Error('Pin is incorrect!')
 		}
 
-		const token = getTokenByDeviceId(device.id)
-		
+		const token = getTokenByDevice(device)
+
 		return { deviceId: device.id, token, tokenExpiration: 24 * 7 }
 	},
 
-    refreshToken: async (obj, args, context, info) => {
+	refreshToken: async (obj, args, context, info) => {
 		// Permittable by Users and Devices
-		if(context.user.isAuth) {
-			const token = getTokenByUserId(context.user._id)
-			return { userId: context.user._id, token, tokenExpiration: 1 } // returns UserAuthData
+		if (context.user) {
+			const token = getTokenByUser(context.user)
+			return { userId: context.user.id, token, tokenExpiration: 1 } // returns UserAuthData
 		}
 
-        if(context.device.isAuth) {
-			const token = getTokenByUserId(context.user._id)
-			return { deviceId: context.device._id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
+		if (context.device) {
+			const token = getTokenByDevice(context.device)
+			return { deviceId: context.device.id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
 		}
-		
+
 		throw new Error('Not logged in!')
 	},
 
 	isAuth: async (obj, args, context, info) => {
-        // Permittable by all
-		return (context.user.isAuth || context.device.isAuth) ? true : false
+		// Permittable by all
+		return context.user || context.device ? true : false
 	},
+}
 
+class RequiresAuthDirective extends SchemaDirectiveVisitor {
+	visitFieldDefinition(field) {
+		const { resolve = defaultFieldResolver } = field
+		const { rolesAccepted } = this.args
+
+		field.resolve = async (...args) => {
+			const [, { mac }, context] = args
+
+			let rolesHaving = []
+
+			context.isDeploying && rolesHaving.push('DEPLOYER')
+			context.device && rolesHaving.push('DEVICE')
+
+			if (context.user) {
+				rolesHaving.push('USER')
+				context.user.isAdmin && rolesHaving.push('ADMIN')
+				context.user.isRoot && rolesHaving.push('ROOT')
+			}
+
+			if (mac && context.user) {
+				const device = await Device.findOne({ mac })
+
+				context.user.devicesOwning.filter(
+					deviceOwning => deviceOwning.id === device.id,
+				).length && rolesHaving.push('DEVICE_OWNER')
+
+				context.user.devicesManaging.filter(
+					deviceManaging => deviceManaging.id === device.id,
+				).length && rolesHaving.push('DEVICE_MANAGER')
+			}
+			console.log(rolesHaving)
+			if (
+				!rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
+					.length
+			) {
+				throw new Error('You are not authorized by requiresAuth!')
+			}
+
+			const result = await resolve.apply(this, args)
+			return result
+		}
+	}
 }
 
 module.exports = {
-    authTypeDefs,
-    authResolvers
+	authTypeDefs,
+	authResolvers,
+	RequiresAuthDirective,
 }

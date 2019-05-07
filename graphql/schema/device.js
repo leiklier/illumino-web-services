@@ -7,201 +7,162 @@ const Device = require('../../models/device')
 const { loadDeviceById } = require('../loaders')
 
 const deviceTypeDefs = gql`
-    type Device {
-        _id: ID!
-        mac: String!
-        authKey: String
-        pin: String
-        name: String
-        owner: User
-        managers: [User]!
-    }
+	type Device {
+		id: ID!
+		mac: String!
+		authKey: String
+		pin: String
+		name: String
+		owner: User
+		managers: [User]!
+	}
 
-    input DeviceInput {
-        mac: String!
-        authKey: String!
-        pin: Int
-        ownerEmail: String
-        name: String
-    }
+	input DeviceInput {
+		mac: String!
+		authKey: String!
+		pin: Int
+		ownerEmail: String
+		name: String
+	}
 `
 
 const deviceResolvers = {
-    createDevice: async (obj, { deviceInput }, context, info) => {
-        // Permittable by everyone with DEPLOY_KEY
-        if(!context.user.isAdmin && !context.isDeploying) {
-            throw new Error("Not Admin or no invalid DEPLOY_KEY!")
-        }
+	createDevice: async (obj, { deviceInput }, context, info) => {
+		if (!isMACAddress(deviceInput.mac)) {
+			throw new Error('Invalid MAC address')
+		}
 
-        if(!isMACAddress(deviceInput.mac)) {
-            throw new Error('Invalid MAC address')
-        }
+		const existingDevice = await Device.findOne({ mac: deviceInput.mac })
+		if (existingDevice) {
+			throw new Error('Device exists already.')
+		}
 
-        const existingDevice = await Device.findOne({ mac: deviceInput.mac })
-        if(existingDevice) {
-            throw new Error('Device exists already.')
-        }
+		const device = new Device({
+			lastSeenAt: new Date(),
+			mac: deviceInput.mac,
+			authKey: await bcrypt.hash(deviceInput.authKey, 12),
+		})
 
-        const device = new Device()
-        device.lastSeenAt = new Date()
-        device.mac = deviceInput.mac
-        device.authKey = await bcrypt.hash(deviceInput.authKey, 12)
+		if (deviceInput.pin) {
+			if (deviceInput.pin.toString().length > 4) {
+				throw new Error('Pin too long. Should be 4 digits.')
+			}
+			device.pin = await bcrypt.hash(deviceInput.pin.toString(), 12)
+		}
 
-        if(deviceInput.pin) {
-            if(deviceInput.pin.toString().length > 4) {
-                throw new Error('Pin too long. Should be 4 digits.')
-            }
-            device.pin = await bcrypt.hash(deviceInput.pin, 12)
-        }
+		if (deviceInput.name) {
+			device.name = deviceInput.name
+		}
 
-        if(deviceInput.name) {
-            device.name = deviceInput.name
-        }
+		if (!deviceInput.ownerEmail) {
+			await device.save()
 
-        if(!deviceInput.ownerEmail) {
-            await device.save()
+			return context.user && context.user.isAdmin
+				? loadDeviceById(device.id)
+				: loadDeviceById(device.id, 2)
+		}
 
-            return context.isAdmin ? 
-                loadDeviceById(device.id) :
-                loadDeviceById(device.id, 2)
-        }
+		const owner = await User.findOne({ email: deviceInput.ownerEmail })
+		if (!owner) {
+			throw new Error('Owner does not exist!')
+		}
 
-        const owner = await User.findOne({email: deviceInput.ownerEmail})
-        if(!owner) {
-            throw new Error('Owner does not exist!')
-        }
+		// Need to do to operations concurrently, so use transaction
+		const session = await Device.startSession()
+		session.startTransaction()
+		try {
+			device.owner = owner.id
+			owner.devicesOwning.push(device.id)
+			await owner.save()
+			await device.save()
 
-        // Need to do to operations concurrently, so use transaction
-        const session = await Device.startSession()
-        session.startTransaction()
-        try {
-            device.owner = owner._id
-            owner.devicesOwning.push(device._id)
-            await owner.save()
-            await device.save()
+			return context.user.isAdmin
+				? loadDeviceById(device.id)
+				: loadDeviceById(device.id, 2)
+		} catch (err) {
+			await session.abortTransaction()
+			session.endSession()
+			throw err
+		}
+	},
+	claimDevice: async (obj, { mac }, context, info) => {
+		const ownerId = context.user.id
 
-            return context.isAdmin ?
-                loadDeviceById(device.id) :
-                loadDeviceById(device.id, 2)
-        } catch(err) {
-            await session.abortTransaction()
-            session.endSession()
-            throw err
-        }
+		const device = await Device.findOne({ mac })
+		const owner = await User.findOne({ _id: ownerId })
 
-    },
-    claimDevice: async (obj, { mac }, context, info) => {
-        // Permittable by users
-        if(!context.user.isAuth) {
-            throw new Error('User not logged in!')
-        }
-    
-        const ownerId = context.user._id
+		if (!device) {
+			throw new Error('Device does not exist!')
+		}
 
-        const device = await Device.findOne({ mac })
-        const owner = await User.findOne({ _id: ownerId})
+		if (!owner) {
+			throw new Error('User does not exist!')
+		}
 
-        if (!device) {
-            throw new Error('Device does not exist!');
-        }
+		if (device.owner) {
+			throw new Error('Device has already been claimed!')
+		}
 
-        if(!owner) {
-            throw new Error('User does not exist!')
-        }
+		owner.devicesOwning.push(device.id)
+		device.owner = ownerId
 
-        if(device.owner) {
-            throw new Error('Device has already been claimed!')
-        }
+		// Need to update two documents concurrently
+		const session = await Device.startSession()
+		session.startTransaction()
+		try {
+			await owner.save()
+			await device.save()
+			return context.user.isAdmin
+				? loadDeviceById(device.id)
+				: loadDeviceById(device.id, 2)
+		} catch (err) {
+			await session.abortTransaction()
+			session.endSession()
+			throw err
+		}
+	},
+	setDevicePin: async (obj, { mac, pin }, context, info) => {
+		// Permittable by Device.owner, admins,
+		// and on all Devices with no Device.owner
 
-        owner.devicesOwning.push(device.id)
-        device.owner = ownerId
+		if (pin.toString().length > 4) {
+			throw new Error('Pin too long. Should be 4 digits.')
+		}
 
+		const device = await Device.findOne({ mac }).populate('owner', '_id')
+		if (!device) {
+			throw new Error('Device does not exist!')
+		}
 
-        // Need to update two documents concurrently
-        const session = await Device.startSession()
-        session.startTransaction()
-        try {
-            await owner.save()
-            await device.save()
-            return context.user.isAdmin ?
-                loadDeviceById(device.id) :
-                loadDeviceById(device.id, 2)
+		device.pin = await bcrypt.hash(pin.toString(), 12)
 
-        } catch(err) {
-            await session.abortTransaction()
-            session.endSession()
-            throw err
-        }
-    },
-    setDevicePin: async (obj, { mac, pin }, context, info) => {
-        // Permittable by Device.owner, admins, 
-        // and on all Devices with no Device.owner
+		await device.save()
+		return context.user.isAdmin
+			? loadDeviceById(device.id)
+			: loadDeviceById(device.id, 2)
+	},
+	setDeviceName: async (obj, { mac, name }, context, info) => {
+		const device = await Device.findOne({ mac }).populate('owner', '_id')
+		if (!device) {
+			throw new Error('Device does not exist!')
+		}
 
-        if(pin.toString().length > 4) {
-            throw new Error('Pin too long. Should be 4 digits.')
-        }
+		device.name = name
+		await device.save()
 
-        const device = await Device
-            .findOne({ mac })
-            .populate('owner', '_id')
-        if(!device) {
-            throw new Error('Device does not exist!')
-        }
+		return context.user.isAdmin
+			? loadDeviceById(device.id)
+			: loadDeviceById(device.id, 2)
+	},
+	txBeacon: async (obj, args, context, info) => {
+		context.device.lastSeenAt = new Date()
+		await context.device.save()
 
-        device.pin = await bcrypt.hash(pin.toString(), 12)
-
-        if(device.owner && !(context.isAdmin || context.user._id === device.owner.id)) {
-            throw new Error('User not authorized!')
-        }
-
-        await device.save()
-        return context.isAdmin ?
-            loadDeviceById(device.id) :
-            loadDeviceById(device.id, 2)
-    },
-    setDeviceName: async (obj, { mac, name }, context, info) => {
-        // Permittable by deviceOwners and admins
-        if(!context.user.isAuth) {
-            throw new Error('User not logged in!')
-        }
-        
-        const device = await Device
-            .findOne({ mac })
-            .populate('owner', '_id')
-        if(!device) {
-            throw new Error('Device does not exist!')
-        }
-
-        if(!(context.isAdmin || context.user._id === device.owner.id)) {
-            throw new Error('User not authorized!')
-        }
-
-        device.name = name
-        await device.save()
-
-        return context.isAdmin ?
-            loadDeviceById(device.id) :
-            loadDeviceById(device.id, 2)
-    },
-    txBeacon: async (obj, args, context, info) => {
-        // Permittable by a Device
-        if(!context.device.isAuth) {
-            throw new Error('Device not logged in!')
-        }
-
-        const device = await Device.findOne({_id: context.device._id})
-        if(!device) {
-            throw new Error('Device does not exist!')
-        }
-
-        device.lastSeenAt = new Date()
-        await device.save()
-
-        return device.lastSeenAt.toISOString()
-    }
+		return context.device.lastSeenAt.toISOString()
+	},
 }
 
 module.exports = {
-    deviceTypeDefs,
-    deviceResolvers
+	deviceTypeDefs,
+	deviceResolvers,
 }

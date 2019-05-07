@@ -1,25 +1,27 @@
 {
-  "name": "ambientalarm-api",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "NODE_ENV=production node .",
-    "stag": "NODE_ENV=staging node .",
-    "dev": "NODE_ENV=development nodemon ."
-  },
-  "repository": "https://github.com/leiklier/ambientalarm-api.git",
-  "author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
-  "license": "MIT",
-  "dependencies": {
-    "apollo-server": "^2.4.8",
-    "bcryptjs": "^2.4.3",
-    "dataloader": "^1.4.0",
-    "graphql": "^14.2.1",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.5.5",
-    "validator": "^10.11.0"
-  },
-  "devDependencies": {
-    "nodemon": "^1.18.11"
-  }
+	"name": "ambientalarm-api",
+	"version": "v0.1.0",
+	"private": true,
+	"main": "server.js",
+	"scripts": {
+		"start": "NODE_ENV=production node .",
+		"stag": "NODE_ENV=staging node .",
+		"dev": "NODE_ENV=development nodemon ."
+	},
+	"repository": "https://github.com/leiklier/ambientalarm-api.git",
+	"author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
+	"license": "MIT",
+	"dependencies": {
+		"apollo-server": "^2.4.8",
+		"bcryptjs": "^2.4.3",
+		"dataloader": "^1.4.0",
+		"graphql": "^14.2.1",
+		"graphql-tools": "^4.0.4",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "^5.5.5",
+		"validator": "^10.11.0"
+	},
+	"devDependencies": {
+		"nodemon": "^1.18.11"
+	}
 }

@@ -1,99 +1,34 @@
-const User = require('../models/user')
-const Device = require('../models/device')
-const { getUserIdByToken, getDeviceIdByToken } = require('../helpers')
+const { getUserByToken, getDeviceByToken } = require('../helpers/token')
 
-const context = async ({req}) => {
-    // Format of header Authorization: <type> <content>
-    const authHeader = req.headers.authorization
+const context = async ({ req }) => {
+	let context = {}
 
-    const userContext = await getUserContextByAuthHeader(authHeader)
-    const deviceContext= await getDeviceContextByAuthHeader(authHeader)
+	// Authorization:
+	try {
+		// Format of header Authorization: <type> <content>
+		const authHeader = req.headers.authorization
+		const [authType, authContent] = authHeader.split(' ')
+		switch (authType) {
+			case 'Bearer': {
+				const token = authContent
+				context.user = await getUserByToken(token)
+				context.device = await getDeviceByToken(token)
+				break
+			}
 
-    const context = {
-        user: userContext,
-        device: deviceContext,
-        isDeploying: isValidDeployKeyByAuthHeader(authHeader)
-    }
+			case 'Mutual': {
+				const deployKey = authContent
+				if (deployKey === process.env.DEPLOY_KEY) {
+					context.isDeploying = true
+				}
+				break
+			}
+		}
+	} catch (err) {
+		// authHeader is empty
+	}
 
-    return context
-}
-
-const getUserContextByAuthHeader = async authHeader => {
-    var authType, token
-    try {
-        [authType, token] = authHeader.split(' ')
-    } catch(err) {
-        // authHeader is empty
-        return {}
-    }
-    if(!authType === 'Bearer') {
-        return {}
-    }
-
-    const userId = getUserIdByToken(token)
-    
-    if(!userId) {
-        // Token has expired
-        return {}
-    }
-
-    const user = await User.findOne({_id: userId})
-
-    if(!user) {
-        return {}
-    }
-
-    return {
-        isAuth: true,
-        _id: user.id,
-        roles: user.roles,
-        isAdmin: Boolean(user.roles.includes('admin'))
-    }
-}
-
-const getDeviceContextByAuthHeader = async authHeader => {
-    var authType, token
-    try {
-        [authType, token] = authHeader.split(' ')
-    } catch(err) {
-        // authHeader is empty
-        return {}
-    }
-    if(!authType === 'Bearer') {
-        return {}
-    }
-    
-    const deviceId = getDeviceIdByToken(token)
-    
-    if(!deviceId) {
-        // Token has expired
-        return {}
-    }
-
-    const device = await Device.findOne({_id: deviceId})
-
-    if(!device) {
-        return {}
-    }
-
-    return {
-        isAuth: true,
-        _id: device.id
-    }
-}
-
-const isValidDeployKeyByAuthHeader = authHeader => {
-    try {
-        const [authType, deployKey] = authHeader.split(' ')
-        if(!authType === 'Mutual') {
-            return false
-        }
-
-        return deployKey === process.env.DEPLOY_KEY
-    } catch(err) {
-        // authHeader is empty
-        return false
-    }
+	return context
 }
 
 module.exports = context
