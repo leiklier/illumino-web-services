@@ -23,18 +23,18 @@ const typeDefs = gql`
 
 	interface AuthData {
 		token: String!
-		tokenExpiration: Int!
+		expiresAt: String!
 	}
 
 	type UserAuthData implements AuthData {
 		token: String!
-		tokenExpiration: Int!
+		expiresAt: String!
 		userId: ID!
 	}
 
 	type DeviceAuthData implements AuthData {
 		token: String!
-		tokenExpiration: Int!
+		expiresAt: String!
 		deviceId: ID!
 	}
 `
@@ -68,12 +68,13 @@ queryResolvers.loginUser = async (obj, { email, password }, context, info) => {
 		throw new Error('Password is incorrect!')
 	}
 
-	const token = getTokenByUser(user)
+	const token = getTokenByUser(user, '1h')
+	const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString()
 
-	return { userId: user.id, token, tokenExpiration: 1 }
+	return { userId: user.id, token, expiresAt }
 }
 
-queryResolvers.loginDevice = async (obj, { mac, pin }, context, info) => {
+queryResolvers.loginDevice = async (_, { mac, pin }) => {
 	const device = await Device.findOne({ mac })
 
 	if (!device) {
@@ -86,8 +87,27 @@ queryResolvers.loginDevice = async (obj, { mac, pin }, context, info) => {
 	}
 
 	const token = getTokenByDevice(device)
+	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString()
 
-	return { deviceId: device.id, token, tokenExpiration: 24 * 7 }
+	return { deviceId: device.id, token, expiresAt }
+}
+
+queryResolvers.authDevice = async (_, { mac, authKey }) => {
+	const device = await Device.findOne({ mac })
+
+	if (!device) {
+		throw new Errow('Device does not exist!')
+	}
+
+	const authKeyIsEqual = await bcrypt.compare(authKey, device.authKey)
+	if (!authKeyIsEqual) {
+		throw new Error('authKey is incorrect!')
+	}
+
+	const token = getTokenByDevice(device)
+	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString()
+
+	return { deviceId: device.id, token, expiresAt }
 }
 
 queryResolvers.isAuth = async (obj, args, context, info) => {

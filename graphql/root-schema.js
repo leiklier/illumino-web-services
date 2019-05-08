@@ -8,10 +8,11 @@ const deviceSchema = require('./schema/device')
 
 const rootTypeDefs = gql`
 	type RootQuery {
-		user(email: String): User
+		user(email: String): User @requiresAuth(rolesAccepted: [USER, DEVICE])
 		device(mac: String): Device
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(mac: String!, pin: Int!): DeviceAuthData!
+		authDevice(mac: String!, authKey: String!): DeviceAuthData!
 		refreshToken: AuthData! @requiresAuth(rolesAccepted: [USER, DEVICE])
 		isAuth: Boolean!
 	}
@@ -21,6 +22,7 @@ const rootTypeDefs = gql`
 
 		setDevicePin(mac: String!, pin: Int!): Device!
 			@requiresAuth(rolesAccepted: [DEVICE_OWNER, ADMIN])
+
 		setDeviceName(mac: String!, name: String!): Device!
 			@requiresAuth(rolesAccepted: [DEVICE_OWNER, ADMIN])
 

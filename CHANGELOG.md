@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setDeviceName` GraphQL mutation which lets the `owner` of a `Device` or an `admin` set its `name`.
 - `loginDevice` GraphQL query for logging in a `Device` using `mac` and `pin`.
 - `txBeacon` GraphQL mutation which is used by `Device` for showing its presence online.
+- `authDevice` GraphQL query for authorizing a `Device` using `mac` and `authKey`. Used by the `Device` itself.
 
 ### Changed
 

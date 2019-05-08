@@ -3,15 +3,15 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 const Device = require('../models/device')
 
-const getTokenByUser = user => {
+const getTokenByUser = (user, expiresIn = '1h') => {
 	return (token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-		expiresIn: '1h',
+		expiresIn,
 	}))
 }
 
-const getTokenByDevice = device => {
+const getTokenByDevice = (device, expiresIn = '7d') => {
 	return (token = jwt.sign({ deviceId: device.id }, process.env.JWT_SECRET, {
-		expiresIn: '7d',
+		expiresIn,
 	}))
 }
 
