@@ -6,7 +6,7 @@ const User = require('../../models/user')
 const Device = require('../../models/device')
 const { getTokenByUser, getTokenByDevice } = require('../../helpers/token')
 
-const authTypeDefs = gql`
+const typeDefs = gql`
 	directive @requiresAuth(rolesAccepted: [Role!]! = [USER]) on FIELD_DEFINITION
 
 	enum Role {
@@ -37,61 +37,76 @@ const authTypeDefs = gql`
 	}
 `
 
-const authResolvers = {
-	loginUser: async (obj, { email, password }, context, info) => {
-		const user = await User.findOne({ email })
-
-		if (!user) {
-			throw new Error('User does not exist!')
+const AuthDataResolver = {
+	__resolveType(authData, context, info) {
+		if(authData.userId) {
+			return 'UserAuthData'
 		}
 
-		const passwordIsEqual = await bcrypt.compare(password, user.password)
-		if (!passwordIsEqual) {
-			throw new Error('Password is incorrect!')
+		if(authData.deviceId) {
+			return 'DeviceAuthData'
 		}
 
-		const token = getTokenByUser(user)
+		return null
+	}
+}
 
-		return { userId: user.id, token, tokenExpiration: 1 }
-	},
+const queryResolvers = {}
+const mutationResolvers = {}
 
-	loginDevice: async (obj, { mac, pin }, context, info) => {
-		// Permittable by all
-		const device = await Device.findOne({ mac })
+queryResolvers.loginUser = async (obj, { email, password }, context, info) => {
+	const user = await User.findOne({ email })
 
-		if (!device) {
-			throw new Error('Device does not exist!')
-		}
+	if (!user) {
+		throw new Error('User does not exist!')
+	}
 
-		const pinIsEqual = await bcrypt.compare(pin.toString(), device.pin)
-		if (!pinIsEqual) {
-			throw new Error('Pin is incorrect!')
-		}
+	const passwordIsEqual = await bcrypt.compare(password, user.password)
+	if (!passwordIsEqual) {
+		throw new Error('Password is incorrect!')
+	}
 
-		const token = getTokenByDevice(device)
+	const token = getTokenByUser(user)
 
-		return { deviceId: device.id, token, tokenExpiration: 24 * 7 }
-	},
+	return { userId: user.id, token, tokenExpiration: 1 }
+}
 
-	refreshToken: async (obj, args, context, info) => {
-		// Permittable by Users and Devices
-		if (context.user) {
-			const token = getTokenByUser(context.user)
-			return { userId: context.user.id, token, tokenExpiration: 1 } // returns UserAuthData
-		}
+queryResolvers.loginDevice = async (obj, { mac, pin }, context, info) => {
+	// Permittable by all
+	const device = await Device.findOne({ mac })
 
-		if (context.device) {
-			const token = getTokenByDevice(context.device)
-			return { deviceId: context.device.id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
-		}
+	if (!device) {
+		throw new Error('Device does not exist!')
+	}
 
-		throw new Error('Not logged in!')
-	},
+	const pinIsEqual = await bcrypt.compare(pin.toString(), device.pin)
+	if (!pinIsEqual) {
+		throw new Error('Pin is incorrect!')
+	}
 
-	isAuth: async (obj, args, context, info) => {
-		// Permittable by all
-		return context.user || context.device ? true : false
-	},
+	const token = getTokenByDevice(device)
+
+	return { deviceId: device.id, token, tokenExpiration: 24 * 7 }
+}
+
+queryResolvers.isAuth = async (obj, args, context, info) => {
+	// Permittable by all
+	return context.user || context.device ? true : false
+}
+
+queryResolvers.refreshToken = async (obj, args, context, info) => {
+	// Permittable by Users and Devices
+	if (context.user) {
+		const token = getTokenByUser(context.user)
+		return { userId: context.user.id, token, tokenExpiration: 1 } // returns UserAuthData
+	}
+
+	if (context.device) {
+		const token = getTokenByDevice(context.device)
+		return { deviceId: context.device.id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
+	}
+
+	throw new Error('Not logged in!')
 }
 
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
@@ -139,7 +154,9 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 }
 
 module.exports = {
-	authTypeDefs,
-	authResolvers,
+	typeDefs,
+	queryResolvers,
+	mutationResolvers,
+	AuthDataResolver,
 	RequiresAuthDirective,
 }

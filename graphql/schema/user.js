@@ -3,13 +3,12 @@ const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
-const { loadUserById } = require('../loaders')
+const { userLoader, loadUserById } = require('../dataloaders')
 
-const userTypeDefs = gql`
+const typeDefs = gql`
 	type User {
 		id: ID!
 		email: String!
-		password: String
 		roles: [String!]
 		firstName: String!
 		lastName: String!
@@ -25,59 +24,126 @@ const userTypeDefs = gql`
 	}
 `
 
-const userResolvers = {
-	me: async (obj, args, context, info) => {
-		return (user = context.user.isAdmin
-			? await loadUserById(context.user.id)
-			: await loadUserById(context.user.id, 3))
+const UserResolver = {
+	id: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
+		}
+		return userFound.id
 	},
-
-	createUser: async (obj, { userInput }, context, info) => {
-		// Permittable by everyone
-		try {
-			if (!isEmail(userInput.email)) {
-				throw new Error('Invalid email.')
-			}
-
-			const existingUser = await User.findOne({ email: userInput.email })
-			if (existingUser) {
-				throw new Error('User exists already.')
-			}
-
-			const hashedPassword = await bcrypt.hash(userInput.password, 12)
-			const user = new User({
-				...userInput,
-				password: hashedPassword,
-				roles: ['user'], // default
-			})
-			const result = await user.save()
-
-			return { ...result.toObject(), password: null }
-		} catch (err) {
-			throw err
+	email: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
 		}
+		return userFound.email
 	},
-
-	grantAdmin: async (obj, { email }, context, info) => {
-		// Permittable by admins
-		const user = await User.findOne({ email })
-
-		if (!user) {
-			throw new Error('User does not exist!')
+	roles: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
 		}
-
-		if (!user.roles.includes('admin')) {
-			user.roles.push('admin')
+		return userFound.roles
+	},
+	firstName: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
 		}
-
-		await user.save()
-
-		// Admin context, so allow infinite nesting
-		return await loadUserById(user.id)
+		return userFound.firstName
+	},
+	lastName: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
+		}
+		return userFound.lastName
+	},
+	devicesOwning: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
+		}
+		return userFound.devicesOwning
+	},
+	devicesManaging: async (user) => {
+		const userFound = await userLoader.load(user.id)
+		if(!userFound) {
+			return null
+		}
+		return userFound.devicesManaging
 	},
 }
 
+const queryResolvers = {}
+const mutationResolvers = {}
+
+queryResolvers.user = async (obj, {email}, context, info) => {
+	let user
+	if(email)
+		user = await User.findOne({email})
+	else
+		user = await User.findOne({_id: context.user.id})
+	
+	if(!user) {
+		return null
+	}
+
+	return {
+		id: user.id
+	}
+}
+
+mutationResolvers.createUser = async (obj, { userInput }, context, info) => {
+	// Permittable by everyone
+	try {
+		if (!isEmail(userInput.email)) {
+			throw new Error('Invalid email.')
+		}
+
+		const existingUser = await User.findOne({ email: userInput.email })
+		if (existingUser) {
+			throw new Error('User exists already.')
+		}
+
+		const hashedPassword = await bcrypt.hash(userInput.password, 12)
+		const user = new User({
+			...userInput,
+			password: hashedPassword,
+			roles: ['user'], // default
+		})
+		const result = await user.save()
+
+		return { ...result.toObject(), password: null }
+	} catch (err) {
+		throw err
+	}
+}
+
+mutationResolvers.grantAdmin = async (obj, { email }, context, info) => {
+	// Permittable by admins
+	const user = await User.findOne({ email })
+
+	if (!user) {
+		throw new Error('User does not exist!')
+	}
+
+	if (!user.roles.includes('admin')) {
+		user.roles.push('admin')
+	}
+
+	await user.save()
+
+	// Admin context, so allow infinite nesting
+	return await loadUserById(user.id)
+}
+
+
+
 module.exports = {
-	userTypeDefs,
-	userResolvers,
+	typeDefs,
+	queryResolvers,
+	mutationResolvers,
+	UserResolver
 }

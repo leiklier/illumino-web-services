@@ -95,6 +95,8 @@ const populateDevice = (device, nestingLevel) => {
 }
 
 module.exports = {
+	userLoader,
+	deviceLoader,
 	loadUserById,
 	loadUsersById,
 	loadDeviceById,

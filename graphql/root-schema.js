@@ -2,14 +2,15 @@ const { gql } = require('apollo-server')
 
 const context = require('./context')
 
-const { authTypeDefs, authResolvers, RequiresAuthDirective } = require('./schema/auth')
-const { userTypeDefs, userResolvers } = require('./schema/user')
-const { deviceTypeDefs, deviceResolvers } = require('./schema/device')
+const authSchema = require('./schema/auth')
+const userSchema = require('./schema/user')
+const deviceSchema = require('./schema/device')
 
 const rootTypeDefs = gql`
 
     type RootQuery {
-        me: User! @requiresAuth(rolesAccepted: [USER])
+        user(email: String): User @requiresAuth(rolesAccepted: [USER, DEVICE])
+        device(mac: String): Device @requiresAuth(rolesAccepted: [USER, DEVICE])
         loginUser(email: String!, password: String!): UserAuthData!
         loginDevice(mac: String!, pin: Int!): DeviceAuthData!
         refreshToken: AuthData! @requiresAuth(rolesAccepted: [USER, DEVICE])
@@ -38,43 +39,25 @@ const rootTypeDefs = gql`
 `
 
 const rootSchema = {
-    typeDefs: [authTypeDefs, userTypeDefs, deviceTypeDefs, rootTypeDefs],
+    typeDefs: [authSchema.typeDefs, userSchema.typeDefs, deviceSchema.typeDefs, rootTypeDefs],
     resolvers: {
-        AuthData: {
-            __resolveType(authData, context, info) {
-                if(authData.userId) {
-                    return 'UserAuthData'
-                }
-
-                if(authData.deviceId) {
-                    return 'DeviceAuthData'
-                }
-
-                return null
-            }
-        },
         RootQuery: {
-            loginUser: authResolvers.loginUser,
-            loginDevice: authResolvers.loginDevice,
-            refreshToken: authResolvers.refreshToken,
-            isAuth: authResolvers.isAuth,
-
-            me: userResolvers.me
+            ...authSchema.queryResolvers,
+            ...userSchema.queryResolvers,
+            ...deviceSchema.queryResolvers,
         },
         RootMutation: {
-            createUser: userResolvers.createUser,
-            grantAdmin: userResolvers.grantAdmin,
-
-            createDevice: deviceResolvers.createDevice,
-            claimDevice: deviceResolvers.claimDevice,
-            setDeviceName: deviceResolvers.setDeviceName,
-            setDevicePin: deviceResolvers.setDevicePin,
-            txBeacon: deviceResolvers.txBeacon
-        }
+            ...authSchema.mutationResolvers,
+            ...userSchema.mutationResolvers,
+            ...deviceSchema.mutationResolvers,
+        },
+        AuthData: authSchema.AuthDataResolver,
+        User: userSchema.UserResolver,
+        Device: deviceSchema.DeviceResolver,
     },
     context,
     schemaDirectives: {
-        requiresAuth: RequiresAuthDirective
+        requiresAuth: authSchema.RequiresAuthDirective
     }
 }
 
