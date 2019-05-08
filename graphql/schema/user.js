@@ -3,7 +3,7 @@ const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
-const { userLoader, loadUserById } = require('../dataloaders')
+const { userLoader } = require('../dataloaders')
 
 const typeDefs = gql`
 	type User {
@@ -25,52 +25,52 @@ const typeDefs = gql`
 `
 
 const UserResolver = {
-	id: async (user) => {
+	id: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
+		if (!userFound) {
 			return null
 		}
 		return userFound.id
 	},
-	email: async (user) => {
+	email: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
+		if (!userFound) {
 			return null
 		}
 		return userFound.email
 	},
-	roles: async (user) => {
+	roles: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
+		if (!userFound) {
 			return null
 		}
 		return userFound.roles
 	},
-	firstName: async (user) => {
+	firstName: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
+		if (!userFound) {
 			return null
 		}
 		return userFound.firstName
 	},
-	lastName: async (user) => {
+	lastName: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
+		if (!userFound) {
 			return null
 		}
 		return userFound.lastName
 	},
-	devicesOwning: async (user) => {
+	devicesOwning: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
-			return null
+		if (!userFound) {
+			return []
 		}
 		return userFound.devicesOwning
 	},
-	devicesManaging: async (user) => {
+	devicesManaging: async user => {
 		const userFound = await userLoader.load(user.id)
-		if(!userFound) {
-			return null
+		if (!userFound) {
+			return []
 		}
 		return userFound.devicesManaging
 	},
@@ -79,19 +79,17 @@ const UserResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.user = async (obj, {email}, context, info) => {
+queryResolvers.user = async (obj, { email }, context, info) => {
 	let user
-	if(email)
-		user = await User.findOne({email})
-	else
-		user = await User.findOne({_id: context.user.id})
-	
-	if(!user) {
+	if (email) user = await User.findOne({ email })
+	else user = await User.findOne({ _id: context.user.id })
+
+	if (!user) {
 		return null
 	}
 
 	return {
-		id: user.id
+		id: user.id,
 	}
 }
 
@@ -113,9 +111,9 @@ mutationResolvers.createUser = async (obj, { userInput }, context, info) => {
 			password: hashedPassword,
 			roles: ['user'], // default
 		})
-		const result = await user.save()
+		await user.save()
 
-		return { ...result.toObject(), password: null }
+		return { id: user.id }
 	} catch (err) {
 		throw err
 	}
@@ -136,14 +134,12 @@ mutationResolvers.grantAdmin = async (obj, { email }, context, info) => {
 	await user.save()
 
 	// Admin context, so allow infinite nesting
-	return await loadUserById(user.id)
+	return { id: user.id }
 }
-
-
 
 module.exports = {
 	typeDefs,
 	queryResolvers,
 	mutationResolvers,
-	UserResolver
+	UserResolver,
 }

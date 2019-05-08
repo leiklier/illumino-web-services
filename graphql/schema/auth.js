@@ -11,12 +11,14 @@ const typeDefs = gql`
 
 	enum Role {
 		USER
+		DEVICE
 		DEVICE_OWNER
 		DEVICE_MANAGER
+		DEVICE_OWNING
+		DEVICE_MANAGING
 		ADMIN
 		ROOT
 		DEPLOYER
-		DEVICE
 	}
 
 	interface AuthData {
@@ -39,16 +41,16 @@ const typeDefs = gql`
 
 const AuthDataResolver = {
 	__resolveType(authData, context, info) {
-		if(authData.userId) {
+		if (authData.userId) {
 			return 'UserAuthData'
 		}
 
-		if(authData.deviceId) {
+		if (authData.deviceId) {
 			return 'DeviceAuthData'
 		}
 
 		return null
-	}
+	},
 }
 
 const queryResolvers = {}
@@ -72,7 +74,6 @@ queryResolvers.loginUser = async (obj, { email, password }, context, info) => {
 }
 
 queryResolvers.loginDevice = async (obj, { mac, pin }, context, info) => {
-	// Permittable by all
 	const device = await Device.findOne({ mac })
 
 	if (!device) {
@@ -139,7 +140,7 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 					deviceManaging => deviceManaging.id === device.id,
 				).length && rolesHaving.push('DEVICE_MANAGER')
 			}
-			console.log(rolesHaving)
+
 			if (
 				!rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
 					.length
