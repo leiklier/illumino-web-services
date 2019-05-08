@@ -10,8 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `user` context which provides information about the authorized `User`.
-- `device` context which provides information about the authorized `Device`.
-- `me` GraphQL query which lets the user query information about himself, up to three levels down.
+- `device` context which provides information about the authorized `Device`.´
 - `refreshToken` GraphQL query which generates a new token if previous still is valid.
 - `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 - `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
@@ -23,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `loginDevice` GraphQL query for logging in a `Device` using `mac` and `pin`.
 - `txBeacon` GraphQL mutation which is used by `Device` for showing its presence online.
 - `authDevice` GraphQL query for authorizing a `Device` using `mac` and `authKey`. Used by the `Device` itself.
+- `user` GraphQL query lets you gather information about a `User` with a certain `email`. If `email` is not provided but a `User` is logged in, this query will provide information about the `User` himself.
+- `device` GraphQL query lets you gather information about a `Device` with a certain `mac` address. If `mac` is not provided but a `Device` is logged in, this query will provide information about the `Device` itself.
 
 ### Changed
 

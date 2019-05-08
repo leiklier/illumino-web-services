@@ -1,7 +1,11 @@
 const { getUserByToken, getDeviceByToken } = require('../helpers/token')
+const { userLoader, deviceLoader } = require('../dataloaders')
 
 const context = async ({ req }) => {
-	let context = {}
+	let context = {
+		userLoader,
+		deviceLoader,
+	}
 
 	// Authorization:
 	try {

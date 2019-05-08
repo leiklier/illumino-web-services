@@ -3,17 +3,19 @@ const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
-const { userLoader } = require('../dataloaders')
 
 const typeDefs = gql`
 	type User {
 		id: ID!
 		email: String!
 		roles: [String!]
+			@requiresAuth(rolesAccepted: [ROOT], relationsAccepted: [SELF])
 		firstName: String!
 		lastName: String!
 		devicesOwning: [Device]!
+			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF])
 		devicesManaging: [Device]!
+			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF])
 	}
 
 	input UserInput {
@@ -25,49 +27,49 @@ const typeDefs = gql`
 `
 
 const UserResolver = {
-	id: async user => {
+	id: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.id
 	},
-	email: async user => {
+	email: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.email
 	},
-	roles: async user => {
+	roles: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.roles
 	},
-	firstName: async user => {
+	firstName: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.firstName
 	},
-	lastName: async user => {
+	lastName: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.lastName
 	},
-	devicesOwning: async user => {
+	devicesOwning: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return []
 		}
 		return userFound.devicesOwning
 	},
-	devicesManaging: async user => {
+	devicesManaging: async (user, _, { userLoader }) => {
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return []
@@ -79,10 +81,13 @@ const UserResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.user = async (obj, { email }, context, info) => {
+queryResolvers.user = async (_, { email }, context) => {
 	let user
-	if (email) user = await User.findOne({ email })
-	else user = await User.findOne({ _id: context.user.id })
+	if (email) {
+		user = await User.findOne({ email })
+	} else {
+		user = await User.findOne({ _id: context.user.id })
+	}
 
 	if (!user) {
 		return null
@@ -93,7 +98,7 @@ queryResolvers.user = async (obj, { email }, context, info) => {
 	}
 }
 
-mutationResolvers.createUser = async (obj, { userInput }, context, info) => {
+mutationResolvers.createUser = async (_, { userInput }) => {
 	// Permittable by everyone
 	try {
 		if (!isEmail(userInput.email)) {
@@ -119,7 +124,7 @@ mutationResolvers.createUser = async (obj, { userInput }, context, info) => {
 	}
 }
 
-mutationResolvers.grantAdmin = async (obj, { email }, context, info) => {
+mutationResolvers.grantAdmin = async (_, { email }) => {
 	// Permittable by admins
 	const user = await User.findOne({ email })
 

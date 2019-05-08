@@ -1,7 +1,7 @@
 const DataLoader = require('dataloader')
 
-const User = require('../models/user')
-const Device = require('../models/device')
+const User = require('./models/user')
+const Device = require('./models/device')
 
 const userLoader = new DataLoader(userIds => {
 	return User.find({ _id: { $in: userIds } })

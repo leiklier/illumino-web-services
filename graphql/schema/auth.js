@@ -7,18 +7,23 @@ const Device = require('../../models/device')
 const { getTokenByUser, getTokenByDevice } = require('../../helpers/token')
 
 const typeDefs = gql`
-	directive @requiresAuth(rolesAccepted: [Role!]! = [USER]) on FIELD_DEFINITION
+	directive @requiresAuth(
+		rolesAccepted: [Role]
+		relationsAccepted: [Relation]
+	) on FIELD_DEFINITION
 
 	enum Role {
 		USER
 		DEVICE
-		DEVICE_OWNER
-		DEVICE_MANAGER
-		DEVICE_OWNING
-		DEVICE_MANAGING
 		ADMIN
 		ROOT
 		DEPLOYER
+	}
+
+	enum Relation {
+		SELF
+		OWNER
+		MANAGER
 	}
 
 	interface AuthData {
@@ -56,7 +61,7 @@ const AuthDataResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.loginUser = async (obj, { email, password }, context, info) => {
+queryResolvers.loginUser = async (_, { email, password }) => {
 	const user = await User.findOne({ email })
 
 	if (!user) {
@@ -79,6 +84,10 @@ queryResolvers.loginDevice = async (_, { mac, pin }) => {
 
 	if (!device) {
 		throw new Error('Device does not exist!')
+	}
+
+	if (!device.pin) {
+		throw new Error('Pin has not been set yet!')
 	}
 
 	const pinIsEqual = await bcrypt.compare(pin.toString(), device.pin)
@@ -111,20 +120,24 @@ queryResolvers.authDevice = async (_, { mac, authKey }) => {
 }
 
 queryResolvers.isAuth = async (obj, args, context, info) => {
-	// Permittable by all
 	return context.user || context.device ? true : false
 }
 
 queryResolvers.refreshToken = async (obj, args, context, info) => {
-	// Permittable by Users and Devices
 	if (context.user) {
 		const token = getTokenByUser(context.user)
-		return { userId: context.user.id, token, tokenExpiration: 1 } // returns UserAuthData
+		const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString()
+
+		return { userId: context.user.id, token, expiresAt } // returns UserAuthData
 	}
 
 	if (context.device) {
 		const token = getTokenByDevice(context.device)
-		return { deviceId: context.device.id, token, tokenExpiration: 7 * 24 } // returns DeviceAuthData
+		const expiresAt = new Date(
+			Date.now() + 1000 * 60 * 60 * 24 * 7,
+		).toISOString()
+
+		return { deviceId: context.device.id, token, expiresAt } // returns DeviceAuthData
 	}
 
 	throw new Error('Not logged in!')
@@ -133,13 +146,17 @@ queryResolvers.refreshToken = async (obj, args, context, info) => {
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
 	visitFieldDefinition(field) {
 		const { resolve = defaultFieldResolver } = field
-		const { rolesAccepted } = this.args
+		let { rolesAccepted, relationsAccepted } = this.args
+
+		if (!Array.isArray(rolesAccepted)) rolesAccepted = []
+		if (!Array.isArray(relationsAccepted)) relationsAccepted = []
 
 		field.resolve = async (...args) => {
-			const [, { mac }, context] = args
-
+			const [obj, { email, mac }, context] = args
+			const id = obj === Object(obj) && obj.id
 			let rolesHaving = []
 
+			// Check for roles having
 			context.isDeploying && rolesHaving.push('DEPLOYER')
 			context.device && rolesHaving.push('DEVICE')
 
@@ -149,22 +166,72 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				context.user.isRoot && rolesHaving.push('ROOT')
 			}
 
-			if (mac && context.user) {
-				const device = await Device.findOne({ mac })
+			// Check for the relation having to parent obj
+			let relationHaving = null
+			if (context.user) {
+				if (mac) {
+					const device = await Device.findOne({ mac })
+					const isOwningDevice = Boolean(
+						context.user.devicesOwning.filter(
+							deviceOwning => deviceOwning.id === device.id,
+						).length,
+					)
+					const isManagingDevice = Boolean(
+						context.user.devicesManaging.filter(
+							deviceManaging => deviceManaging.id === device.id,
+						).length,
+					)
 
-				context.user.devicesOwning.filter(
-					deviceOwning => deviceOwning.id === device.id,
-				).length && rolesHaving.push('DEVICE_OWNER')
-
-				context.user.devicesManaging.filter(
-					deviceManaging => deviceManaging.id === device.id,
-				).length && rolesHaving.push('DEVICE_MANAGER')
+					if (isOwningDevice) {
+						relationHaving = 'OWNER'
+					} else if (isManagingDevice) {
+						relationHaving = 'MANAGER'
+					}
+				} else if (id) {
+					/* SECURITY ISSUE:
+					 *  A user trying to access a device with same
+					 * id will get full access
+					 */
+					const isSelf = id === context.user.id
+					if (isSelf) {
+						relationHaving = 'SELF'
+					}
+				}
+			} else if (context.device) {
+				if (email) {
+					const user = await User.findOne({ email })
+					const isDeviceOwner = context.device.owner.id === user.id
+					const isDeviceManager = Boolean(
+						context.device.managers.filter(
+							deviceManager => deviceManager.id === user.id,
+						),
+					)
+					if (isDeviceOwner) {
+						relationHaving = 'OWNER'
+					} else if (isDeviceManager) {
+						relationHaving = 'MANAGER'
+					}
+				} else if (id) {
+					/* SECURITY ISSUE:
+					 *  A Device trying to access a User with same
+					 * id will get full access
+					 */
+					const isSelf = id === context.device.id
+					if (isSelf) {
+						relationHaving = 'SELF'
+					}
+				}
 			}
 
-			if (
-				!rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
+			const rolesAreOk =
+				!rolesAccepted.length ||
+				rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
 					.length
-			) {
+
+			const relationsAreOk =
+				!relationsAccepted.length || relationsAccepted.includes(relationHaving)
+
+			if (!(rolesAreOk || relationsAreOk)) {
 				throw new Error('You are not authorized by requiresAuth!')
 			}
 
