@@ -9,7 +9,8 @@ const context = async ({ req }) => {
 
 	// Authorization:
 	try {
-		// Format of header Authorization: <type> <content>
+		//* Format of header Authorization: <type> <content>
+
 		const authHeader = req.headers.authorization
 		const [authType, authContent] = authHeader.split(' ')
 		switch (authType) {

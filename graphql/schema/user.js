@@ -27,49 +27,63 @@ const typeDefs = gql`
 `
 
 const UserResolver = {
-	id: async (user, _, { userLoader }) => {
+	id: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.id
 	},
-	email: async (user, _, { userLoader }) => {
+	email: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.email
 	},
-	roles: async (user, _, { userLoader }) => {
+	roles: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.roles
 	},
-	firstName: async (user, _, { userLoader }) => {
+	firstName: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.firstName
 	},
-	lastName: async (user, _, { userLoader }) => {
+	lastName: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.lastName
 	},
-	devicesOwning: async (user, _, { userLoader }) => {
+	devicesOwning: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return []
 		}
 		return userFound.devicesOwning
 	},
-	devicesManaging: async (user, _, { userLoader }) => {
+	devicesManaging: async (user, args, context) => {
+		const { userLoader } = context
+
 		const userFound = await userLoader.load(user.id)
 		if (!userFound) {
 			return []

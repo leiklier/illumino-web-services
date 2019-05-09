@@ -45,7 +45,7 @@ const typeDefs = gql`
 `
 
 const AuthDataResolver = {
-	__resolveType(authData, context, info) {
+	__resolveType(authData, context) {
 		if (authData.userId) {
 			return 'UserAuthData'
 		}
@@ -61,7 +61,7 @@ const AuthDataResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.loginUser = async (_, { email, password }) => {
+queryResolvers.loginUser = async (obj, { email, password }) => {
 	const user = await User.findOne({ email })
 
 	if (!user) {
@@ -79,7 +79,7 @@ queryResolvers.loginUser = async (_, { email, password }) => {
 	return { userId: user.id, token, expiresAt }
 }
 
-queryResolvers.loginDevice = async (_, { mac, pin }) => {
+queryResolvers.loginDevice = async (obj, { mac, pin }) => {
 	const device = await Device.findOne({ mac })
 
 	if (!device) {
@@ -101,7 +101,7 @@ queryResolvers.loginDevice = async (_, { mac, pin }) => {
 	return { deviceId: device.id, token, expiresAt }
 }
 
-queryResolvers.authDevice = async (_, { mac, authKey }) => {
+queryResolvers.authDevice = async (obj, { mac, authKey }) => {
 	const device = await Device.findOne({ mac })
 
 	if (!device) {
@@ -123,7 +123,7 @@ queryResolvers.isAuth = async (obj, args, context, info) => {
 	return context.user || context.device ? true : false
 }
 
-queryResolvers.refreshToken = async (obj, args, context, info) => {
+queryResolvers.refreshToken = async (obj, args, context) => {
 	if (context.user) {
 		const token = getTokenByUser(context.user)
 		const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString()
@@ -170,6 +170,10 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			let relationHaving = null
 			if (context.user) {
 				if (mac) {
+					// A User is trying to acces a Device,
+					// we want to find the relation between
+					// them:
+
 					const device = await Device.findOne({ mac })
 					const isOwningDevice = Boolean(
 						context.user.devicesOwning.filter(
@@ -188,10 +192,14 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 						relationHaving = 'MANAGER'
 					}
 				} else if (id) {
-					/* SECURITY ISSUE:
-					 *  A user trying to access a device with same
-					 * id will get full access
-					 */
+					//! SECURITY ISSUE:
+					//! A user trying to access a device with same
+					//! id will be treated as `SELF`
+
+					// We got an authorized User trying
+					// to access an object with a certain id,
+					// Check if this is the User himself:
+
 					const isSelf = id === context.user.id
 					if (isSelf) {
 						relationHaving = 'SELF'
@@ -199,6 +207,10 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				}
 			} else if (context.device) {
 				if (email) {
+					// A Device is trying to access a User,
+					// we want to find the relation between
+					// them:
+
 					const user = await User.findOne({ email })
 					const isDeviceOwner = context.device.owner.id === user.id
 					const isDeviceManager = Boolean(
@@ -212,10 +224,14 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 						relationHaving = 'MANAGER'
 					}
 				} else if (id) {
-					/* SECURITY ISSUE:
-					 *  A Device trying to access a User with same
-					 * id will get full access
-					 */
+					//! SECURITY ISSUE:
+					//! A Device trying to access a User with same
+					//! id will be treated as `SELF`
+
+					// We got an authorized Device trying
+					// to access an object with a certain id,
+					// Check if this is the Device itself:
+
 					const isSelf = id === context.device.id
 					if (isSelf) {
 						relationHaving = 'SELF'

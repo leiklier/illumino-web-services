@@ -24,35 +24,36 @@ const typeDefs = gql`
 `
 
 const DeviceResolver = {
-	id: async (device, _, { deviceLoader }) => {
-		const deviceFound = await deviceLoader.load(device.id)
-		if (!deviceFound) {
-			return null
-		}
-		return deviceFound.id
-	},
-	mac: async (device, _, { deviceLoader }) => {
+	mac: async (device, args, context) => {
+		const { deviceLoader } = context
+
 		const deviceFound = await deviceLoader.load(device.id)
 		if (!deviceFound) {
 			return null
 		}
 		return deviceFound.mac
 	},
-	name: async (device, _, { deviceLoader }) => {
+	name: async (device, args, context) => {
+		const { deviceLoader } = context
+
 		const deviceFound = await deviceLoader.load(device.id)
 		if (!deviceFound) {
 			return null
 		}
 		return deviceFound.name
 	},
-	owner: async (device, _, { deviceLoader }) => {
+	owner: async (device, args, context) => {
+		const { deviceLoader } = context
+
 		const deviceFound = await deviceLoader.load(device.id)
 		if (!deviceFound) {
 			return null
 		}
 		return deviceFound.owner
 	},
-	managers: async (device, _, { deviceLoader }) => {
+	managers: async (device, args, context) => {
+		const { deviceLoader } = context
+
 		const deviceFound = await deviceLoader.load(device.id)
 		if (!deviceFound) {
 			return []
@@ -64,7 +65,7 @@ const DeviceResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.device = async (_, { mac }, context) => {
+queryResolvers.device = async (obj, { mac }, context) => {
 	let device
 	if (mac) {
 		device = await Device.findOne({ mac })
@@ -81,7 +82,7 @@ queryResolvers.device = async (_, { mac }, context) => {
 	return { id: device.id }
 }
 
-mutationResolvers.createDevice = async (_, { deviceInput }) => {
+mutationResolvers.createDevice = async (obj, { deviceInput }) => {
 	if (!isMACAddress(deviceInput.mac)) {
 		throw new Error('Invalid MAC address')
 	}
@@ -171,7 +172,7 @@ mutationResolvers.claimDevice = async (_, { mac }, context) => {
 	}
 }
 
-mutationResolvers.setDevicePin = async (_, { mac, pin }) => {
+mutationResolvers.setDevicePin = async (obj, { mac, pin }) => {
 	// Permittable by Device.owner, admins,
 	// and on all Devices with no Device.owner
 
@@ -190,7 +191,7 @@ mutationResolvers.setDevicePin = async (_, { mac, pin }) => {
 	return { id: device.id }
 }
 
-mutationResolvers.setDeviceName = async (_, { mac, name }) => {
+mutationResolvers.setDeviceName = async (obj, { mac, name }) => {
 	const device = await Device.findOne({ mac }).populate('owner', '_id')
 	if (!device) {
 		throw new Error('Device does not exist!')
@@ -202,11 +203,14 @@ mutationResolvers.setDeviceName = async (_, { mac, name }) => {
 	return { id: device.id }
 }
 
-mutationResolvers.txBeacon = async (_, __, context) => {
-	context.device.lastSeenAt = new Date()
-	await context.device.save()
+mutationResolvers.txBeacon = async (obj, args, context) => {
+	const { deviceLoader } = context
+	const device = await deviceLoader.load(context.device.id)
 
-	return context.device.lastSeenAt.toISOString()
+	device.lastSeenAt = new Date()
+	await device.save()
+
+	return device.lastSeenAt.toISOString()
 }
 
 module.exports = {

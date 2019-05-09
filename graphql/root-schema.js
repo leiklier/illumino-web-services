@@ -21,7 +21,7 @@ const rootTypeDefs = gql`
 		claimDevice(mac: String!): Device! @requiresAuth(rolesAccepted: [USER])
 
 		setDevicePin(mac: String!, pin: Int!): Device!
-			@requiresAuth(rolesAccepted: [ADMIN])
+			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF, OWNER])
 
 		setDeviceName(mac: String!, name: String!): Device!
 			@requiresAuth(rolesAccepted: [ADMIN])
