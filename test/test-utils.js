@@ -4,8 +4,8 @@ const mongoose = require('mongoose')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 const mongod = new MongoMemoryServer()
 
-const User = require('../models/user')
-const Device = require('../models/device')
+const User = require('../src/models/user')
+const Device = require('../src/models/device')
 const users = require('./fixtures/users')
 const devices = require('./fixtures/devices')
 

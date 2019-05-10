@@ -2,7 +2,7 @@
 	"name": "ambientalarm-api",
 	"version": "v0.1.0",
 	"private": true,
-	"main": "server.js",
+	"main": "src/server.js",
 	"scripts": {
 		"start": "NODE_ENV=production node .",
 		"stag": "NODE_ENV=staging node .",

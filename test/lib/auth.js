@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken')
 
-const User = require('../../models/user')
-const Device = require('../../models/device')
+const User = require('../../src/models/user')
+const Device = require('../../src/models/device')
 
 const {
 	getTokenByUser,
 	getTokenByDevice,
 	getUserByToken,
 	getDeviceByToken,
-} = require('../../helpers/token.js')
+} = require('../../src/helpers/token')
 
 describe('Auth library', () => {
 	describe('getTokenByUser', () => {
