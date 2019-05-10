@@ -39,7 +39,6 @@ describe('Auth library', () => {
 
 	describe('getUserByToken', () => {
 		before(async () => {
-			console.log('hey')
 			await db.create()
 			await db.populate(['users'])
 		})
