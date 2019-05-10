@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const bcryptPlugin = require('mongoose-bcrypt')
 
 const Schema = mongoose.Schema
 
@@ -14,8 +15,13 @@ const deviceSchema = new Schema(
 			// Used by Device to authenticate itself
 			type: String,
 			required: true,
+			bcrypt: true,
 		},
-		pin: String, // 4 digit number, used to unlock Device
+		pin: {
+			// 4 digit number, used to unlock Device
+			type: String,
+			bcrypt: true,
+		},
 		name: String,
 		lastSeenAt: {
 			type: Date,
@@ -42,5 +48,7 @@ const deviceSchema = new Schema(
 deviceSchema.virtual('hasOwner').get(function() {
 	return Boolean(this.owner)
 })
+
+deviceSchema.plugin(bcryptPlugin)
 
 module.exports = mongoose.model('Device', deviceSchema)

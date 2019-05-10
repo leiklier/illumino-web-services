@@ -15,6 +15,7 @@
 - Refactor all `Error`s into `ApolloError`s.
 - Rename `pin` to `pincode`.
 - Add virtual getter `hasOwner` to `Device` mongoose model
+- replace `bcrypt` manual encryption with `mongoose-bcrypt`.
 
 ## Security fixes
 

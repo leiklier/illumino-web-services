@@ -13,12 +13,12 @@
 	"license": "MIT",
 	"dependencies": {
 		"apollo-server": "^2.4.8",
-		"bcryptjs": "^2.4.3",
 		"dataloader": "^1.4.0",
 		"graphql": "^14.2.1",
 		"graphql-tools": "^4.0.4",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^5.5.5",
+		"mongoose-bcrypt": "^1.6.0",
 		"validator": "^10.11.0"
 	},
 	"devDependencies": {

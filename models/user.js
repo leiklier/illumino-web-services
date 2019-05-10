@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const bcryptPlugin = require('mongoose-bcrypt')
 
 const Schema = mongoose.Schema
 
@@ -12,6 +13,7 @@ const userSchema = new Schema(
 		password: {
 			type: String,
 			required: true,
+			bcrypt: true,
 		},
 		roles: {
 			// Valid types: user, admin, root
@@ -52,5 +54,7 @@ userSchema.virtual('isAdmin').get(function() {
 userSchema.virtual('isRoot').get(function() {
 	return this.roles.includes('root')
 })
+
+userSchema.plugin(bcryptPlugin)
 
 module.exports = mongoose.model('User', userSchema)

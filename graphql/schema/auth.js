@@ -1,6 +1,5 @@
 const { gql } = require('apollo-server')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
-const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
@@ -68,7 +67,7 @@ queryResolvers.loginUser = async (obj, { email, password }) => {
 		throw new Error('User does not exist!')
 	}
 
-	const passwordIsEqual = await bcrypt.compare(password, user.password)
+	const passwordIsEqual = await user.verifyPassword(password)
 	if (!passwordIsEqual) {
 		throw new Error('Password is incorrect!')
 	}
@@ -90,7 +89,7 @@ queryResolvers.loginDevice = async (obj, { mac, pin }) => {
 		throw new Error('Pin has not been set yet!')
 	}
 
-	const pinIsEqual = await bcrypt.compare(pin.toString(), device.pin)
+	const pinIsEqual = await device.verifyPin(pin.toString())
 	if (!pinIsEqual) {
 		throw new Error('Pin is incorrect!')
 	}
@@ -108,7 +107,7 @@ queryResolvers.authDevice = async (obj, { mac, authKey }) => {
 		throw new Errow('Device does not exist!')
 	}
 
-	const authKeyIsEqual = await bcrypt.compare(authKey, device.authKey)
+	const authKeyIsEqual = await device.verifyAuthKey(authKey)
 	if (!authKeyIsEqual) {
 		throw new Error('authKey is incorrect!')
 	}

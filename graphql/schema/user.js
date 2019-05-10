@@ -1,6 +1,5 @@
 const { gql } = require('apollo-server')
 const { isEmail } = require('validator')
-const bcrypt = require('bcryptjs')
 
 const User = require('../../models/user')
 
@@ -27,15 +26,6 @@ const typeDefs = gql`
 `
 
 const UserResolver = {
-	id: async (user, args, context) => {
-		const { userLoader } = context
-
-		const userFound = await userLoader.load(user.id)
-		if (!userFound) {
-			return null
-		}
-		return userFound.id
-	},
 	email: async (user, args, context) => {
 		const { userLoader } = context
 
@@ -112,7 +102,7 @@ queryResolvers.user = async (_, { email }, context) => {
 	}
 }
 
-mutationResolvers.createUser = async (_, { userInput }) => {
+mutationResolvers.createUser = async (obj, { userInput }) => {
 	// Permittable by everyone
 	try {
 		if (!isEmail(userInput.email)) {
@@ -124,10 +114,8 @@ mutationResolvers.createUser = async (_, { userInput }) => {
 			throw new Error('User exists already.')
 		}
 
-		const hashedPassword = await bcrypt.hash(userInput.password, 12)
 		const user = new User({
 			...userInput,
-			password: hashedPassword,
 			roles: ['user'], // default
 		})
 		await user.save()
@@ -138,7 +126,7 @@ mutationResolvers.createUser = async (_, { userInput }) => {
 	}
 }
 
-mutationResolvers.grantAdmin = async (_, { email }) => {
+mutationResolvers.grantAdmin = async (obj, { email }) => {
 	// Permittable by admins
 	const user = await User.findOne({ email })
 

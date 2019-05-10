@@ -1,5 +1,4 @@
 const { gql } = require('apollo-server')
-const bcrypt = require('bcryptjs')
 const { isMACAddress } = require('validator')
 
 const User = require('../../models/user')
@@ -95,14 +94,14 @@ mutationResolvers.createDevice = async (obj, { deviceInput }) => {
 	const device = new Device({
 		lastSeenAt: new Date(),
 		mac: deviceInput.mac,
-		authKey: await bcrypt.hash(deviceInput.authKey, 12),
+		authKey: deviceInput.authKey,
 	})
 
 	if (deviceInput.pin) {
 		if (deviceInput.pin.toString().length > 4) {
 			throw new Error('Pin too long. Should be 4 digits.')
 		}
-		device.pin = await bcrypt.hash(deviceInput.pin.toString(), 12)
+		device.pin = deviceInput.pin.toString()
 	}
 
 	if (deviceInput.name) {
@@ -185,7 +184,7 @@ mutationResolvers.setDevicePin = async (obj, { mac, pin }) => {
 		throw new Error('Device does not exist!')
 	}
 
-	device.pin = await bcrypt.hash(pin.toString(), 12)
+	device.pin = pin
 
 	await device.save()
 	return { id: device.id }
