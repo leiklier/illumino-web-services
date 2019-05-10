@@ -5,35 +5,6 @@ const Device = require('../models/device')
 const { userLoader, deviceLoader } = require('../dataloaders')
 
 /**
- * This function tries to decode the provided JWT (`token`). Upon
- * success it will return the `tokenPayload` object that was stored
- * in it.
- *
- * @param {string} token - A JSON Web Token
- * @return {Object} The decoded JSON Web Token (`null` if invalid)
- *
- * @exception {TokenIsEmpty} The `token` must be a non-empty `string`.
- * @exception {TokenDidNotValidate} The `token` must be signed using `process.env.JWT_SECRET`.
- */
-const getPayloadByToken = token => {
-	if (!token || token === '') {
-		throw new Error('TokenIsEmpty')
-	}
-
-	let tokenPayload
-	try {
-		tokenPayload = jwt.verify(token, process.env.JWT_SECRET)
-	} catch (err) {
-		throw new Error('TokenDidNotValidate')
-	}
-	if (!tokenPayload) {
-		tokenPayload = {}
-	}
-
-	return tokenPayload
-}
-
-/**
  * This function creates a signed JWT with a payload containing
  * the `userId` of the `user` provided as input. The
  * token returned is used in e.g. auth.
@@ -72,7 +43,7 @@ const getTokenByDevice = (device, expiresIn = '7d') => {
  */
 const getUserByToken = async token => {
 	try {
-		const tokenPayload = getPayloadByToken(token)
+		const tokenPayload = jwt.verify(token, process.env.JWT_SECRET) || {}
 		if (!tokenPayload.userId) {
 			return null
 		}
@@ -98,7 +69,7 @@ const getUserByToken = async token => {
  */
 const getDeviceByToken = async token => {
 	try {
-		const tokenPayload = getPayloadByToken(token)
+		const tokenPayload = jwt.verify(token, process.env.JWT_SECRET) || {}
 		if (!tokenPayload.deviceId) {
 			return null
 		}
@@ -117,7 +88,6 @@ const getDeviceByToken = async token => {
 }
 
 module.exports = {
-	getPayloadByToken,
 	getTokenByUser,
 	getTokenByDevice,
 	getUserByToken,

@@ -6,7 +6,8 @@
 	"scripts": {
 		"start": "NODE_ENV=production node .",
 		"stag": "NODE_ENV=staging node .",
-		"dev": "NODE_ENV=development nodemon ."
+		"dev": "NODE_ENV=development nodemon .",
+		"test": "NODE_ENV=test mocha"
 	},
 	"repository": "https://github.com/leiklier/ambientalarm-api.git",
 	"author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
@@ -14,6 +15,7 @@
 	"dependencies": {
 		"apollo-server": "^2.4.8",
 		"dataloader": "^1.4.0",
+		"dotenv": "^8.0.0",
 		"graphql": "^14.2.1",
 		"graphql-tools": "^4.0.4",
 		"jsonwebtoken": "^8.5.1",
@@ -22,6 +24,9 @@
 		"validator": "^10.11.0"
 	},
 	"devDependencies": {
+		"chai": "^4.2.0",
+		"mocha": "^6.1.4",
+		"mongodb-memory-server": "^5.1.1",
 		"nodemon": "^1.18.11"
 	}
 }

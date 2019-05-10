@@ -8,7 +8,6 @@ const deviceSchema = new Schema(
 		mac: {
 			// MAC Address of default network interface
 			type: String,
-			unique: true,
 			required: true,
 		},
 		authKey: {
