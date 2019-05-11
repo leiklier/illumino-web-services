@@ -1,4 +1,4 @@
-const { getUserByToken, getDeviceByToken } = require('../helpers/token')
+const { getUserByToken, getDeviceByToken } = require('../util/token')
 const { userLoader, deviceLoader } = require('../dataloaders')
 
 const context = async ({ req }) => {

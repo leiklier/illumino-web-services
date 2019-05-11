@@ -7,7 +7,7 @@
 		"start": "NODE_ENV=production node .",
 		"stag": "NODE_ENV=staging node .",
 		"dev": "NODE_ENV=development nodemon .",
-		"test": "NODE_ENV=test mocha"
+		"test": "NODE_ENV=test jest --coverage"
 	},
 	"repository": "https://github.com/leiklier/ambientalarm-api.git",
 	"author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
@@ -24,9 +24,8 @@
 		"validator": "^10.11.0"
 	},
 	"devDependencies": {
-		"chai": "^4.2.0",
 		"husky": "^2.2.0",
-		"mocha": "^6.1.4",
+		"jest": "^24.8.0",
 		"mongodb-memory-server": "^5.1.1",
 		"nodemon": "^1.18.11",
 		"prettier": "^1.17.0",

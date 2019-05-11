@@ -14,9 +14,9 @@ const { userLoader, deviceLoader } = require('../dataloaders')
  * @return {string} The JSON Web Token with userId as payload
  */
 const getTokenByUser = (user, expiresIn = '1h') => {
-	return (token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+	return jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
 		expiresIn,
-	}))
+	})
 }
 
 /**
@@ -29,9 +29,9 @@ const getTokenByUser = (user, expiresIn = '1h') => {
  * @return {string} The JSON Web Token with deviceId as payload
  */
 const getTokenByDevice = (device, expiresIn = '7d') => {
-	return (token = jwt.sign({ deviceId: device.id }, process.env.JWT_SECRET, {
+	return jwt.sign({ deviceId: device.id }, process.env.JWT_SECRET, {
 		expiresIn,
-	}))
+	})
 }
 
 /**

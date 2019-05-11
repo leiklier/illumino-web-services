@@ -1,14 +1,25 @@
 const jwt = require('jsonwebtoken')
 
-const User = require('../../src/models/user')
-const Device = require('../../src/models/device')
+const mongoose = require('mongoose')
+const User = require('../models/user')
+const Device = require('../models/device')
 
 const {
 	getTokenByUser,
 	getTokenByDevice,
 	getUserByToken,
 	getDeviceByToken,
-} = require('../../src/helpers/token')
+} = require('./token')
+
+beforeAll(async () => {
+	await mongoose.connect(process.env.MONGO_URI, {
+		useNewUrlParser: true,
+	})
+})
+
+afterAll(async () => {
+	await mongoose.disconnect()
+})
 
 describe('Auth library', () => {
 	describe('getTokenByUser', () => {
@@ -18,9 +29,9 @@ describe('Auth library', () => {
 			}
 			const token = getTokenByUser(user)
 			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET)
-			expect(token).to.be.a('string')
-			expect(tokenPayload).to.be.a('Object')
-			expect(tokenPayload.userId).to.equal(user.id)
+			expect(typeof token).toBe('string')
+			expect(typeof tokenPayload).toBe('object')
+			expect(tokenPayload.userId).toBe(user.id)
 		})
 	})
 
@@ -31,28 +42,19 @@ describe('Auth library', () => {
 			}
 			const token = getTokenByDevice(device)
 			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET)
-			expect(token).to.be.a('string')
-			expect(tokenPayload).to.be.a('Object')
-			expect(tokenPayload.deviceId).to.equal(device.id)
+			expect(typeof token).toBe('string')
+			expect(typeof tokenPayload).toBe('object')
+			expect(tokenPayload.deviceId).toBe(device.id)
 		})
 	})
 
 	describe('getUserByToken', () => {
-		before(async () => {
-			await db.create()
-			await db.populate(['users'])
-		})
-
-		after(async () => {
-			await db.destroy()
-		})
-
 		it('should return a user if tokenPayload stores valid userId', async () => {
 			const user = await User.findOne({ email: 'user@test.com' })
 			const token = getTokenByUser(user)
 			const userReceived = await getUserByToken(token)
-			expect(userReceived).to.be.a('Object')
-			expect(userReceived.id).to.be.equal(user.id)
+			expect(typeof userReceived).toBe('object')
+			expect(userReceived.id).toBe(user.id)
 		})
 
 		it('should return null if tokenPayload stores invalid userId', async () => {
@@ -61,7 +63,7 @@ describe('Auth library', () => {
 			}
 			const token = getTokenByUser(user)
 			const userReceived = await getUserByToken(token)
-			expect(userReceived).to.be.a('null')
+			expect(userReceived).toBeNull()
 		})
 
 		it('should return null if no userId in tokenPayload', async () => {
@@ -75,26 +77,18 @@ describe('Auth library', () => {
 				},
 			)
 			const userReceived = await getUserByToken(token)
-			expect(userReceived).to.be.a('null')
+			expect(userReceived).toBeNull()
 		})
 	})
 
 	describe('getDeviceByToken', () => {
-		before(async () => {
-			await db.create()
-			await db.populate(['devices'])
-		})
-
-		after(async () => {
-			await db.destroy()
-		})
-
 		it('should return a device if tokenPayload stores valid deviceId', async () => {
+			console.log(await Device.findOne({ mac: '00:00:00:00:00:00' }))
 			const device = await Device.findOne({ mac: '00:00:00:00:00:00' })
 			const token = getTokenByDevice(device)
 			const deviceReceived = await getDeviceByToken(token)
-			expect(deviceReceived).to.be.a('Object')
-			expect(deviceReceived.id).to.be.equal(device.id)
+			expect(typeof deviceReceived).toBe('object')
+			expect(deviceReceived.id).toBe(device.id)
 		})
 
 		it('should return null if tokenPayload stores invalid deviceId', async () => {
@@ -103,7 +97,7 @@ describe('Auth library', () => {
 			}
 			const token = getTokenByUser(device)
 			const deviceReceived = await getUserByToken(token)
-			expect(deviceReceived).to.be.a('null')
+			expect(deviceReceived).toBeNull()
 		})
 
 		it('should return null if no deviceId in tokenPayload', async () => {
@@ -117,7 +111,7 @@ describe('Auth library', () => {
 				},
 			)
 			const deviceReceived = await getDeviceByToken(token)
-			expect(deviceReceived).to.be.a('null')
+			expect(deviceReceived).toBeNull()
 		})
 	})
 })
