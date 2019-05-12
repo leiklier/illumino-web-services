@@ -1,6 +1,7 @@
+require('dotenv').config()
 const jwt = require('jsonwebtoken')
 
-const mongoose = require('mongoose')
+const db = require('../../test/util/db')
 const User = require('../models/user')
 const Device = require('../models/device')
 
@@ -12,13 +13,12 @@ const {
 } = require('./token')
 
 beforeAll(async () => {
-	await mongoose.connect(process.env.MONGO_URI, {
-		useNewUrlParser: true,
-	})
+	await db.create()
+	await db.populate(['User', 'Device'])
 })
 
 afterAll(async () => {
-	await mongoose.disconnect()
+	await db.destroy()
 })
 
 describe('Token Library', () => {
@@ -87,6 +87,7 @@ describe('Token Library', () => {
 			const token = getTokenByDevice(device)
 			const deviceReceived = await getDeviceByToken(token)
 			expect(typeof deviceReceived).toBe('object')
+			expect(deviceReceived).not.toBeNull()
 			expect(deviceReceived.id).toBe(device.id)
 		})
 
@@ -110,6 +111,12 @@ describe('Token Library', () => {
 				},
 			)
 			const deviceReceived = await getDeviceByToken(token)
+			expect(deviceReceived).toBeNull()
+		})
+
+		it('should return null if invalid token was provided', async () => {
+			const invalidToken = 'this_is_an_invalid_token'
+			const deviceReceived = await getDeviceByToken(invalidToken)
 			expect(deviceReceived).toBeNull()
 		})
 	})

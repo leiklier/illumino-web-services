@@ -1,19 +1,19 @@
-const mongoose = require('mongoose')
-
+require('dotenv').config()
 const User = require('../models/user')
 const Device = require('../models/device')
+
+const db = require('../../test/util/db')
 const { getTokenByUser, getTokenByDevice } = require('../lib/token')
 
 const createContext = require('./context')
 
 beforeAll(async () => {
-	await mongoose.connect(process.env.MONGO_URI, {
-		useNewUrlParser: true,
-	})
+	await db.create()
+	await db.populate(['User', 'Device'])
 })
 
 afterAll(async () => {
-	await mongoose.disconnect()
+	await db.destroy()
 })
 
 describe('ApolloServer context', () => {
@@ -27,6 +27,8 @@ describe('ApolloServer context', () => {
 		const context = await createContext({ req })
 
 		expect(typeof context.user).toBe('object')
+		expect(context.user).not.toBeNull()
+
 		expect(context.user.id).toBe(user.id)
 		expect(context.user.roles).toContain('user')
 		expect(context.user.isAdmin).toBeFalsy()
@@ -62,6 +64,7 @@ describe('ApolloServer context', () => {
 		const context = await createContext({ req })
 
 		expect(typeof context.device).toBe('object')
+		expect(context.device).not.toBeNull()
 		expect(context.device.id).toBe(device.id)
 
 		expect({
@@ -71,13 +74,24 @@ describe('ApolloServer context', () => {
 		}).toMatchSnapshot()
 	})
 
-	it('should set isDeploying flag when deploy key is provided', async () => {
+	it('should set isDeploying flag when valid deploy key is provided', async () => {
 		const headers = {
 			authorization: `Mutual ${process.env.DEPLOY_KEY}`,
 		}
 		const req = { headers }
 		const context = await createContext({ req })
 		expect(context.isDeploying).toBeTruthy()
+		expect(context.user).toBeFalsy()
+		expect(context.device).toBeFalsy()
+	})
+
+	it('should not set isDeploying flag when invalid deploy key is provided', async () => {
+		const headers = {
+			authorization: `Mutual invalid_deply_key`,
+		}
+		const req = { headers }
+		const context = await createContext({ req })
+		expect(context.isDeploying).toBeFalsy()
 		expect(context.user).toBeFalsy()
 		expect(context.device).toBeFalsy()
 	})
