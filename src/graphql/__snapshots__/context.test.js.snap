@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ApolloServer context should create device context when authorized as device 1`] = `
+Object {
+  "device": Object {
+    "__v": 0,
+    "_id": "5cd5b96cd5186963186be748",
+    "authKey": null,
+    "hasOwner": true,
+    "id": "5cd5b96cd5186963186be748",
+    "lastSeenAt": 2019-05-10T17:48:28.614Z,
+    "mac": "00:00:00:00:00:00",
+    "managers": Array [],
+    "name": "Jenny sin alarm",
+    "owner": Object {
+      "__v": 0,
+      "_id": "5cd5b885badacd5a992b0c9f",
+      "devicesManaging": Array [],
+      "devicesOwning": Array [
+        "5cd5b96cd5186963186be748",
+      ],
+      "email": "user@test.com",
+      "firstName": "Roli Jenny",
+      "id": "5cd5b885badacd5a992b0c9f",
+      "isAdmin": false,
+      "isRoot": false,
+      "lastName": "Oritseweyimi",
+      "password": "$2a$10$iOiqxZbDw3Ekl4pUpfJmouOSnSPaJmRggIWV7sTo0.hUkcTeMcxqC",
+      "roles": Array [
+        "user",
+      ],
+    },
+    "pin": null,
+  },
+  "deviceLoader": undefined,
+  "user": null,
+  "userLoader": undefined,
+}
+`;
+
+exports[`ApolloServer context should create user context when authorized as user 1`] = `
+Object {
+  "device": null,
+  "deviceLoader": undefined,
+  "user": Object {
+    "__v": 0,
+    "_id": "5cd5b885badacd5a992b0c9f",
+    "devicesManaging": Array [],
+    "devicesOwning": Array [
+      Object {
+        "__v": 0,
+        "_id": "5cd5b96cd5186963186be748",
+        "authKey": "$2a$10$0GlET4dxohBrI.BpRXcLhe6XnUyF3n5ElDy.JMD5/x7mAAxpvBS/u",
+        "hasOwner": true,
+        "id": "5cd5b96cd5186963186be748",
+        "lastSeenAt": 2019-05-10T17:48:28.614Z,
+        "mac": "00:00:00:00:00:00",
+        "managers": Array [],
+        "name": "Jenny sin alarm",
+        "owner": "5cd5b885badacd5a992b0c9f",
+      },
+    ],
+    "email": "user@test.com",
+    "firstName": "Roli Jenny",
+    "id": "5cd5b885badacd5a992b0c9f",
+    "isAdmin": false,
+    "isRoot": false,
+    "lastName": "Oritseweyimi",
+    "password": null,
+    "roles": Array [
+      "user",
+    ],
+  },
+  "userLoader": undefined,
+}
+`;
+
+exports[`ApolloServer context should not create context without auth header 1`] = `
+Object {
+  "deviceLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {
+      "5cd5b96cd5186963186be748" => Promise {},
+    },
+    "_queue": Array [],
+  },
+  "userLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {
+      "5cd5b885badacd5a992b0c9f" => Promise {},
+      "5cd5b7407a709c508b6201b9" => Promise {},
+    },
+    "_queue": Array [],
+  },
+}
+`;

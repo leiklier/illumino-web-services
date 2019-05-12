@@ -21,7 +21,7 @@ afterAll(async () => {
 	await mongoose.disconnect()
 })
 
-describe('Auth library', () => {
+describe('Token Library', () => {
 	describe('getTokenByUser', () => {
 		it('should return a JWT containing userId from a user object', () => {
 			const user = {
@@ -83,7 +83,6 @@ describe('Auth library', () => {
 
 	describe('getDeviceByToken', () => {
 		it('should return a device if tokenPayload stores valid deviceId', async () => {
-			console.log(await Device.findOne({ mac: '00:00:00:00:00:00' }))
 			const device = await Device.findOne({ mac: '00:00:00:00:00:00' })
 			const token = getTokenByDevice(device)
 			const deviceReceived = await getDeviceByToken(token)

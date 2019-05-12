@@ -3,7 +3,7 @@ const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
-const { getTokenByUser, getTokenByDevice } = require('../../util/token')
+const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
 
 const typeDefs = gql`
 	directive @requiresAuth(

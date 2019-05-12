@@ -1,4 +1,4 @@
-const { getUserByToken, getDeviceByToken } = require('../util/token')
+const { getUserByToken, getDeviceByToken } = require('../lib/token')
 const { userLoader, deviceLoader } = require('../dataloaders')
 
 const context = async ({ req }) => {
@@ -9,7 +9,7 @@ const context = async ({ req }) => {
 
 	// Authorization:
 	try {
-		//* Format of header Authorization: <type> <content>
+		// Format of header Authorization: <type> <content>
 
 		const authHeader = req.headers.authorization
 		const [authType, authContent] = authHeader.split(' ')

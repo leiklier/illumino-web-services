@@ -5,14 +5,14 @@ const Device = require('./models/device')
 
 const userLoader = new DataLoader(userIds => {
 	return User.find({ _id: { $in: userIds } })
-		.populate('devicesOwning', '_id')
-		.populate('devicesManaging', '_id')
+		.populate('devicesOwning')
+		.populate('devicesManaging')
 })
 
 const deviceLoader = new DataLoader(deviceIds => {
 	return Device.find({ _id: { $in: deviceIds } })
-		.populate('owner', '_id roles')
-		.populate('managers', '_id roles')
+		.populate('owner')
+		.populate('managers')
 })
 
 module.exports = {
