@@ -1,12 +1,16 @@
 const { gql } = require('apollo-server')
 
-const context = require('./context')
+const { context, onConnect } = require('./context')
 
 const authSchema = require('./schema/auth')
 const userSchema = require('./schema/user')
 const deviceSchema = require('./schema/device')
 
 const rootTypeDefs = gql`
+	type RootSubsription {
+		user(email: String!): User!
+	}
+
 	type RootQuery {
 		user(email: String): User @requiresAuth(rolesAccepted: [USER, DEVICE])
 		device(mac: String): Device
@@ -37,6 +41,7 @@ const rootTypeDefs = gql`
 	}
 
 	schema {
+		subscription: RootSubsription
 		query: RootQuery
 		mutation: RootMutation
 	}
@@ -50,6 +55,9 @@ const rootSchema = {
 		rootTypeDefs,
 	],
 	resolvers: {
+		RootSubsription: {
+			...userSchema.subscriptionResolvers,
+		},
 		RootQuery: {
 			...authSchema.queryResolvers,
 			...userSchema.queryResolvers,
@@ -65,6 +73,7 @@ const rootSchema = {
 		Device: deviceSchema.DeviceResolver,
 	},
 	context,
+	subscriptions: { onConnect },
 	schemaDirectives: {
 		requiresAuth: authSchema.RequiresAuthDirective,
 	},

@@ -5,7 +5,7 @@ const Device = require('../models/device')
 const db = require('../../test/util/db')
 const { getTokenByUser, getTokenByDevice } = require('../lib/token')
 
-const createContext = require('./context')
+const createContext = require('./context').context
 
 beforeAll(async () => {
 	await db.create()

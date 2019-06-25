@@ -1,7 +1,9 @@
-const { gql } = require('apollo-server')
+const { gql, withFilter } = require('apollo-server')
 const { isEmail } = require('validator')
 
 const User = require('../../models/user')
+
+const pubsub = require('../pubsub')
 
 const typeDefs = gql`
 	type User {
@@ -82,8 +84,18 @@ const UserResolver = {
 	},
 }
 
+const subscriptionResolvers = {}
 const queryResolvers = {}
 const mutationResolvers = {}
+
+subscriptionResolvers.user = {
+	subscribe: withFilter(
+		() => pubsub.asyncIterator('user'),
+		(payload, variables) => {
+			return payload.user.email === variables.email
+		},
+	),
+}
 
 queryResolvers.user = async (_, { email }, context) => {
 	let user
@@ -146,6 +158,7 @@ mutationResolvers.grantAdmin = async (obj, { email }) => {
 
 module.exports = {
 	typeDefs,
+	subscriptionResolvers,
 	queryResolvers,
 	mutationResolvers,
 	UserResolver,

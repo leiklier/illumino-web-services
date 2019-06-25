@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `txBeacon` GraphQL mutation which is used by `Device` for showing its presence online.
 - `authDevice` GraphQL query for authorizing a `Device` using `mac` and `authKey`. Used by the `Device` itself.
 - `user` GraphQL query lets you gather information about a `User` with a certain `email`. If `email` is not provided but a `User` is logged in, this query will provide information about the `User` himself.
+- `user` GraphQL subscription for subscribing to changes to / creation of a certain `User`.
 - `device` GraphQL query lets you gather information about a `Device` with a certain `mac` address. If `mac` is not provided but a `Device` is logged in, this query will provide information about the `Device` itself.
 
 ### Changed

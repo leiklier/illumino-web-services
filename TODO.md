@@ -13,6 +13,7 @@
 
 - Rename `Device` to `ClockDevice`. Also make `Device` an `interface`.
 - Refactor all `Error`s into `ApolloError`s.
+- Implement naming scheme for all `Error`s to make them consistent.
 - Rename `pin` to `pincode`.
 - Add virtual getter `hasOwner` to `Device` mongoose model
 - replace `bcrypt` manual encryption with `mongoose-bcrypt`.
@@ -24,5 +25,7 @@
 ## Bug fixes
 
 - When mutating using `createDevice`, it fails to return the created `Device`.
+- DataLoader cache should be cleared on GraphQL mutation
+- DataLoader cache should be cleared when data has changed in database (bind to `Model.watch().on(...)`)
 
 ---

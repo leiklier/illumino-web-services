@@ -1,7 +1,7 @@
 const { getUserByToken, getDeviceByToken } = require('../lib/token')
 const { userLoader, deviceLoader } = require('../dataloaders')
 
-const context = async ({ req }) => {
+const context = async ({ req, connection }) => {
 	let context = {
 		userLoader,
 		deviceLoader,
@@ -33,7 +33,37 @@ const context = async ({ req }) => {
 		// authHeader is empty
 	}
 
+	// Is connected via WebSocket
+	if (connection && connection.context) {
+		context = {
+			...context,
+			...connection.context,
+		}
+	}
+
 	return context
 }
 
-module.exports = context
+// This gets fired on every websocket connect-event ( = Subscription )
+// What is returned gets added to connection.context in the above
+// context function, and is thus added to context
+const onConnect = async (connectionParams, webSocket) => {
+	let context = {}
+
+	// TODO: connectionParams is not tested, test in
+	// ApolloClient and remove this comment when
+	// confirmed working
+	if (connectionParams.authToken) {
+		const token = connectionParams.authToken
+
+		context.user = await getUserByToken(token)
+		context.device = await getDeviceByToken(token)
+	}
+
+	return context
+}
+
+module.exports = {
+	context,
+	onConnect,
+}
