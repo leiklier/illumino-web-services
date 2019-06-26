@@ -2,6 +2,7 @@ const DataLoader = require('dataloader')
 
 const User = require('./models/user')
 const Device = require('./models/device')
+const Measurement = require('./models/measurement')
 
 const userLoader = new DataLoader(userIds => {
 	return User.find({ _id: { $in: userIds } })
@@ -15,7 +16,12 @@ const deviceLoader = new DataLoader(deviceIds => {
 		.populate('managers')
 })
 
+const measurementLoader = new DataLoader(measurementIds => {
+	return Measurement.find({ _id: { $in: measurementIds } }).populate('device')
+})
+
 module.exports = {
 	userLoader,
 	deviceLoader,
+	measurementLoader,
 }

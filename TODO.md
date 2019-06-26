@@ -17,6 +17,7 @@
 - Rename `pin` to `pincode`.
 - Add virtual getter `hasOwner` to `Device` mongoose model
 - replace `bcrypt` manual encryption with `mongoose-bcrypt`.
+- Two-way relation binding on `User`<->`Device` is unneccessary. Remove fields on `User`, and create index on `Device` (or is it? What about managers? they cannot be indexed. Can however be move to another collection).
 
 ## Security fixes
 

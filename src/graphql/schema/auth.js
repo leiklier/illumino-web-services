@@ -142,6 +142,21 @@ queryResolvers.refreshToken = async (obj, args, context) => {
 	throw new Error('Not logged in!')
 }
 
+//! Bug: Default field resolver cannot resolve fields
+//! when requiring certain relations. For instance, this
+//! will fail:
+// query {
+// 	user {
+//	  firstName
+//	  devicesOwning {
+//		name
+//		latestMeasurements {
+//		  type
+//		  value
+//		}
+//	  }
+//	}
+// }
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
 	visitFieldDefinition(field) {
 		const { resolve = defaultFieldResolver } = field
@@ -169,7 +184,7 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			let relationHaving = null
 			if (context.user) {
 				if (mac) {
-					// A User is trying to acces a Device,
+					// A User is trying to access a Device by mac,
 					// we want to find the relation between
 					// them:
 
@@ -238,13 +253,11 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				}
 			}
 
-			const rolesAreOk =
-				!rolesAccepted.length ||
-				rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
-					.length
+			const rolesAreOk = rolesHaving.filter(roleHaving =>
+				rolesAccepted.includes(roleHaving),
+			).length
 
-			const relationsAreOk =
-				!relationsAccepted.length || relationsAccepted.includes(relationHaving)
+			const relationsAreOk = relationsAccepted.includes(relationHaving)
 
 			if (!(rolesAreOk || relationsAreOk)) {
 				throw new Error('You are not authorized by requiresAuth!')

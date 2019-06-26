@@ -15,15 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `isAuth` GraphQL query which returns `Boolean` based on whether user is logged in or not.
 - `grantAdmin` GraphQL mutation which allows one `admin` to grant another user `admin` privileges.
 - `Device` mongoose model with `owner` and `managers`.
+- `Measurement` mongoose model for storing `Measurement`s belonging to a `Device`.
 - `createDevice` GraphQL mutation which lets a `Device` self register.
 - `claimDevice` GraphQL mutation which lets a `User` own an existing `Device` which currently has no `owner`.
 - `setDevicePin` GraphQL mutation which lets the `owner` of a `Device` or an `admin`set its `pin` (or anyone if the `Device` has not been claimed).
 - `setDeviceName` GraphQL mutation which lets the `owner` of a `Device` or an `admin` set its `name`.
 - `loginDevice` GraphQL query for logging in a `Device` using `mac` and `pin`.
 - `txBeacon` GraphQL mutation which is used by `Device` for showing its presence online.
+- `txMeasurement` GraphQL mutation which lets a `Device` store a new `Measurement`.
 - `authDevice` GraphQL query for authorizing a `Device` using `mac` and `authKey`. Used by the `Device` itself.
 - `user` GraphQL query lets you gather information about a `User` with a certain `email`. If `email` is not provided but a `User` is logged in, this query will provide information about the `User` himself.
 - `user` GraphQL subscription for subscribing to changes to / creation of a certain `User`.
+- `newMeasurements` GraphQL subscription for subscribing to new `Measurement`s for a certain `Device`.
 - `device` GraphQL query lets you gather information about a `Device` with a certain `mac` address. If `mac` is not provided but a `Device` is logged in, this query will provide information about the `Device` itself.
 
 ### Changed

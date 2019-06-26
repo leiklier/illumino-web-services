@@ -1,21 +1,17 @@
-const User = require('../../models/user')
+const Measurement = require('../../models/measurement')
 
 module.exports = pubsub => {
-	User.watch().on('change', data => {
+	Measurement.watch().on('change', data => {
 		const { operationType, fullDocument } = data
 
 		const id = fullDocument._id.toString()
-		const user = { id }
+		const measurement = { id }
 
 		// relevant `operationType`s:
 		// ['insert', 'delete', 'replace']
 		switch (operationType) {
 			case 'insert': {
-				pubsub.publish('user', { user })
-				break
-			}
-			case 'replace': {
-				pubsub.publish('user', { user })
+				pubsub.publish('newMeasurements', { newMeasurements: measurement })
 				break
 			}
 			default:

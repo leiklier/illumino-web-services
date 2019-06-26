@@ -1,5 +1,6 @@
 const { PubSub } = require('apollo-server')
 const bindUserEvents = require('./user')
+const bindMeasurementEvents = require('./measurement')
 
 const pubsub = new PubSub()
 if (process.env.NODE_ENV !== 'test') {
@@ -7,6 +8,7 @@ if (process.env.NODE_ENV !== 'test') {
 	// which does not support change
 	// streams, so skip if testing
 	bindUserEvents(pubsub)
+	bindMeasurementEvents(pubsub)
 }
 
 module.exports = pubsub

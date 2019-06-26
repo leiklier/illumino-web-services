@@ -33,6 +33,12 @@ Object {
     "pin": null,
   },
   "deviceLoader": undefined,
+  "measurementLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
   "user": null,
   "userLoader": undefined,
 }
@@ -42,6 +48,12 @@ exports[`ApolloServer context should create user context when authorized as user
 Object {
   "device": null,
   "deviceLoader": undefined,
+  "measurementLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
   "user": Object {
     "__v": 0,
     "_id": "5cd5b885badacd5a992b0c9f",
@@ -83,6 +95,12 @@ Object {
     "_promiseCache": Map {
       "5cd5b96cd5186963186be748" => Promise {},
     },
+    "_queue": Array [],
+  },
+  "measurementLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
     "_queue": Array [],
   },
   "userLoader": DataLoader {

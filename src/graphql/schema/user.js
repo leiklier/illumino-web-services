@@ -8,7 +8,7 @@ const pubsub = require('../pubsub')
 const typeDefs = gql`
 	type User {
 		id: ID!
-		email: String!
+		email: EmailAddress!
 		roles: [String!]
 			@requiresAuth(rolesAccepted: [ROOT], relationsAccepted: [SELF])
 		firstName: String!
@@ -20,7 +20,7 @@ const typeDefs = gql`
 	}
 
 	input UserInput {
-		email: String!
+		email: EmailAddress!
 		password: String!
 		firstName: String!
 		lastName: String!
@@ -91,8 +91,10 @@ const mutationResolvers = {}
 subscriptionResolvers.user = {
 	subscribe: withFilter(
 		() => pubsub.asyncIterator('user'),
-		(payload, variables) => {
-			return payload.user.email === variables.email
+		async (payload, variables, context) => {
+			const { userLoader } = context
+			const user = await userLoader.load(payload.user.id)
+			return user.email === variables.email
 		},
 	),
 }
@@ -152,7 +154,6 @@ mutationResolvers.grantAdmin = async (obj, { email }) => {
 
 	await user.save()
 
-	// Admin context, so allow infinite nesting
 	return { id: user.id }
 }
 

@@ -3,6 +3,7 @@ const { isMACAddress } = require('validator')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
+const Measurement = require('../../models/measurement')
 
 const typeDefs = gql`
 	type Device {
@@ -11,6 +12,9 @@ const typeDefs = gql`
 		name: String
 		owner: User
 		managers: [User]!
+
+		latestMeasurements(types: [MeasurementType!]): [Measurement!]!
+			@requiresAuth(relationsAccepted: [SELF, OWNER, MANAGER])
 	}
 
 	input DeviceInput {
@@ -58,6 +62,20 @@ const DeviceResolver = {
 			return []
 		}
 		return deviceFound.managers
+	},
+	latestMeasurements: async (device, { types }, context) => {
+		const { deviceLoader } = context
+		const deviceFound = await deviceLoader.load(device.id)
+
+		let measurements = await Measurement.findLatestMeasurements(deviceFound)
+
+		if (types) {
+			measurements = measurements.filter(measurement =>
+				types.includes(measurement.type),
+			)
+		}
+
+		return measurements
 	},
 }
 
