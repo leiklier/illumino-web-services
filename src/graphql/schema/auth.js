@@ -1,8 +1,10 @@
-const { gql } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
 const { keepOnlyAlphaNumeric } = require('../../lib/string')
+
+const error = require('../errors')
 
 const typeDefs = gql`
 	directive @requiresAuth(acceptsOnly: [Role!]) on FIELD_DEFINITION
@@ -58,12 +60,12 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
-		throw new Error('User does not exist!')
+		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
 	const passwordIsEqual = await user.verifyPassword(password)
 	if (!passwordIsEqual) {
-		throw new Error('Password is incorrect!')
+		throw new ApolloError(error.PASSWORD_IS_INCORRECT)
 	}
 
 	const token = getTokenByUser(user, '1h')
@@ -77,16 +79,16 @@ queryResolvers.loginDevice = async (obj, { mac, pin }, context) => {
 	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
-		throw new Error('Device does not exist!')
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	if (!device.pin) {
-		throw new Error('Pin has not been set yet!')
+		throw new ApolloError(error.PIN_IS_NOT_SET)
 	}
 
 	const pinIsEqual = await device.verifyPin(pin.toString())
 	if (!pinIsEqual) {
-		throw new Error('Pin is incorrect!')
+		throw new ApolloError(error.PIN_IS_INCORRECT)
 	}
 
 	const token = getTokenByDevice(device)
@@ -100,12 +102,12 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
-		throw new Errow('Device does not exist!')
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const authKeyIsEqual = await device.verifyAuthKey(authKey)
 	if (!authKeyIsEqual) {
-		throw new Error('authKey is incorrect!')
+		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
 	}
 
 	const token = getTokenByDevice(device)
@@ -135,7 +137,7 @@ queryResolvers.refreshToken = async (obj, args, context) => {
 		return { deviceId: context.device.id, token, expiresAt } // returns DeviceAuthData
 	}
 
-	throw new Error('Not logged in!')
+	throw new ApolloError(error.NOT_AUTHENTICATED)
 }
 
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
@@ -329,8 +331,12 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
 					.length
 
-			if (!(rolesAreOk && context.isAuth)) {
-				throw new Error('You are not authorized by requiresAuth!')
+			if (!context.isAuth) {
+				throw new ApolloError(error.NOT_AUTHENTICATED)
+			}
+
+			if (!rolesAreOk) {
+				throw new ApolloError(error.NOT_AUTHORIZED)
 			}
 
 			const result = await resolve.apply(this, args)

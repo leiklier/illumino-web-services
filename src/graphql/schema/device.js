@@ -1,8 +1,10 @@
-const { gql } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server')
 const { isMACAddress } = require('validator')
 
 const Device = require('../../models/device')
 const Measurement = require('../../models/measurement')
+
+const error = require('../errors')
 
 const typeDefs = gql`
 	type Device {
@@ -103,12 +105,12 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	const { userByEmailLoader, deviceByMacLoader } = context
 
 	if (!isMACAddress(deviceInput.mac)) {
-		throw new Error('Invalid MAC address')
+		throw new ApolloError(error.MAC_IS_INVALID)
 	}
 
 	const existingDevice = await deviceByMacLoader.load(deviceInput.mac)
 	if (existingDevice) {
-		throw new Error('Device exists already.')
+		throw new ApolloError(error.DEVICE_DOES_ALREADY_EXIST)
 	}
 
 	const device = new Device({
@@ -118,8 +120,8 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	})
 
 	if (deviceInput.pin) {
-		if (deviceInput.pin.toString().length > 4) {
-			throw new Error('Pin too long. Should be 4 digits.')
+		if (deviceInput.pin.toString().length !== 4) {
+			throw new ApolloError(error.PIN_IS_INVALID)
 		}
 		device.pin = deviceInput.pin.toString()
 	}
@@ -136,7 +138,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 
 	const owner = await userByEmailLoader.load(deviceInput.ownerEmail)
 	if (!owner) {
-		throw new Error('Owner does not exist!')
+		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
 	// Need to do two operations concurrently, so use transaction
@@ -165,15 +167,15 @@ mutationResolvers.claimDevice = async (obj, { mac }, context) => {
 	const owner = await userByIdLoader.load(ownerId)
 
 	if (!device) {
-		throw new Error('Device does not exist!')
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	if (!owner) {
-		throw new Error('User does not exist!')
+		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
 	if (device.owner) {
-		throw new Error('Device has already been claimed!')
+		throw new ApolloError(error.DEVICE_IS_ALREADY_CLAIMED)
 	}
 
 	owner.devicesOwning.push(device.id)
@@ -196,13 +198,13 @@ mutationResolvers.claimDevice = async (obj, { mac }, context) => {
 mutationResolvers.setDevicePin = async (obj, { mac, pin }, context) => {
 	const { deviceByMacLoader } = context
 
-	if (pin.toString().length > 4) {
-		throw new Error('Pin too long. Should be 4 digits.')
+	if (pin.toString().length !== 4) {
+		throw new ApolloError(error.PIN_IS_INVALID)
 	}
 
 	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
-		throw new Error('Device does not exist!')
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	device.pin = pin
@@ -215,7 +217,7 @@ mutationResolvers.setDeviceName = async (obj, { mac, name }, context) => {
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
-		throw new Error('Device does not exist!')
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	device.name = name

@@ -1,9 +1,11 @@
-const { gql, withFilter } = require('apollo-server')
+const { gql, ApolloError, withFilter } = require('apollo-server')
 const { isEmail } = require('validator')
 
 const User = require('../../models/user')
 
 const pubsub = require('../pubsub')
+
+const error = require('../errors')
 
 const typeDefs = gql`
 	type User {
@@ -120,12 +122,12 @@ mutationResolvers.createUser = async (obj, { userInput }, context) => {
 
 	try {
 		if (!isEmail(userInput.email)) {
-			throw new Error('Invalid email.')
+			throw new ApolloError(error.EMAIL_IS_INVALID)
 		}
 
 		const existingUser = await userByEmailLoader.load(userInput.email)
 		if (existingUser) {
-			throw new Error('User exists already.')
+			throw new ApolloError(error.USER_DOES_ALREADY_EXIST)
 		}
 
 		const user = new User({
@@ -145,7 +147,7 @@ mutationResolvers.grantAdmin = async (obj, { email }, context) => {
 	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
-		throw new Error('User does not exist!')
+		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
 	if (!user.roles.includes('admin')) {
