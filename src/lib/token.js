@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
 const Device = require('../models/device')
-const { userLoader, deviceLoader } = require('../dataloaders')
 
 /**
  * This function creates a signed JWT with a payload containing
@@ -48,7 +47,9 @@ const getUserByToken = async token => {
 			return null
 		}
 
-		const user = await userLoader.load(tokenPayload.userId)
+		const user = await User.findOne({ _id: tokenPayload.userId })
+			.populate('devicesOwning')
+			.populate('devicesManaging')
 
 		return {
 			...user.toObject(),
@@ -74,7 +75,9 @@ const getDeviceByToken = async token => {
 			return null
 		}
 
-		const device = await deviceLoader.load(tokenPayload.deviceId)
+		const device = await Device.findOne({ _id: tokenPayload.deviceId })
+			.populate('owner')
+			.populate('managers')
 
 		return {
 			...device.toObject(),

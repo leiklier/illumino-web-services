@@ -1,11 +1,8 @@
 const { getUserByToken, getDeviceByToken } = require('../lib/token')
-const {
-	userLoader,
-	deviceLoader,
-	measurementLoader,
-} = require('../dataloaders')
+const createDataLoaders = require('../dataloaders')
 
 const context = async ({ req, connection }) => {
+	const { userLoader, deviceLoader, measurementLoader } = createDataLoaders()
 	let context = {
 		userLoader,
 		deviceLoader,
