@@ -46,6 +46,9 @@ const context = async ({ req, connection }) => {
 		}
 	}
 
+	if (context.user || context.device || context.isDeploying)
+		context.isAuth = true
+
 	return context
 }
 

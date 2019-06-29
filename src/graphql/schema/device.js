@@ -11,10 +11,10 @@ const typeDefs = gql`
 		mac: String!
 		name: String
 		owner: User
-		managers: [User]!
+		managers: [User!]!
 
 		latestMeasurements(types: [MeasurementType!]): [Measurement!]!
-			@requiresAuth(relationsAccepted: [SELF, OWNER, MANAGER])
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
 	input DeviceInput {

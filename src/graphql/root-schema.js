@@ -21,31 +21,31 @@ const rootTypeDefs = gql`
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(mac: String!, pin: Int!): DeviceAuthData!
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
-		refreshToken: AuthData! @requiresAuth(rolesAccepted: [USER, DEVICE])
+		refreshToken: AuthData! @requiresAuth(acceptsOnly: [USER, DEVICE])
 		isAuth: Boolean!
 	}
 
 	type RootMutation {
-		claimDevice(mac: String!): Device! @requiresAuth(rolesAccepted: [USER])
+		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: Int!): Device!
-			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF, OWNER])
+			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
 		setDeviceName(mac: String!, name: String!): Device!
-			@requiresAuth(rolesAccepted: [ADMIN])
+			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
-		grantAdmin(email: String!): User! @requiresAuth(rolesAccepted: [ROOT])
+		grantAdmin(email: String!): User! @requiresAuth(acceptsOnly: ROOT)
 
-		txBeacon: String! @requiresAuth(rolesAccepted: [DEVICE])
+		txBeacon: String! @requiresAuth(acceptsOnly: DEVICE)
 
 		txMeasurement(
 			type: MeasurementType!
 			environment: MeasurementEnvironment
 			value: Float!
-		): Measurement! @requiresAuth(rolesAccepted: [DEVICE])
+		): Measurement! @requiresAuth(acceptsOnly: DEVICE)
 
 		createDevice(deviceInput: DeviceInput!): Device!
-			@requiresAuth(rolesAccepted: [DEPLOYER, ADMIN])
+			@requiresAuth(acceptsOnly: [DEPLOYER, ADMIN])
 
 		createUser(userInput: UserInput): User!
 	}

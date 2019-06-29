@@ -4,7 +4,6 @@
 
 - Implement `active` query on `Device` which returns status `enum` : `CONNECTED` or `DISCONNECTED` based on `lastSeenAt`.
 - Device should have a `firmwareVersion` attribute.
-- `doAuth` or `authDevice` query for authenticating a `Device` by `authKey`.
 - add `createdAt` and `updatedAt` entities to `User` and `Device`.
 - Check out `graphql-tools`. Should we port codebase?
 - `SensorData` `interface`.
@@ -18,6 +17,8 @@
 - Add virtual getter `hasOwner` to `Device` mongoose model
 - replace `bcrypt` manual encryption with `mongoose-bcrypt`.
 - Two-way relation binding on `User`<->`Device` is unneccessary. Remove fields on `User`, and create index on `Device` (or is it? What about managers? they cannot be indexed. Can however be move to another collection).
+- Rename `AuthData` to `AuthPayload` to follow conventions laid out by Github.
+- Implementations of `AuthData` should return the `Device` / `User` instead of only its `id`, i.e. `deviceId` and `userId`.
 
 ## Security fixes
 

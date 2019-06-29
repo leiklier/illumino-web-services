@@ -9,14 +9,12 @@ const typeDefs = gql`
 	type User {
 		id: ID!
 		email: EmailAddress!
-		roles: [String!]
-			@requiresAuth(rolesAccepted: [ROOT], relationsAccepted: [SELF])
+		roles: [String!] @requiresAuth(acceptsOnly: [SELF, ROOT])
 		firstName: String!
 		lastName: String!
-		devicesOwning: [Device]!
-			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF])
+		devicesOwning: [Device]! @requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 		devicesManaging: [Device]!
-			@requiresAuth(rolesAccepted: [ADMIN], relationsAccepted: [SELF])
+			@requiresAuth(acceptsOnly: [SELF, MANAGER, ADMIN])
 	}
 
 	input UserInput {

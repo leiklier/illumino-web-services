@@ -3,13 +3,12 @@ const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const User = require('../../models/user')
 const Device = require('../../models/device')
+
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
+const { keepOnlyAlphaNumeric } = require('../../lib/string')
 
 const typeDefs = gql`
-	directive @requiresAuth(
-		rolesAccepted: [Role]
-		relationsAccepted: [Relation]
-	) on FIELD_DEFINITION
+	directive @requiresAuth(acceptsOnly: [Role!]) on FIELD_DEFINITION
 
 	enum Role {
 		USER
@@ -17,9 +16,6 @@ const typeDefs = gql`
 		ADMIN
 		ROOT
 		DEPLOYER
-	}
-
-	enum Relation {
 		SELF
 		OWNER
 		MANAGER
@@ -142,35 +138,26 @@ queryResolvers.refreshToken = async (obj, args, context) => {
 	throw new Error('Not logged in!')
 }
 
-//! Bug: Default field resolver cannot resolve fields
-//! when requiring certain relations. For instance, this
-//! will fail:
-// query {
-// 	user {
-//	  firstName
-//	  devicesOwning {
-//		name
-//		latestMeasurements {
-//		  type
-//		  value
-//		}
-//	  }
-//	}
-// }
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
 	visitFieldDefinition(field) {
 		const { resolve = defaultFieldResolver } = field
-		let { rolesAccepted, relationsAccepted } = this.args
-
-		if (!Array.isArray(rolesAccepted)) rolesAccepted = []
-		if (!Array.isArray(relationsAccepted)) relationsAccepted = []
+		const rolesAccepted = this.args.acceptsOnly
 
 		field.resolve = async (...args) => {
-			const [obj, { email, mac }, context] = args
+			const [obj, { email, mac }, context, info] = args
+
 			const id = obj === Object(obj) && obj.id
+
+			// Strip for [], ! - we are only interested in the type,
+			// i.e. `User` and not `[User!]!`:
+			const parentType = keepOnlyAlphaNumeric(info.parentType.toString())
+			const returnType = keepOnlyAlphaNumeric(info.returnType.toString())
+
+			// ******************************
+			// ********** ROLES *************
+			// ******************************
 			let rolesHaving = []
 
-			// Check for roles having
 			context.isDeploying && rolesHaving.push('DEPLOYER')
 			context.device && rolesHaving.push('DEVICE')
 
@@ -180,86 +167,165 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				context.user.isRoot && rolesHaving.push('ROOT')
 			}
 
-			// Check for the relation having to parent obj
+			// ******************************
+			// ********* RELATION ***********
+			// ******************************
+			const relation = {
+				SELF: 'SELF',
+				OWNER: 'OWNER',
+				MANAGER: 'MANAGER',
+			}
+
 			let relationHaving = null
-			if (context.user) {
-				if (mac) {
-					// A User is trying to access a Device by mac,
-					// we want to find the relation between
-					// them:
 
-					const device = await Device.findOne({ mac })
-					const isOwningDevice = Boolean(
-						context.user.devicesOwning.filter(
-							deviceOwning => deviceOwning.id === device.id,
-						).length,
-					)
-					const isManagingDevice = Boolean(
-						context.user.devicesManaging.filter(
-							deviceManaging => deviceManaging.id === device.id,
-						).length,
-					)
-
-					if (isOwningDevice) {
-						relationHaving = 'OWNER'
-					} else if (isManagingDevice) {
-						relationHaving = 'MANAGER'
-					}
-				} else if (id) {
-					//! SECURITY ISSUE:
-					//! A user trying to access a device with same
-					//! id will be treated as `SELF`
-
-					// We got an authorized User trying
-					// to access an object with a certain id,
-					// Check if this is the User himself:
-
-					const isSelf = id === context.user.id
-					if (isSelf) {
-						relationHaving = 'SELF'
-					}
-				}
-			} else if (context.device) {
-				if (email) {
-					// A Device is trying to access a User,
-					// we want to find the relation between
-					// them:
-
-					const user = await User.findOne({ email })
-					const isDeviceOwner = context.device.owner.id === user.id
-					const isDeviceManager = Boolean(
-						context.device.managers.filter(
-							deviceManager => deviceManager.id === user.id,
-						),
-					)
-					if (isDeviceOwner) {
-						relationHaving = 'OWNER'
-					} else if (isDeviceManager) {
-						relationHaving = 'MANAGER'
-					}
-				} else if (id) {
-					//! SECURITY ISSUE:
-					//! A Device trying to access a User with same
-					//! id will be treated as `SELF`
-
-					// We got an authorized Device trying
-					// to access an object with a certain id,
-					// Check if this is the Device itself:
-
-					const isSelf = id === context.device.id
-					if (isSelf) {
-						relationHaving = 'SELF'
-					}
+			// * SELF
+			// * * Device
+			if (context.device && parentType === 'Device') {
+				// We are resolving the fields of a `Device`,
+				// and we are authorized as a `Device`
+				if (id === context.device.id) {
+					relationHaving = relation.SELF
 				}
 			}
 
-			const rolesAreOk = rolesHaving.filter(roleHaving =>
-				rolesAccepted.includes(roleHaving),
-			).length
+			if (context.device && mac) {
+				// We are resolving something that takes
+				// mac as input, and authorized as `Device`
+				if (mac === context.device.mac) {
+					relationHaving = relation.SELF
+				}
+			}
 
-			const relationsAreOk = relationsAccepted.includes(relationHaving)
+			// * * User
+			if (context.user && parentType === 'User') {
+				// We are resolving the fields of a `User`,
+				// and we are authorized as a `User`
+				if (id === context.user.id) {
+					relationHaving = relation.SELF
+				}
+			}
 
-			if (!(rolesAreOk || relationsAreOk)) {
+			if (context.user && email) {
+				// We are resolving something that takes
+				// email as input, and authorized as `User`
+				if (email === context.user.email) {
+					relationHaving = relation.SELF
+				}
+			}
+
+			// * OWNER
+			// * * Device
+			if (context.device && parentType === 'User') {
+				// We are resolving the fields of a `User`,
+				// and we are authorized as a `Device`
+				if (context.device.owner.id === id) {
+					relationHaving = relation.OWNER
+				}
+			}
+
+			if (context.device && email) {
+				// We are resolving something that takes
+				// email as input, and authorized as `Device`
+				const user = await User.findOne({ email })
+				if (
+					user &&
+					context.device.owner &&
+					context.device.owner.id === user.id
+				) {
+					relationHaving = relation.OWNER
+				}
+			}
+
+			// * * User
+			if (context.user && parentType === 'Device') {
+				// We are resolving the fields of a `Device`,
+				// and we are authorized as a `User`
+				const { deviceLoader } = context
+				const device = await deviceLoader.load(id)
+				if (device && device.owner && device.owner.id === context.user.id) {
+					relationHaving = relation.OWNER
+				}
+			}
+
+			if (context.user && mac) {
+				// We are resolving something that takes
+				// mac as input, and authorized as `User`
+				const device = await Device.findOne({ mac })
+				if (device && device.owner && device.owner.id === context.user.id) {
+					relationHaving = relation.OWNER
+				}
+			}
+
+			// * MANAGER
+			// * * Device
+			if (context.device && parentType === 'User') {
+				// We are resolving the fields of a `User`,
+				// and we are authorized as a `Device`
+				const { managers } = context.device
+				const isManager = managers.filter(manager => manager.id === id).length
+				if (isManager) {
+					relationHaving = relation.MANAGER
+				}
+			}
+
+			if (context.device && email) {
+				// We are resolving something which takes
+				// email as input, and authorized as `Device`
+				const { managers } = context.device
+				const user = await User.findOne({ email })
+
+				const isManager = managers.filter(manager => manager.id === user.id)
+					.length
+
+				if (isManager) {
+					relationHaving = relation.MANAGER
+				}
+			}
+
+			// * * User
+			if (context.user && parentType === 'Device') {
+				// We are resolving the fields of a `Device`,
+				// and we are authorized as a `User`
+				const { deviceLoader } = context
+				const device = (await deviceLoader.load(id)) || {}
+
+				const managers = device.managers || []
+				const isManager = managers.filter(
+					manager => manager.id === context.user.id,
+				).length
+
+				if (isManager) {
+					relationHaving = relation.MANAGER
+				}
+			}
+
+			if (context.user && mac) {
+				// We are resolving something which takes
+				// mac as input, and authorized as `User`
+				const device =
+					(await Device.findOne({ mac }).populate('managers')) || {}
+
+				const managers = device.managers || []
+				const isManager = managers.filter(
+					manager => manager.id === context.user.id,
+				).length
+
+				if (isManager) {
+					relationHaving = relation.MANAGER
+				}
+			}
+
+			// ******************************
+			// ***** CHECK REQUIREMENTS *****
+			// ******************************
+			rolesHaving.push(relationHaving)
+
+			const rolesAreOk =
+				!rolesAccepted.length ||
+				rolesHaving.filter(roleHaving => rolesAccepted.includes(roleHaving))
+					.length
+
+			if (!(rolesAreOk && context.isAuth)) {
 				throw new Error('You are not authorized by requiresAuth!')
 			}
 
