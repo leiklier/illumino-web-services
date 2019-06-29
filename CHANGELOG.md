@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.0] - 2019-06-29
+
 ### Added
 
 - `user` context which provides information about the authorized `User`.
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `user` GraphQL subscription for subscribing to changes to / creation of a certain `User`.
 - `newMeasurements` GraphQL subscription for subscribing to new `Measurement`s for a certain `Device`.
 - `device` GraphQL query lets you gather information about a `Device` with a certain `mac` address. If `mac` is not provided but a `Device` is logged in, this query will provide information about the `Device` itself.
+- Consistent error codes.
 
 ### Changed
 
@@ -43,5 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `createUser` GraphQL mutation.
 - `login` GraphQL query for logging in a `User`.
 
-[unreleased]: https://github.com/leiklier/ambientalarm-api/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/leiklier/ambientalarm-api/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/leiklier/ambientalarm-api/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/leiklier/ambientalarm-api/releases/tag/v0.1.0
