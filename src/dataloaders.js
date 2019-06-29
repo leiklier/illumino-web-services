@@ -10,11 +10,14 @@ const createDataLoaders = () => {
 			.populate('devicesOwning')
 			.populate('devicesManaging')
 			.then(users => {
+				let usersById = {}
 				for (const user of users) {
+					usersById[user._id] = user
 					userByEmailLoader.prime(user.email, user)
 				}
 
-				return users
+				// Need to return undefined for queries with empty response:
+				return userIds.map(userId => usersById[userId])
 			}),
 	)
 
@@ -23,11 +26,14 @@ const createDataLoaders = () => {
 			.populate('devicesOwning')
 			.populate('devicesManaging')
 			.then(users => {
+				let usersByEmail = {}
 				for (const user of users) {
+					usersByEmail[user.email] = user
 					userByIdLoader.prime(user.id, user)
 				}
 
-				return users
+				// Need to return undefined for queries with empty response:
+				return emails.map(email => usersByEmail[email])
 			}),
 	)
 
@@ -36,11 +42,14 @@ const createDataLoaders = () => {
 			.populate('owner')
 			.populate('managers')
 			.then(devices => {
+				let devicesById = {}
 				for (const device of devices) {
+					devicesById[device._id] = device
 					deviceByMacLoader.prime(device.mac, device)
 				}
 
-				return devices
+				// Need to return undefined for queries with empty response:
+				return deviceIds.map(deviceId => devicesById[deviceId])
 			}),
 	)
 
@@ -49,17 +58,32 @@ const createDataLoaders = () => {
 			.populate('owner')
 			.populate('managers')
 			.then(devices => {
+				let devicesByMac = {}
 				for (const device of devices) {
+					devicesByMac[device.mac] = device
 					deviceByIdLoader.prime(device.id, device)
 				}
 
-				return devices
+				// Need to return undefined for queries with empty response:
+				return macs.map(mac => devicesByMac[mac])
 			}),
 	)
 
-	const measurementByIdLoader = new DataLoader(measurementIds => {
-		return Measurement.find({ _id: { $in: measurementIds } }).populate('device')
-	})
+	const measurementByIdLoader = new DataLoader(measurementIds =>
+		Measurement.find({ _id: { $in: measurementIds } })
+			.populate('device')
+			.then(measurements => {
+				let measurementsById = {}
+				for (const measurement of measurements) {
+					measurementsById[measurement._id] = measurement
+				}
+
+				// Need to return undefined for queries with empty response:
+				return measurementIds.map(
+					measurementId => measurementsById[measurementId],
+				)
+			}),
+	)
 
 	return {
 		userByIdLoader,
