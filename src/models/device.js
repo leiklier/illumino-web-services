@@ -9,6 +9,7 @@ const deviceSchema = new Schema(
 			// MAC Address of default network interface
 			type: String,
 			required: true,
+			unique: true,
 		},
 		authKey: {
 			// Used by Device to authenticate itself

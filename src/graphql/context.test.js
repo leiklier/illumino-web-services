@@ -36,8 +36,8 @@ describe('ApolloServer context', () => {
 
 		expect({
 			...context,
-			userLoader: undefined,
-			deviceLoader: undefined,
+			userByIdLoader: undefined,
+			deviceByIdLoader: undefined,
 		}).toMatchSnapshot()
 	})
 
@@ -69,8 +69,8 @@ describe('ApolloServer context', () => {
 
 		expect({
 			...context,
-			userLoader: undefined,
-			deviceLoader: undefined,
+			userByIdLoader: undefined,
+			deviceByIdLoader: undefined,
 		}).toMatchSnapshot()
 	})
 

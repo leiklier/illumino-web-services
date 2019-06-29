@@ -2,11 +2,8 @@ const { getUserByToken, getDeviceByToken } = require('../lib/token')
 const createDataLoaders = require('../dataloaders')
 
 const context = async ({ req, connection }) => {
-	const { userLoader, deviceLoader, measurementLoader } = createDataLoaders()
 	let context = {
-		userLoader,
-		deviceLoader,
-		measurementLoader,
+		...createDataLoaders(),
 	}
 
 	// Authorization:

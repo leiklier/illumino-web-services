@@ -32,25 +32,43 @@ Object {
     },
     "pin": null,
   },
-  "deviceLoader": undefined,
+  "deviceByIdLoader": undefined,
+  "deviceByMacLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
   "isAuth": true,
-  "measurementLoader": DataLoader {
+  "measurementByIdLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
     "_queue": Array [],
   },
   "user": null,
-  "userLoader": undefined,
+  "userByEmailLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "userByIdLoader": undefined,
 }
 `;
 
 exports[`ApolloServer context should create user context when authorized as user 1`] = `
 Object {
   "device": null,
-  "deviceLoader": undefined,
+  "deviceByIdLoader": undefined,
+  "deviceByMacLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
   "isAuth": true,
-  "measurementLoader": DataLoader {
+  "measurementByIdLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
@@ -85,25 +103,43 @@ Object {
       "user",
     ],
   },
-  "userLoader": undefined,
+  "userByEmailLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "userByIdLoader": undefined,
 }
 `;
 
 exports[`ApolloServer context should not create context without auth header 1`] = `
 Object {
-  "deviceLoader": DataLoader {
+  "deviceByIdLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
     "_queue": Array [],
   },
-  "measurementLoader": DataLoader {
+  "deviceByMacLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
     "_queue": Array [],
   },
-  "userLoader": DataLoader {
+  "measurementByIdLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "userByEmailLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "userByIdLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},

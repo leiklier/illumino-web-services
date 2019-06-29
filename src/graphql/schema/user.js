@@ -27,54 +27,54 @@ const typeDefs = gql`
 
 const UserResolver = {
 	email: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.email
 	},
 	roles: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.roles
 	},
 	firstName: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.firstName
 	},
 	lastName: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return null
 		}
 		return userFound.lastName
 	},
 	devicesOwning: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return []
 		}
 		return userFound.devicesOwning
 	},
 	devicesManaging: async (user, args, context) => {
-		const { userLoader } = context
+		const { userByIdLoader } = context
 
-		const userFound = await userLoader.load(user.id)
+		const userFound = await userByIdLoader.load(user.id)
 		if (!userFound) {
 			return []
 		}
@@ -89,20 +89,21 @@ const mutationResolvers = {}
 subscriptionResolvers.user = {
 	subscribe: withFilter(
 		() => pubsub.asyncIterator('user'),
-		async (payload, variables, context) => {
-			const { userLoader } = context
-			const user = await userLoader.load(payload.user.id)
-			return user.email === variables.email
+		async (payload, args, context) => {
+			const { userByIdLoader } = context
+			const user = await userByIdLoader.load(payload.user.id)
+			return user.email === args.email
 		},
 	),
 }
 
 queryResolvers.user = async (_, { email }, context) => {
+	const { userByIdLoader, userByEmailLoader } = context
 	let user
 	if (email) {
-		user = await User.findOne({ email })
-	} else {
-		user = await User.findOne({ _id: context.user.id })
+		user = await userByEmailLoader.load(email)
+	} else if (context.user) {
+		user = await userByIdLoader.load(context.user.id)
 	}
 
 	if (!user) {
@@ -114,14 +115,15 @@ queryResolvers.user = async (_, { email }, context) => {
 	}
 }
 
-mutationResolvers.createUser = async (obj, { userInput }) => {
-	// Permittable by everyone
+mutationResolvers.createUser = async (obj, { userInput }, context) => {
+	const { userByEmailLoader } = context
+
 	try {
 		if (!isEmail(userInput.email)) {
 			throw new Error('Invalid email.')
 		}
 
-		const existingUser = await User.findOne({ email: userInput.email })
+		const existingUser = await userByEmailLoader.load(userInput.email)
 		if (existingUser) {
 			throw new Error('User exists already.')
 		}
@@ -138,9 +140,9 @@ mutationResolvers.createUser = async (obj, { userInput }) => {
 	}
 }
 
-mutationResolvers.grantAdmin = async (obj, { email }) => {
-	// Permittable by admins
-	const user = await User.findOne({ email })
+mutationResolvers.grantAdmin = async (obj, { email }, context) => {
+	const { userByEmailLoader } = context
+	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
 		throw new Error('User does not exist!')

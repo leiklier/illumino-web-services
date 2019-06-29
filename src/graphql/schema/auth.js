@@ -1,9 +1,6 @@
 const { gql } = require('apollo-server')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
 
-const User = require('../../models/user')
-const Device = require('../../models/device')
-
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
 const { keepOnlyAlphaNumeric } = require('../../lib/string')
 
@@ -56,8 +53,9 @@ const AuthDataResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.loginUser = async (obj, { email, password }) => {
-	const user = await User.findOne({ email })
+queryResolvers.loginUser = async (obj, { email, password }, context) => {
+	const { userByEmailLoader } = context
+	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
 		throw new Error('User does not exist!')
@@ -74,8 +72,9 @@ queryResolvers.loginUser = async (obj, { email, password }) => {
 	return { userId: user.id, token, expiresAt }
 }
 
-queryResolvers.loginDevice = async (obj, { mac, pin }) => {
-	const device = await Device.findOne({ mac })
+queryResolvers.loginDevice = async (obj, { mac, pin }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
 		throw new Error('Device does not exist!')
@@ -96,8 +95,9 @@ queryResolvers.loginDevice = async (obj, { mac, pin }) => {
 	return { deviceId: device.id, token, expiresAt }
 }
 
-queryResolvers.authDevice = async (obj, { mac, authKey }) => {
-	const device = await Device.findOne({ mac })
+queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
 		throw new Errow('Device does not exist!')
@@ -151,7 +151,6 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			// Strip for [], ! - we are only interested in the type,
 			// i.e. `User` and not `[User!]!`:
 			const parentType = keepOnlyAlphaNumeric(info.parentType.toString())
-			const returnType = keepOnlyAlphaNumeric(info.returnType.toString())
 
 			// ******************************
 			// ********** ROLES *************
@@ -226,7 +225,8 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.device && email) {
 				// We are resolving something that takes
 				// email as input, and authorized as `Device`
-				const user = await User.findOne({ email })
+				const { userByEmailLoader } = context
+				const user = await userByEmailLoader.load(email)
 				if (
 					user &&
 					context.device.owner &&
@@ -240,8 +240,9 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.user && parentType === 'Device') {
 				// We are resolving the fields of a `Device`,
 				// and we are authorized as a `User`
-				const { deviceLoader } = context
-				const device = await deviceLoader.load(id)
+				const { deviceByIdLoader } = context
+				const device = await deviceByIdLoader.load(id)
+
 				if (device && device.owner && device.owner.id === context.user.id) {
 					relationHaving = relation.OWNER
 				}
@@ -250,7 +251,9 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.user && mac) {
 				// We are resolving something that takes
 				// mac as input, and authorized as `User`
-				const device = await Device.findOne({ mac })
+				const { deviceByMacLoader } = context
+				const device = await deviceByMacLoader.load(mac)
+
 				if (device && device.owner && device.owner.id === context.user.id) {
 					relationHaving = relation.OWNER
 				}
@@ -271,9 +274,10 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.device && email) {
 				// We are resolving something which takes
 				// email as input, and authorized as `Device`
-				const { managers } = context.device
-				const user = await User.findOne({ email })
+				const { userByEmailLoader } = context
+				const user = await userByEmailLoader.load(email)
 
+				const { managers } = context.device
 				const isManager = managers.filter(manager => manager.id === user.id)
 					.length
 
@@ -286,8 +290,8 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.user && parentType === 'Device') {
 				// We are resolving the fields of a `Device`,
 				// and we are authorized as a `User`
-				const { deviceLoader } = context
-				const device = (await deviceLoader.load(id)) || {}
+				const { deviceByIdLoader } = context
+				const device = (await deviceByIdLoader.load(id)) || {}
 
 				const managers = device.managers || []
 				const isManager = managers.filter(
@@ -302,8 +306,8 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			if (context.user && mac) {
 				// We are resolving something which takes
 				// mac as input, and authorized as `User`
-				const device =
-					(await Device.findOne({ mac }).populate('managers')) || {}
+				const { deviceByMacLoader } = context
+				const device = (await deviceByMacLoader.load(mac)) || {}
 
 				const managers = device.managers || []
 				const isManager = managers.filter(
