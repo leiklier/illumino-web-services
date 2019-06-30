@@ -10,7 +10,7 @@
 
 ## Improvements
 
-- Rename `Device` to `ClockDevice`. Also make `Device` an `interface`.
+- Rename `Device` to `ClockDevice`. Also make `Device` an `interface`. In `mongoose`, this can be done by use of `discriminator`s.
 - Refactor all `Error`s into `ApolloError`s.
 - Implement naming scheme for all `Error`s to make them consistent.
 - Rename `pin` to `pincode`.

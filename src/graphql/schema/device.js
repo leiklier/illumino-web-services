@@ -21,7 +21,7 @@ const typeDefs = gql`
 	input DeviceInput {
 		mac: String!
 		authKey: String!
-		pin: Int
+		pin: PIN
 		ownerEmail: String
 		name: String
 	}
@@ -120,9 +120,6 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	})
 
 	if (deviceInput.pin) {
-		if (deviceInput.pin.toString().length !== 4) {
-			throw new ApolloError(error.PIN_IS_INVALID)
-		}
 		device.pin = deviceInput.pin.toString()
 	}
 
@@ -197,10 +194,6 @@ mutationResolvers.claimDevice = async (obj, { mac }, context) => {
 
 mutationResolvers.setDevicePin = async (obj, { mac, pin }, context) => {
 	const { deviceByMacLoader } = context
-
-	if (pin.toString().length !== 4) {
-		throw new ApolloError(error.PIN_IS_INVALID)
-	}
 
 	const device = await deviceByMacLoader.load(mac)
 	if (!device) {

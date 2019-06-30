@@ -19,7 +19,7 @@ const rootTypeDefs = gql`
 		user(email: String): User
 		device(mac: String): Device
 		loginUser(email: String!, password: String!): UserAuthData!
-		loginDevice(mac: String!, pin: Int!): DeviceAuthData!
+		loginDevice(mac: String!, pin: PIN!): DeviceAuthData!
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
 		refreshToken: AuthData! @requiresAuth(acceptsOnly: [USER, DEVICE])
 		isAuth: Boolean!
@@ -28,7 +28,7 @@ const rootTypeDefs = gql`
 	type RootMutation {
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
-		setDevicePin(mac: String!, pin: Int!): Device!
+		setDevicePin(mac: String!, pin: PIN!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
 		setDeviceName(mac: String!, name: String!): Device!
