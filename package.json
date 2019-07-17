@@ -14,14 +14,16 @@
 	"license": "MIT",
 	"dependencies": {
 		"@okgrow/graphql-scalars": "^0.4.5",
-		"apollo-server": "^2.4.8",
+		"apollo-server": "^2.6.7",
 		"dataloader": "^1.4.0",
+		"doasync": "^2.0.1",
 		"dotenv": "^8.0.0",
 		"graphql": "^14.2.1",
 		"graphql-tools": "^4.0.4",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^5.5.5",
 		"mongoose-bcrypt": "^1.6.0",
+		"mongoose-gridfs": "^1.2.3",
 		"validator": "^10.11.0"
 	},
 	"devDependencies": {

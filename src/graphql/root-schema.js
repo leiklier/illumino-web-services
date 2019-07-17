@@ -7,6 +7,7 @@ const { scalarDefs, scalarResolvers } = require('./scalars')
 const authSchema = require('./schema/auth')
 const userSchema = require('./schema/user')
 const deviceSchema = require('./schema/device')
+const firmwareSchema = require('./schema/firmware')
 const measurementSchema = require('./schema/measurement')
 
 const rootTypeDefs = gql`
@@ -44,6 +45,8 @@ const rootTypeDefs = gql`
 			value: Float!
 		): Measurement! @requiresAuth(acceptsOnly: DEVICE)
 
+		publishFirmware(firmwareInput: FirmwareInput!): Boolean!
+
 		createDevice(deviceInput: DeviceInput!): Device!
 			@requiresAuth(acceptsOnly: [DEPLOYER, ADMIN])
 
@@ -63,6 +66,7 @@ const rootSchema = {
 		authSchema.typeDefs,
 		userSchema.typeDefs,
 		deviceSchema.typeDefs,
+		firmwareSchema.typeDefs,
 		measurementSchema.typeDefs,
 		rootTypeDefs,
 	],
@@ -82,6 +86,7 @@ const rootSchema = {
 			...authSchema.mutationResolvers,
 			...userSchema.mutationResolvers,
 			...deviceSchema.mutationResolvers,
+			...firmwareSchema.mutationResolvers,
 			...measurementSchema.mutationResolvers,
 		},
 		AuthData: authSchema.AuthDataResolver,

@@ -55,7 +55,7 @@ scalarResolvers.PIN = new GraphQLScalarType({
 	parseLiteral(ast) {
 		if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
 			throw new GraphQLError(
-				`Can only parse strings & integers to dates but got a: ${ast.kind}`,
+				`Can only parse strings & integers to PIN but got a: ${ast.kind}`,
 			)
 		}
 
