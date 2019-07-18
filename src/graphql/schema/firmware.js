@@ -26,6 +26,63 @@ const typeDefs = gql`
 	}
 `
 
+const FirmwareResolver = {
+	target: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return firmwareFound.target
+	},
+	name: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return firmwareFound.name
+	},
+	description: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return firmwareFound.description || null
+	},
+	createdAt: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return firmwareFound.createdAt
+	},
+	version: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return firmwareFound.version
+	},
+	isLatest: async (firmware, args, context) => {
+		const { firmwareByIdLoader } = context
+		// TODO
+		return true
+	},
+}
 const mutationResolvers = {}
 
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
@@ -51,4 +108,5 @@ mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 module.exports = {
 	typeDefs,
 	mutationResolvers,
+	FirmwareResolver,
 }

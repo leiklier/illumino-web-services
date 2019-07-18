@@ -22,7 +22,7 @@ const deviceSchema = new Schema(
 			type: String,
 			bcrypt: true,
 		},
-		firmware: {
+		installedFirmware: {
 			type: Schema.Types.ObjectId,
 			ref: 'Firmware',
 			required: true,

@@ -14,6 +14,9 @@ const typeDefs = gql`
 		owner: User
 		managers: [User!]!
 
+		installedFirmware: Firmware!
+			@requiresAuth(acceptsOnly: [SELF, ADMIN, OWNER, MANAGER])
+
 		latestMeasurements(types: [MeasurementType!]): [Measurement!]!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
@@ -64,6 +67,16 @@ const DeviceResolver = {
 			return []
 		}
 		return deviceFound.managers
+	},
+	installedFirmware: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return null
+		}
+
+		return deviceFound.installedFirmware
 	},
 	latestMeasurements: async (device, { types }, context) => {
 		const { deviceByIdLoader } = context
@@ -130,7 +143,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		lastSeenAt: new Date(),
 		mac: deviceInput.mac,
 		authKey: deviceInput.authKey,
-		firmware,
+		installedFirmware: firmware,
 	})
 
 	if (deviceInput.pin) {

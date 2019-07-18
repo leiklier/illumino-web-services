@@ -42,6 +42,7 @@ const createDataLoaders = () => {
 		Device.find({ _id: { $in: deviceIds } })
 			.populate('owner')
 			.populate('managers')
+			.populate('installedFirmware')
 			.then(devices => {
 				let devicesById = {}
 				for (const device of devices) {
@@ -58,6 +59,7 @@ const createDataLoaders = () => {
 		Device.find({ mac: { $in: macs } })
 			.populate('owner')
 			.populate('managers')
+			.populate('installedFirmware')
 			.then(devices => {
 				let devicesByMac = {}
 				for (const device of devices) {
@@ -74,7 +76,7 @@ const createDataLoaders = () => {
 		Firmware.find({ _id: { $in: firmwareIds } }).then(firmwares => {
 			let firmwaresById = {}
 			for (const firmware of firmwares) {
-				firmwaresById[firmware.version] = firmware
+				firmwaresById[firmware.id] = firmware
 				firmwareByUniqueVersionLoader.prime(
 					`${firmware.target}+${firmware.version}`,
 					firmware,

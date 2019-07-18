@@ -92,6 +92,7 @@ const rootSchema = {
 		AuthData: authSchema.AuthDataResolver,
 		User: userSchema.UserResolver,
 		Device: deviceSchema.DeviceResolver,
+		Firmware: firmwareSchema.FirmwareResolver,
 		Measurement: measurementSchema.MeasurementResolver,
 	},
 	context,

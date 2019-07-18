@@ -39,7 +39,10 @@ const firmwareSchema = new Schema(
 			required: true,
 		},
 	},
-	{ timestamps: true },
+	{
+		timestamps: true,
+		toObject: { virtuals: true },
+	},
 )
 
 //* NB: This saves the current document, so all required
