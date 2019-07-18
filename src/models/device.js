@@ -22,6 +22,11 @@ const deviceSchema = new Schema(
 			type: String,
 			bcrypt: true,
 		},
+		firmware: {
+			type: Schema.Types.ObjectId,
+			ref: 'Firmware',
+			required: true,
+		},
 		name: String,
 		lastSeenAt: {
 			type: Date,

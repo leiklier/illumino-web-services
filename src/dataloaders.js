@@ -2,6 +2,7 @@ const DataLoader = require('dataloader')
 
 const User = require('./models/user')
 const Device = require('./models/device')
+const Firmware = require('./models/firmware')
 const Measurement = require('./models/measurement')
 
 const createDataLoaders = () => {
@@ -69,6 +70,51 @@ const createDataLoaders = () => {
 			}),
 	)
 
+	const firmwareByIdLoader = new DataLoader(firmwareIds =>
+		Firmware.find({ _id: { $in: firmwareIds } }).then(firmwares => {
+			let firmwaresById = {}
+			for (const firmware of firmwares) {
+				firmwaresById[firmware.version] = firmware
+				firmwareByUniqueVersionLoader.prime(
+					`${firmware.target}+${firmware.version}`,
+					firmware,
+				)
+			}
+
+			// Need to return undefined for queries with empty response:
+			return firmwareIds.map(firmwareId => firmwaresById[firmwareId])
+		}),
+	)
+
+	const firmwareByUniqueVersionLoader = new DataLoader(uniqueVersions => {
+		// uniqueVersion = `${target}+${version}`, i.e. `DEVICE+v4.2.5`
+		let uniqueVersionTuples = [] // [{target, version}]
+
+		for (const uniqueVersionString of uniqueVersions) {
+			const [target, version] = uniqueVersionString.split('+')
+			uniqueVersionTuples.push({ target, version })
+		}
+
+		return Firmware.find()
+			.or(uniqueVersionTuples)
+			.then(firmwares => {
+				let firmwaresByUniqueVersion = {}
+
+				for (const firmware of firmwares) {
+					firmwaresByUniqueVersion[
+						`${firmware.target}+${firmware.version}`
+					] = firmware
+
+					firmwareByIdLoader.prime(firmware.id, firmware)
+				}
+
+				// Need to return undefined for queries with empty response:
+				return uniqueVersions.map(
+					uniqueVersion => firmwaresByUniqueVersion[uniqueVersion],
+				)
+			})
+	})
+
 	const measurementByIdLoader = new DataLoader(measurementIds =>
 		Measurement.find({ _id: { $in: measurementIds } })
 			.populate('device')
@@ -90,6 +136,8 @@ const createDataLoaders = () => {
 		userByEmailLoader,
 		deviceByIdLoader,
 		deviceByMacLoader,
+		firmwareByIdLoader,
+		firmwareByUniqueVersionLoader,
 		measurementByIdLoader,
 	}
 }

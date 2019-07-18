@@ -22,6 +22,7 @@ const typeDefs = gql`
 		mac: String!
 		authKey: String!
 		pin: PIN
+		firmwareVersion: String!
 		ownerEmail: String
 		name: String
 	}
@@ -102,7 +103,11 @@ queryResolvers.device = async (obj, { mac }, context) => {
 }
 
 mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
-	const { userByEmailLoader, deviceByMacLoader } = context
+	const {
+		userByEmailLoader,
+		deviceByMacLoader,
+		firmwareByUniqueVersionLoader,
+	} = context
 
 	if (!isMACAddress(deviceInput.mac)) {
 		throw new ApolloError(error.MAC_IS_INVALID)
@@ -113,10 +118,19 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		throw new ApolloError(error.DEVICE_DOES_ALREADY_EXIST)
 	}
 
+	const firmware = await firmwareByUniqueVersionLoader.load(
+		`DEVICE+${deviceInput.firmwareVersion}`,
+	)
+
+	if (!firmware) {
+		throw new ApolloError(error.FIRMWARE_DOES_NOT_EXIST)
+	}
+
 	const device = new Device({
 		lastSeenAt: new Date(),
 		mac: deviceInput.mac,
 		authKey: deviceInput.authKey,
+		firmware,
 	})
 
 	if (deviceInput.pin) {

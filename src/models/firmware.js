@@ -14,21 +14,24 @@ const { Schema } = mongoose
 
 const firmwareSchema = new Schema(
 	{
+		//* -------------------------------------------------
+		//* target and version should together form a unique
+		//* identifier for a given `Firmware`
 		target: {
 			type: String,
 			required: true,
 		},
+		version: {
+			type: String,
+			required: true,
+		},
+		//* -------------------------------------------------
 		name: {
 			type: String,
 			required: true,
 		},
 		description: {
 			type: String,
-		},
-		version: {
-			type: String,
-			required: true,
-			unique: true,
 		},
 		binary: {
 			// ObjectId of the GridFS file stored in `binaries.files`
@@ -74,5 +77,18 @@ firmwareSchema.virtual('binaryBuffer').get(async function() {
 
 	return content
 })
+
+// Needed by the firmwareByUniqueVersionLoader
+firmwareSchema.virtual('uniqueVersion').get(function() {
+	return `${this.target}+${this.version}`
+})
+
+// TODO:
+//  * Add static method for retrieving latest `Firmware`
+//*   given a certain target.
+
+// For querying a `Firmware` based on the unique identifier
+// target+version (often referred to as simply 'version')
+firmwareSchema.index({ target: 1, version: 1 })
 
 module.exports = mongoose.model('Firmware', firmwareSchema)
