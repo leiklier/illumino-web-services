@@ -77,8 +77,10 @@ const createDataLoaders = () => {
 			let firmwaresById = {}
 			for (const firmware of firmwares) {
 				firmwaresById[firmware.id] = firmware
+
+				const versionString = firmware.version.string
 				firmwareByUniqueVersionLoader.prime(
-					`${firmware.target}+${firmware.version}`,
+					`${firmware.target}+${versionString}`,
 					firmware,
 				)
 			}
@@ -90,10 +92,12 @@ const createDataLoaders = () => {
 
 	const firmwareByUniqueVersionLoader = new DataLoader(uniqueVersions => {
 		// uniqueVersion = `${target}+${version}`, i.e. `DEVICE+v4.2.5`
-		let uniqueVersionTuples = [] // [{target, version}]
+		let uniqueVersionTuples = [] // [{target, version: {major, minor, patch}}]
 
 		for (const uniqueVersionString of uniqueVersions) {
-			const [target, version] = uniqueVersionString.split('+')
+			const [target, versionString] = uniqueVersionString.split('+')
+			const [major, minor, patch] = versionString.substring(1).split('.')
+			const version = { major, minor, patch }
 			uniqueVersionTuples.push({ target, version })
 		}
 
@@ -103,8 +107,9 @@ const createDataLoaders = () => {
 				let firmwaresByUniqueVersion = {}
 
 				for (const firmware of firmwares) {
+					const versionString = firmware.version.string
 					firmwaresByUniqueVersion[
-						`${firmware.target}+${firmware.version}`
+						`${firmware.target}+${versionString}`
 					] = firmware
 
 					firmwareByIdLoader.prime(firmware.id, firmware)

@@ -12,17 +12,46 @@ db.once('open', () => {
 
 const { Schema } = mongoose
 
+const semanticVersionSchema = new Schema(
+	{
+		major: {
+			type: Number,
+			required: true,
+		},
+		minor: {
+			type: Number,
+			required: true,
+		},
+		patch: {
+			type: Number,
+			required: true,
+		},
+	},
+	{ toObject: { virtuals: true } },
+)
+
+semanticVersionSchema
+	.virtual('string')
+	.get(function() {
+		return `v${this.major}.${this.minor}.${this.patch}`
+	})
+	.set(function(versionString) {
+		;[this.major, this.minor, this.patch] = versionString
+			.substring(1)
+			.split('.')
+	})
+
 const firmwareSchema = new Schema(
 	{
 		//* -------------------------------------------------
 		//* target and version should together form a unique
-		//* identifier for a given `Firmware`
+		//* identifier `uniqueVersion` for a given `Firmware`
 		target: {
 			type: String,
 			required: true,
 		},
 		version: {
-			type: String,
+			type: semanticVersionSchema,
 			required: true,
 		},
 		//* -------------------------------------------------
@@ -66,6 +95,7 @@ firmwareSchema.methods.writeBinary = async function(filename, readStream) {
 	}
 }
 
+// TODO: Maybe refactor to method instead?
 firmwareSchema.virtual('binaryBuffer').get(async function() {
 	const content = await new Promise((resolve, reject) => {
 		Binary.findById(this.binary.toString(), (error, readStream) => {
@@ -86,12 +116,32 @@ firmwareSchema.virtual('uniqueVersion').get(function() {
 	return `${this.target}+${this.version}`
 })
 
+firmwareSchema.statics.isLatest = async function(firmware) {
+	const latestFirmware = await this.findOne({ target: firmware.target }).sort({
+		// descending
+		'version.major': -1,
+		'version.minor': -1,
+		'version.patch': -1,
+	})
+	if (!latestFirmware) return false
+
+	return latestFirmware.id === firmware.id
+}
+
 // TODO:
 //  * Add static method for retrieving latest `Firmware`
 //*   given a certain target.
 
 // For querying a `Firmware` based on the unique identifier
-// target+version (often referred to as simply 'version')
-firmwareSchema.index({ target: 1, version: 1 })
+// target+version (often referred to as 'uniqueVersion')
+firmwareSchema.index(
+	{
+		target: 1,
+		'version.major': -1,
+		'version.minor': -1,
+		'version.patch': -1,
+	},
+	{ unique: true },
+)
 
 module.exports = mongoose.model('Firmware', firmwareSchema)

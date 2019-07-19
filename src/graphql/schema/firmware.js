@@ -75,12 +75,17 @@ const FirmwareResolver = {
 			return null
 		}
 
-		return firmwareFound.version
+		return firmwareFound.version.string
 	},
 	isLatest: async (firmware, args, context) => {
 		const { firmwareByIdLoader } = context
-		// TODO
-		return true
+
+		const firmwareFound = await firmwareByIdLoader.load(firmware.id)
+		if (!firmwareFound) {
+			return null
+		}
+
+		return await Firmware.isLatest(firmwareFound)
 	},
 }
 const mutationResolvers = {}
@@ -88,11 +93,12 @@ const mutationResolvers = {}
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 	const { target, name, description, version, binary } = firmwareInput
 	const { createReadStream, filename, mimetype, encoding } = await binary
+
 	const firmware = new Firmware({
 		target,
 		name,
 		description,
-		version,
+		version: { string: version },
 	})
 
 	// TODO: Verify mimetype and encoding to match hex, etc
