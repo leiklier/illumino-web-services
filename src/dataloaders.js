@@ -97,8 +97,12 @@ const createDataLoaders = () => {
 		for (const uniqueVersionString of uniqueVersions) {
 			const [target, versionString] = uniqueVersionString.split('+')
 			const [major, minor, patch] = versionString.substring(1).split('.')
-			const version = { major, minor, patch }
-			uniqueVersionTuples.push({ target, version })
+			uniqueVersionTuples.push({
+				target,
+				'version.major': major,
+				'version.minor': minor,
+				'version.patch': patch,
+			})
 		}
 
 		return Firmware.find()
