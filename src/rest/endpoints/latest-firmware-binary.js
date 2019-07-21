@@ -7,7 +7,7 @@ module.exports = app => {
 	//* This endpoint requires the client being authorized
 	//* as a `Device` using either authkey or DeployKey
 
-	app.get('/latest-firmware', async (req, res) => {
+	app.get('/latest-firmware-binary', async (req, res) => {
 		let authorizedDevice = null
 
 		//* --------------- AUTHORIZATION ---------------

@@ -1,5 +1,5 @@
-const enableLatestFirmwareEndpoint = require('./endpoints/latest-firmware')
+const enableLatestFirmwareBinaryEndpoint = require('./endpoints/latest-firmware-binary')
 
 module.exports = app => {
-	enableLatestFirmwareEndpoint(app)
+	enableLatestFirmwareBinaryEndpoint(app)
 }
