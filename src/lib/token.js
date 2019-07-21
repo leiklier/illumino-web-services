@@ -9,13 +9,21 @@ const Device = require('../models/device')
  * token returned is used in e.g. auth.
  *
  * @param {User} user - The User that should be wrapped in the `token`´s payload.
- * @param {string} [expiresIn='1h'] - How long the token should be valid
- * @return {string} The JSON Web Token with userId as payload
+ * @param {string} authType - What type of credentials was provided, e.g. 'password'
+ * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
+ * @return {string} The JSON Web Token with `userId` and `authType` as payload
  */
-const getTokenByUser = (user, expiresIn = '1h') => {
-	return jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-		expiresIn,
-	})
+const getTokenByUser = (user, authType, expiresAt) => {
+	return jwt.sign(
+		{
+			payload: {
+				userId: user.id,
+				authType,
+			},
+			exp: Math.floor(parseInt(expiresAt) / 1000),
+		},
+		process.env.JWT_SECRET,
+	)
 }
 
 /**
@@ -24,13 +32,21 @@ const getTokenByUser = (user, expiresIn = '1h') => {
  * token returned is used in e.g. auth.
  *
  * @param {Device} device - The Device that should be wrapped in a token
- * @param {string} [expiresIn='7d'] - How long the token should be valid
- * @return {string} The JSON Web Token with deviceId as payload
+ * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
+ * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
+ * @return {string} The JSON Web Token with `deviceId` and `authType` as payload
  */
-const getTokenByDevice = (device, expiresIn = '7d') => {
-	return jwt.sign({ deviceId: device.id }, process.env.JWT_SECRET, {
-		expiresIn,
-	})
+const getTokenByDevice = (device, authType, expiresAt) => {
+	return jwt.sign(
+		{
+			payload: {
+				deviceId: device.id,
+				authType,
+			},
+			exp: Math.floor(parseInt(expiresAt) / 1000),
+		},
+		process.env.JWT_SECRET,
+	)
 }
 
 /**
@@ -38,11 +54,13 @@ const getTokenByDevice = (device, expiresIn = '7d') => {
  * in tokenPayload is set and `null` otherwise.
  *
  * @param {string} token - A JSON Web Token.
- * @return {User} The `User` with the specified userId stored in JWT (`null` if not existing).
+ * @return {Object} an object with key `payload`, which contains `userId` stored in JWT (`null` if not existing) and `authType`.
  */
 const getUserByToken = async token => {
 	try {
-		const tokenPayload = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const tokenPayload = decryptedToken.payload || {}
+
 		if (!tokenPayload.userId) {
 			return null
 		}
@@ -66,11 +84,13 @@ const getUserByToken = async token => {
  * in tokenPayload is set and `null` otherwise.
  *
  * @param {string} token - A JSON Web Token
- * @return {Device} The `Device` with the specified deviceId stored in JWT (`null` if not existing).
+ * @return {Object} an object with key `payload`, which contains `deviceId` stored in JWT (`null` if not existing) and `authType`.
  */
 const getDeviceByToken = async token => {
 	try {
-		const tokenPayload = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const tokenPayload = decryptedToken.payload || {}
+
 		if (!tokenPayload.deviceId) {
 			return null
 		}
@@ -90,9 +110,24 @@ const getDeviceByToken = async token => {
 	}
 }
 
+const getAuthTypeByToken = token => {
+	try {
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const tokenPayload = decryptedToken.payload || {}
+
+		return tokenPayload.authType
+	} catch (err) {
+		// Token did invalidate
+		return null
+	}
+}
+
 module.exports = {
 	getTokenByUser,
 	getTokenByDevice,
+
 	getUserByToken,
 	getDeviceByToken,
+
+	getAuthTypeByToken,
 }

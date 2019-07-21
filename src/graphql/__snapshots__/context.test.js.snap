@@ -2,6 +2,7 @@
 
 exports[`ApolloServer context should create device context when authorized as device 1`] = `
 Object {
+  "authType": "authKey",
   "device": Object {
     "__v": 0,
     "_id": "5cd5b96cd5186963186be748",
@@ -72,6 +73,7 @@ Object {
 
 exports[`ApolloServer context should create user context when authorized as user 1`] = `
 Object {
+  "authType": "password",
   "device": null,
   "deviceByIdLoader": undefined,
   "deviceByMacLoader": DataLoader {
