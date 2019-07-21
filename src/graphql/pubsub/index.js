@@ -1,4 +1,4 @@
-const { PubSub } = require('apollo-server')
+const { PubSub } = require('apollo-server-express')
 const bindUserEvents = require('./user')
 const bindMeasurementEvents = require('./measurement')
 

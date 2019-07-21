@@ -1,4 +1,4 @@
-const { gql, ApolloError, withFilter } = require('apollo-server')
+const { gql, ApolloError, withFilter } = require('apollo-server-express')
 const { isEmail } = require('validator')
 
 const User = require('../../models/user')

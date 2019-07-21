@@ -1,4 +1,4 @@
-const { gql, ApolloError } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server-express')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')

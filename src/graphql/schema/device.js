@@ -1,4 +1,4 @@
-const { gql, ApolloError } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server-express')
 const { isMACAddress } = require('validator')
 
 const Device = require('../../models/device')

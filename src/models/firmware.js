@@ -95,21 +95,16 @@ firmwareSchema.methods.writeBinary = async function(filename, readStream) {
 	}
 }
 
-// TODO: Maybe refactor to method instead?
-firmwareSchema.virtual('binaryBuffer').get(async function() {
-	const content = await new Promise((resolve, reject) => {
-		Binary.findById(this.binary.toString(), (error, readStream) => {
+firmwareSchema.methods.getBinaryReadStream = async function() {
+	const readStream = await new Promise((resolve, reject) => {
+		Binary.findById(this.binary.toString(), (error, file) => {
 			if (error) reject(error)
-			readStream.read((error, content) => {
-				if (error) reject(error)
-				resolve(content)
-				return content
-			})
+			resolve(file.read())
 		})
 	})
 
-	return content
-})
+	return readStream
+}
 
 // Needed by the firmwareByUniqueVersionLoader
 firmwareSchema.virtual('uniqueVersion').get(function() {
@@ -126,6 +121,17 @@ firmwareSchema.statics.isLatest = async function(firmware) {
 	if (!latestFirmware) return false
 
 	return latestFirmware.id === firmware.id
+}
+
+firmwareSchema.statics.findLatestFirmware = async function(target) {
+	const latestFirmware = await this.findOne({ target }).sort({
+		// descending
+		'version.major': -1,
+		'version.minor': -1,
+		'version.patch': -1,
+	})
+
+	return latestFirmware
 }
 
 // TODO:

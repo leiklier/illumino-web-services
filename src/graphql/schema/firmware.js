@@ -1,4 +1,4 @@
-const { gql } = require('apollo-server')
+const { gql } = require('apollo-server-express')
 
 const Firmware = require('../../models/firmware')
 
@@ -88,6 +88,7 @@ const FirmwareResolver = {
 		return await Firmware.isLatest(firmwareFound)
 	},
 }
+
 const mutationResolvers = {}
 
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {

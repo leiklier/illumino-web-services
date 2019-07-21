@@ -1,7 +1,7 @@
 const { GraphQLScalarType } = require('graphql')
 const { GraphQLError } = require('graphql/error')
 const { Kind } = require('graphql/language')
-const { gql } = require('apollo-server')
+const { gql } = require('apollo-server-express')
 const { DateTime, EmailAddress } = require('@okgrow/graphql-scalars')
 
 const scalarDefs = gql`
