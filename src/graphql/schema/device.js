@@ -1,15 +1,19 @@
 const { gql, ApolloError } = require('apollo-server')
 const { isMACAddress } = require('validator')
+const SHA256 = require('crypto-js/sha256')
 
 const Device = require('../../models/device')
 const Measurement = require('../../models/measurement')
 
 const error = require('../errors')
 
+const { DEPLOY_KEY } = process.env
+
 const typeDefs = gql`
 	type Device {
 		id: ID!
 		mac: String!
+		secret: String! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER, ADMIN])
 		name: String
 		owner: User
 		managers: [User!]!
@@ -36,6 +40,17 @@ const DeviceResolver = {
 			return null
 		}
 		return deviceFound.mac
+	},
+	secret: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return null
+		}
+		return SHA256(deviceFound.mac + DEPLOY_KEY)
+			.toString()
+			.substr(0, 12)
 	},
 	name: async (device, args, context) => {
 		const { deviceByIdLoader } = context
