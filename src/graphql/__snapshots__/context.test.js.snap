@@ -31,7 +31,7 @@ Object {
       ],
     },
     "pin": null,
-    "secret": "6826e23d",
+    "secret": "6826e23db73f",
   },
   "deviceByIdLoader": undefined,
   "deviceByMacLoader": DataLoader {
@@ -91,7 +91,7 @@ Object {
         "managers": Array [],
         "name": "Jenny sin alarm",
         "owner": "5cd5b885badacd5a992b0c9f",
-        "secret": "6826e23d",
+        "secret": "6826e23db73f",
       },
     ],
     "email": "user@test.com",

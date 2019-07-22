@@ -63,8 +63,8 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
-	const passwordIsEqual = await user.verifyPassword(password)
-	if (!passwordIsEqual) {
+	const passwordIsCorrect = await user.verifyPassword(password)
+	if (!passwordIsCorrect) {
 		throw new ApolloError(error.PASSWORD_IS_INCORRECT)
 	}
 
@@ -74,7 +74,7 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 	return { userId: user.id, token, expiresAt }
 }
 
-queryResolvers.loginDevice = async (obj, { mac, pin }, context) => {
+queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 
@@ -82,13 +82,24 @@ queryResolvers.loginDevice = async (obj, { mac, pin }, context) => {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
-	if (!device.pin) {
+	const secretIsCorrect = await device.verifySecret(secret)
+	if (!secretIsCorrect) {
+		throw new ApolloError(error.SECRET_IS_INCORRECT)
+	}
+
+	if (pin && !device.pin) {
 		throw new ApolloError(error.PIN_IS_NOT_SET)
 	}
 
-	const pinIsEqual = await device.verifyPin(pin.toString())
-	if (!pinIsEqual) {
-		throw new ApolloError(error.PIN_IS_INCORRECT)
+	if (device.pin && !pin) {
+		throw new ApolloError(error.PIN_IS_INVALID)
+	}
+
+	if (device.pin) {
+		const pinIsCorrect = await device.verifyPin(pin.toString())
+		if (!pinIsCorrect) {
+			throw new ApolloError(error.PIN_IS_INCORRECT)
+		}
 	}
 
 	const token = getTokenByDevice(device)
@@ -105,8 +116,8 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
-	const authKeyIsEqual = await device.verifyAuthKey(authKey)
-	if (!authKeyIsEqual) {
+	const authKeyIsCorrect = await device.verifyAuthKey(authKey)
+	if (!authKeyIsCorrect) {
 		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
 	}
 

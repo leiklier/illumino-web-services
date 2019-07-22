@@ -67,7 +67,7 @@ deviceSchema.pre('validate', function(next) {
 
 	this.secret = SHA256(this.mac + DEPLOY_KEY)
 		.toString()
-		.substr(0, 8)
+		.substr(0, 12)
 
 	next()
 })
