@@ -1,7 +1,22 @@
 const mongoose = require('mongoose')
+const { Schema } = mongoose
 const bcryptPlugin = require('mongoose-bcrypt')
 
-const { Schema } = mongoose
+const { semanticVersionSchema } = require('./_schemas')
+
+const deviceTypeSchema = new Schema(
+	{
+		model: {
+			type: String,
+			required: true,
+		},
+		version: {
+			type: semanticVersionSchema,
+			required: true,
+		},
+	},
+	{ toObject: { virtuals: true } },
+)
 
 const deviceSchema = new Schema(
 	{
@@ -21,6 +36,10 @@ const deviceSchema = new Schema(
 			// 4 digit number, used to unlock Device
 			type: String,
 			bcrypt: true,
+		},
+		type: {
+			type: deviceTypeSchema,
+			required: true,
 		},
 		installedFirmware: {
 			type: Schema.Types.ObjectId,
@@ -43,11 +62,7 @@ const deviceSchema = new Schema(
 			},
 		],
 	},
-	{
-		toObject: {
-			virtuals: true,
-		},
-	},
+	{ toObject: { virtuals: true } },
 )
 
 deviceSchema.virtual('hasOwner').get(function() {

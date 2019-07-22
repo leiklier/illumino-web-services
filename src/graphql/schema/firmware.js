@@ -5,12 +5,8 @@ const Firmware = require('../../models/firmware')
 const pubsub = require('../pubsub')
 
 const typeDefs = gql`
-	enum FirmwareTarget {
-		DEVICE
-	}
-
 	input FirmwareInput {
-		target: FirmwareTarget!
+		target: DeviceModel!
 		name: String!
 		description: String
 		version: String!
@@ -19,7 +15,7 @@ const typeDefs = gql`
 
 	type Firmware {
 		id: ID!
-		target: FirmwareTarget!
+		target: DeviceModel!
 		name: String!
 		description: String
 		createdAt: DateTime!

@@ -21,13 +21,28 @@ const typeDefs = gql`
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
+	type DeviceType {
+		model: DeviceModel!
+		version: String!
+	}
+
+	enum DeviceModel {
+		DEVICE
+	}
+
 	input DeviceInput {
 		mac: String!
 		authKey: String!
 		pin: PIN
 		firmwareVersion: String!
+		typeInput: DeviceTypeInput!
 		ownerEmail: String
 		name: String
+	}
+
+	input DeviceTypeInput {
+		model: DeviceModel! = DEVICE
+		version: String! = "v1.0.0"
 	}
 `
 
@@ -144,6 +159,12 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		mac: deviceInput.mac,
 		authKey: deviceInput.authKey,
 		installedFirmware: firmware,
+		type: {
+			model: deviceInput.typeInput.model,
+			version: {
+				string: deviceInput.typeInput.version,
+			},
+		},
 	})
 
 	if (deviceInput.pin) {
