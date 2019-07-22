@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
 const bcryptPlugin = require('mongoose-bcrypt')
+const SHA256 = require('crypto-js/sha256')
+
+const { DEPLOY_KEY } = process.env
 
 const { Schema } = mongoose
 
@@ -19,7 +22,16 @@ const deviceSchema = new Schema(
 		},
 		pin: {
 			// 4 digit number, used to unlock Device
+			// optional sec-feature for `loginDevice`
+			// GraphQL query
 			type: String,
+			bcrypt: true,
+		},
+		secret: {
+			// 8 first chars of SHA256(mac + deployKey)
+			// Used in `loginDevice` GraphQL query
+			type: String,
+			required: true,
 			bcrypt: true,
 		},
 		name: String,
@@ -47,6 +59,17 @@ const deviceSchema = new Schema(
 
 deviceSchema.virtual('hasOwner').get(function() {
 	return Boolean(this.owner)
+})
+
+// Generate `Device.secret` when new `Device` has been created
+deviceSchema.pre('validate', function(next) {
+	if (!this.isNew) next()
+
+	this.secret = SHA256(this.mac + DEPLOY_KEY)
+		.toString()
+		.substr(0, 8)
+
+	next()
 })
 
 deviceSchema.plugin(bcryptPlugin)
