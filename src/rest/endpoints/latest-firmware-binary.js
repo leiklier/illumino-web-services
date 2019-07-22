@@ -20,7 +20,7 @@ module.exports = app => {
 
 			const [authType, token] = authHeader.split(' ')
 			if (!token) throw new Error(error.NOT_AUTHENTICATED)
-			if (!authType === 'Bearer') throw new Error(error.INVALID_AUTH_TYPE)
+			if (authType !== 'Bearer') throw new Error(error.INVALID_AUTH_TYPE)
 
 			authorizedDevice = await getDeviceByToken(token)
 			if (!authorizedDevice) throw new Error(error.DEVICE_DOES_NOT_EXIST)
@@ -30,15 +30,17 @@ module.exports = app => {
 				throw new Error(error.NOT_AUTHORIZED)
 		} catch (err) {
 			// Invalid credentials
+			// TODO: Check that we only sends back allowed errors
 			res.status(HttpStatus.UNAUTHORIZED).send({ error: err.message })
 			return
 		}
 		//* ---------------------------------------------
 
 		const latestFirmware = await Firmware.findLatestFirmware('DEVICE')
+		const filename = latestFirmware.uniqueVersion
 		const binaryReadStream = await latestFirmware.getBinaryReadStream()
 
-		res.setHeader('Content-disposition', 'attachment; filename=binary')
+		res.setHeader('Content-disposition', `attachment; filename="${filename}"`)
 		//                                      ,---- Commonly used for binaries
 		res.setHeader('Content-type', 'application/octet-stream')
 

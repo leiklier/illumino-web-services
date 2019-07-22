@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Firmware` mongoose model for storing firmware belonging to `Device`s.
 - `publishFirmware` GraphQL mutation for releasing new firmware upgrades. The mutation stores `binary`s in GridFS.
 - `installedFirmware` attribute for `Devices` - points to the `Firmware` currently installed and running on a certain `Device`.
+- `newFirmwares` GraphQL subscription for subscribing to new `Firmware` releases.
+- `/latest-firmware-binary` REST endpoint lets authorized `Device` download latest `Firmware` binary.
 
 ## [v0.2.0] - 2019-06-29
 

@@ -1,6 +1,8 @@
-const { gql } = require('apollo-server-express')
+const { gql, withFilter } = require('apollo-server-express')
 
 const Firmware = require('../../models/firmware')
+
+const pubsub = require('../pubsub')
 
 const typeDefs = gql`
 	enum FirmwareTarget {
@@ -89,7 +91,22 @@ const FirmwareResolver = {
 	},
 }
 
+const subscriptionResolvers = {}
 const mutationResolvers = {}
+
+subscriptionResolvers.newFirmwares = {
+	subscribe: withFilter(
+		() => pubsub.asyncIterator('newFirmwares'),
+		async (payload, args, context) => {
+			const { firmwareByIdLoader } = context
+			const firmware = await firmwareByIdLoader.load(payload.newFirmwares.id)
+
+			// TODO: Add some logic here to check that target is matching
+
+			return true
+		},
+	),
+}
 
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 	const { target, name, description, version, binary } = firmwareInput
@@ -114,6 +131,7 @@ mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 
 module.exports = {
 	typeDefs,
+	subscriptionResolvers,
 	mutationResolvers,
 	FirmwareResolver,
 }

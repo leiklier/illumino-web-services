@@ -14,6 +14,7 @@ const rootTypeDefs = gql`
 	type RootSubsription {
 		user(email: String!): User!
 		newMeasurements(mac: String!): Measurement!
+		newFirmwares(mac: String): Firmware!
 	}
 
 	type RootQuery {
@@ -74,6 +75,7 @@ const rootSchema = {
 		...scalarResolvers,
 		RootSubsription: {
 			...userSchema.subscriptionResolvers,
+			...firmwareSchema.subscriptionResolvers,
 			...measurementSchema.subscriptionResolvers,
 		},
 		RootQuery: {

@@ -106,9 +106,8 @@ firmwareSchema.methods.getBinaryReadStream = async function() {
 	return readStream
 }
 
-// Needed by the firmwareByUniqueVersionLoader
 firmwareSchema.virtual('uniqueVersion').get(function() {
-	return `${this.target}+${this.version}`
+	return `${this.target}+${this.version.string}`
 })
 
 firmwareSchema.statics.isLatest = async function(firmware) {
