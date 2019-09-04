@@ -20,8 +20,8 @@ module.exports = [
 		devicesManaging: [],
 		email: 'user@test.com',
 		password: '$2a$10$iOiqxZbDw3Ekl4pUpfJmouOSnSPaJmRggIWV7sTo0.hUkcTeMcxqC',
-		firstName: 'Roli Jenny',
-		lastName: 'Oritseweyimi',
+		firstName: 'Ola',
+		lastName: 'Nordmann',
 		__v: 1,
 	},
 	{

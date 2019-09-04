@@ -27,8 +27,12 @@ describe('Token Library', () => {
 			const user = {
 				id: 123,
 			}
-			const token = getTokenByUser(user)
-			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET)
+			const token = getTokenByUser(
+				user,
+				'password',
+				Date.now() + 1000 * 60 * 60,
+			)
+			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET).payload
 			expect(typeof token).toBe('string')
 			expect(typeof tokenPayload).toBe('object')
 			expect(tokenPayload.userId).toBe(user.id)
@@ -40,8 +44,12 @@ describe('Token Library', () => {
 			const device = {
 				id: 123,
 			}
-			const token = getTokenByDevice(device)
-			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET)
+			const token = getTokenByDevice(
+				device,
+				'authKey',
+				Date.now() + 1000 * 60 * 60,
+			)
+			const tokenPayload = jwt.verify(token, process.env.JWT_SECRET).payload
 			expect(typeof token).toBe('string')
 			expect(typeof tokenPayload).toBe('object')
 			expect(tokenPayload.deviceId).toBe(device.id)
@@ -51,7 +59,7 @@ describe('Token Library', () => {
 	describe('getUserByToken', () => {
 		it('should return a user if tokenPayload stores valid userId', async () => {
 			const user = await User.findOne({ email: 'user@test.com' })
-			const token = getTokenByUser(user)
+			const token = getTokenByUser(user, 'authKey', Date.now() + 1000 * 60 * 60)
 			const userReceived = await getUserByToken(token)
 			expect(typeof userReceived).toBe('object')
 			expect(userReceived.id).toBe(user.id)
@@ -61,7 +69,7 @@ describe('Token Library', () => {
 			const user = {
 				id: 'this is an invalid dummy id',
 			}
-			const token = getTokenByUser(user)
+			const token = getTokenByUser(user, 'authKey', Date.now() + 1000 * 60 * 60)
 			const userReceived = await getUserByToken(token)
 			expect(userReceived).toBeNull()
 		})
@@ -84,7 +92,11 @@ describe('Token Library', () => {
 	describe('getDeviceByToken', () => {
 		it('should return a device if tokenPayload stores valid deviceId', async () => {
 			const device = await Device.findOne({ mac: '00:00:00:00:00:00' })
-			const token = getTokenByDevice(device)
+			const token = getTokenByDevice(
+				device,
+				'authKey',
+				Date.now() + 1000 * 60 * 60,
+			)
 			const deviceReceived = await getDeviceByToken(token)
 			expect(typeof deviceReceived).toBe('object')
 			expect(deviceReceived).not.toBeNull()
@@ -95,7 +107,11 @@ describe('Token Library', () => {
 			const device = {
 				id: 'this is an invalid dummy id',
 			}
-			const token = getTokenByUser(device)
+			const token = getTokenByUser(
+				device,
+				'authKey',
+				Date.now() + 1000 * 60 * 60,
+			)
 			const deviceReceived = await getUserByToken(token)
 			expect(deviceReceived).toBeNull()
 		})

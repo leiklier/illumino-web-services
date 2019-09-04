@@ -2,16 +2,18 @@
 
 exports[`ApolloServer context should create device context when authorized as device 1`] = `
 Object {
+  "authType": "authKey",
   "device": Object {
     "__v": 0,
     "_id": "5cd5b96cd5186963186be748",
     "authKey": null,
     "hasOwner": true,
     "id": "5cd5b96cd5186963186be748",
+    "installedFirmware": "5cd5b96cd5186963186be748",
     "lastSeenAt": 2019-05-10T17:48:28.614Z,
     "mac": "00:00:00:00:00:00",
     "managers": Array [],
-    "name": "Jenny sin alarm",
+    "name": "Ola sin alarm",
     "owner": Object {
       "__v": 0,
       "_id": "5cd5b885badacd5a992b0c9f",
@@ -20,11 +22,11 @@ Object {
         "5cd5b96cd5186963186be748",
       ],
       "email": "user@test.com",
-      "firstName": "Roli Jenny",
+      "firstName": "Ola",
       "id": "5cd5b885badacd5a992b0c9f",
       "isAdmin": false,
       "isRoot": false,
-      "lastName": "Oritseweyimi",
+      "lastName": "Nordmann",
       "password": "$2a$10$iOiqxZbDw3Ekl4pUpfJmouOSnSPaJmRggIWV7sTo0.hUkcTeMcxqC",
       "roles": Array [
         "user",
@@ -35,6 +37,18 @@ Object {
   },
   "deviceByIdLoader": undefined,
   "deviceByMacLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByIdLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByUniqueVersionLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
@@ -60,9 +74,22 @@ Object {
 
 exports[`ApolloServer context should create user context when authorized as user 1`] = `
 Object {
+  "authType": "password",
   "device": null,
   "deviceByIdLoader": undefined,
   "deviceByMacLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByIdLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByUniqueVersionLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},
@@ -86,20 +113,21 @@ Object {
         "authKey": "$2a$10$0GlET4dxohBrI.BpRXcLhe6XnUyF3n5ElDy.JMD5/x7mAAxpvBS/u",
         "hasOwner": true,
         "id": "5cd5b96cd5186963186be748",
+        "installedFirmware": "5cd5b96cd5186963186be748",
         "lastSeenAt": 2019-05-10T17:48:28.614Z,
         "mac": "00:00:00:00:00:00",
         "managers": Array [],
-        "name": "Jenny sin alarm",
+        "name": "Ola sin alarm",
         "owner": "5cd5b885badacd5a992b0c9f",
         "secret": "6826e23db73f",
       },
     ],
     "email": "user@test.com",
-    "firstName": "Roli Jenny",
+    "firstName": "Ola",
     "id": "5cd5b885badacd5a992b0c9f",
     "isAdmin": false,
     "isRoot": false,
-    "lastName": "Oritseweyimi",
+    "lastName": "Nordmann",
     "password": null,
     "roles": Array [
       "user",
@@ -124,6 +152,18 @@ Object {
     "_queue": Array [],
   },
   "deviceByMacLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByIdLoader": DataLoader {
+    "_batchLoadFn": [Function],
+    "_options": undefined,
+    "_promiseCache": Map {},
+    "_queue": Array [],
+  },
+  "firmwareByUniqueVersionLoader": DataLoader {
     "_batchLoadFn": [Function],
     "_options": undefined,
     "_promiseCache": Map {},

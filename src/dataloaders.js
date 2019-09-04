@@ -2,6 +2,7 @@ const DataLoader = require('dataloader')
 
 const User = require('./models/user')
 const Device = require('./models/device')
+const Firmware = require('./models/firmware')
 const Measurement = require('./models/measurement')
 
 const createDataLoaders = () => {
@@ -41,6 +42,7 @@ const createDataLoaders = () => {
 		Device.find({ _id: { $in: deviceIds } })
 			.populate('owner')
 			.populate('managers')
+			.populate('installedFirmware')
 			.then(devices => {
 				let devicesById = {}
 				for (const device of devices) {
@@ -57,6 +59,7 @@ const createDataLoaders = () => {
 		Device.find({ mac: { $in: macs } })
 			.populate('owner')
 			.populate('managers')
+			.populate('installedFirmware')
 			.then(devices => {
 				let devicesByMac = {}
 				for (const device of devices) {
@@ -68,6 +71,60 @@ const createDataLoaders = () => {
 				return macs.map(mac => devicesByMac[mac])
 			}),
 	)
+
+	const firmwareByIdLoader = new DataLoader(firmwareIds =>
+		Firmware.find({ _id: { $in: firmwareIds } }).then(firmwares => {
+			let firmwaresById = {}
+			for (const firmware of firmwares) {
+				firmwaresById[firmware.id] = firmware
+
+				const versionString = firmware.version.string
+				firmwareByUniqueVersionLoader.prime(
+					`${firmware.target}+${versionString}`,
+					firmware,
+				)
+			}
+
+			// Need to return undefined for queries with empty response:
+			return firmwareIds.map(firmwareId => firmwaresById[firmwareId])
+		}),
+	)
+
+	const firmwareByUniqueVersionLoader = new DataLoader(uniqueVersions => {
+		// uniqueVersion = `${target}+${version}`, i.e. `DEVICE+v4.2.5`
+		let uniqueVersionTuples = [] // [{target, version: {major, minor, patch}}]
+
+		for (const uniqueVersionString of uniqueVersions) {
+			const [target, versionString] = uniqueVersionString.split('+')
+			const [major, minor, patch] = versionString.substring(1).split('.')
+			uniqueVersionTuples.push({
+				target,
+				'version.major': major,
+				'version.minor': minor,
+				'version.patch': patch,
+			})
+		}
+
+		return Firmware.find()
+			.or(uniqueVersionTuples)
+			.then(firmwares => {
+				let firmwaresByUniqueVersion = {}
+
+				for (const firmware of firmwares) {
+					const versionString = firmware.version.string
+					firmwaresByUniqueVersion[
+						`${firmware.target}+${versionString}`
+					] = firmware
+
+					firmwareByIdLoader.prime(firmware.id, firmware)
+				}
+
+				// Need to return undefined for queries with empty response:
+				return uniqueVersions.map(
+					uniqueVersion => firmwaresByUniqueVersion[uniqueVersion],
+				)
+			})
+	})
 
 	const measurementByIdLoader = new DataLoader(measurementIds =>
 		Measurement.find({ _id: { $in: measurementIds } })
@@ -90,6 +147,8 @@ const createDataLoaders = () => {
 		userByEmailLoader,
 		deviceByIdLoader,
 		deviceByMacLoader,
+		firmwareByIdLoader,
+		firmwareByUniqueVersionLoader,
 		measurementByIdLoader,
 	}
 }

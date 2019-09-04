@@ -1,4 +1,4 @@
-const { gql, ApolloError } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server-express')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
@@ -7,7 +7,10 @@ const { keepOnlyAlphaNumeric } = require('../../lib/string')
 const error = require('../errors')
 
 const typeDefs = gql`
-	directive @requiresAuth(acceptsOnly: [Role!]) on FIELD_DEFINITION
+	directive @requiresAuth(
+		acceptsOnly: [Role!]
+		cannotBeHuman: Boolean
+	) on FIELD_DEFINITION
 
 	enum Role {
 		USER
@@ -68,8 +71,8 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 		throw new ApolloError(error.PASSWORD_IS_INCORRECT)
 	}
 
-	const token = getTokenByUser(user, '1h')
-	const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString()
+	const expiresAt = Date.now() + 1000 * 60 * 60
+	const token = getTokenByUser(user, 'password', expiresAt)
 
 	return { userId: user.id, token, expiresAt }
 }
@@ -102,8 +105,8 @@ queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
 		}
 	}
 
-	const token = getTokenByDevice(device)
-	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString()
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
+	const token = getTokenByDevice(device, 'pin', expiresAt)
 
 	return { deviceId: device.id, token, expiresAt }
 }
@@ -121,8 +124,8 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
 	}
 
-	const token = getTokenByDevice(device)
-	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString()
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
+	const token = getTokenByDevice(device, 'authKey', expiresAt)
 
 	return { deviceId: device.id, token, expiresAt }
 }
@@ -133,17 +136,15 @@ queryResolvers.isAuth = async (obj, args, context, info) => {
 
 queryResolvers.refreshToken = async (obj, args, context) => {
 	if (context.user) {
-		const token = getTokenByUser(context.user)
-		const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString()
+		const expiresAt = Date.now() + 1000 * 60 * 60 // 1 hour
+		const token = getTokenByUser(context.user, context.authType, expiresAt)
 
 		return { userId: context.user.id, token, expiresAt } // returns UserAuthData
 	}
 
 	if (context.device) {
-		const token = getTokenByDevice(context.device)
-		const expiresAt = new Date(
-			Date.now() + 1000 * 60 * 60 * 24 * 7,
-		).toISOString()
+		const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
+		const token = getTokenByDevice(context.device, context.authType, expiresAt)
 
 		return { deviceId: context.device.id, token, expiresAt } // returns DeviceAuthData
 	}
@@ -154,7 +155,9 @@ queryResolvers.refreshToken = async (obj, args, context) => {
 class RequiresAuthDirective extends SchemaDirectiveVisitor {
 	visitFieldDefinition(field) {
 		const { resolve = defaultFieldResolver } = field
-		const rolesAccepted = this.args.acceptsOnly
+
+		const { cannotBeHuman } = this.args
+		const rolesAccepted = this.args.acceptsOnly || []
 
 		field.resolve = async (...args) => {
 			const [obj, { email, mac }, context, info] = args
@@ -347,6 +350,15 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 			}
 
 			if (!rolesAreOk) {
+				throw new ApolloError(error.NOT_AUTHORIZED)
+			}
+
+			if (
+				cannotBeHuman &&
+				//           ,---- The only authTypes that don't accept humans
+				!['authKey', 'deployKey'].includes(context.authType)
+			) {
+				console.log()
 				throw new ApolloError(error.NOT_AUTHORIZED)
 			}
 

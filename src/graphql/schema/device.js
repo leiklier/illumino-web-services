@@ -1,4 +1,4 @@
-const { gql, ApolloError } = require('apollo-server')
+const { gql, ApolloError } = require('apollo-server-express')
 const { isMACAddress } = require('validator')
 const SHA256 = require('crypto-js/sha256')
 
@@ -18,16 +18,35 @@ const typeDefs = gql`
 		owner: User
 		managers: [User!]!
 
+		installedFirmware: Firmware!
+			@requiresAuth(acceptsOnly: [SELF, ADMIN, OWNER, MANAGER])
+
 		latestMeasurements(types: [MeasurementType!]): [Measurement!]!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+	}
+
+	type DeviceType {
+		model: DeviceModel!
+		version: String!
+	}
+
+	enum DeviceModel {
+		DEVICE
 	}
 
 	input DeviceInput {
 		mac: String!
 		authKey: String!
 		pin: PIN
+		firmwareVersion: String!
+		typeInput: DeviceTypeInput!
 		ownerEmail: String
 		name: String
+	}
+
+	input DeviceTypeInput {
+		model: DeviceModel! = DEVICE
+		version: String! = "v1.0.0"
 	}
 `
 
@@ -79,6 +98,16 @@ const DeviceResolver = {
 		}
 		return deviceFound.managers
 	},
+	installedFirmware: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return null
+		}
+
+		return deviceFound.installedFirmware
+	},
 	latestMeasurements: async (device, { types }, context) => {
 		const { deviceByIdLoader } = context
 		const deviceFound = await deviceByIdLoader.load(device.id)
@@ -117,7 +146,11 @@ queryResolvers.device = async (obj, { mac }, context) => {
 }
 
 mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
-	const { userByEmailLoader, deviceByMacLoader } = context
+	const {
+		userByEmailLoader,
+		deviceByMacLoader,
+		firmwareByUniqueVersionLoader,
+	} = context
 
 	if (!isMACAddress(deviceInput.mac)) {
 		throw new ApolloError(error.MAC_IS_INVALID)
@@ -128,10 +161,25 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		throw new ApolloError(error.DEVICE_DOES_ALREADY_EXIST)
 	}
 
+	const firmware = await firmwareByUniqueVersionLoader.load(
+		`DEVICE+${deviceInput.firmwareVersion}`,
+	)
+
+	if (!firmware) {
+		throw new ApolloError(error.FIRMWARE_DOES_NOT_EXIST)
+	}
+
 	const device = new Device({
 		lastSeenAt: new Date(),
 		mac: deviceInput.mac,
 		authKey: deviceInput.authKey,
+		installedFirmware: firmware,
+		type: {
+			model: deviceInput.typeInput.model,
+			version: {
+				string: deviceInput.typeInput.version,
+			},
+		},
 	})
 
 	if (deviceInput.pin) {

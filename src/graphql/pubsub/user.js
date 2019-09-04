@@ -2,15 +2,24 @@ const User = require('../../models/user')
 
 module.exports = pubsub => {
 	User.watch().on('change', data => {
-		const { operationType, fullDocument } = data
+		// fullDocument is retrieved on all operations,
+		// except on `update` - then documentKey is retrieved
+		const { operationType, fullDocument, documentKey } = data
 
-		const id = fullDocument._id.toString()
+		const id = fullDocument
+			? fullDocument._id.toString()
+			: documentKey._id.toString()
+
 		const user = { id }
 
 		// relevant `operationType`s:
-		// ['insert', 'delete', 'replace']
+		// ['insert', 'update', 'delete', 'replace']
 		switch (operationType) {
 			case 'insert': {
+				pubsub.publish('user', { user })
+				break
+			}
+			case 'update': {
 				pubsub.publish('user', { user })
 				break
 			}

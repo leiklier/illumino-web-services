@@ -19,7 +19,7 @@ afterAll(async () => {
 describe('ApolloServer context', () => {
 	it('should create user context when authorized as user', async () => {
 		const user = await User.findOne({ email: 'user@test.com' })
-		const token = getTokenByUser(user)
+		const token = getTokenByUser(user, 'password', Date.now() + 1000 * 60 * 60)
 		const headers = {
 			authorization: `Bearer ${token}`,
 		}
@@ -43,7 +43,7 @@ describe('ApolloServer context', () => {
 
 	it('should create admin context when authorized as admin', async () => {
 		const user = await User.findOne({ email: 'admin@test.com' })
-		const token = getTokenByUser(user)
+		const token = getTokenByUser(user, 'password', Date.now() + 1000 * 60 * 60)
 		const headers = {
 			authorization: `Bearer ${token}`,
 		}
@@ -56,7 +56,11 @@ describe('ApolloServer context', () => {
 
 	it('should create device context when authorized as device', async () => {
 		const device = await Device.findOne({ mac: '00:00:00:00:00:00' })
-		const token = getTokenByDevice(device)
+		const token = getTokenByDevice(
+			device,
+			'authKey',
+			Date.now() + 1000 * 60 * 60,
+		)
 		const headers = {
 			authorization: `Bearer ${token}`,
 		}

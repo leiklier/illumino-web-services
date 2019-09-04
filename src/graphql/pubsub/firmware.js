@@ -1,7 +1,7 @@
-const Measurement = require('../../models/measurement')
+const Firmware = require('../../models/firmware')
 
 module.exports = pubsub => {
-	Measurement.watch().on('change', data => {
+	Firmware.watch().on('change', data => {
 		// fullDocument is retrieved on all operations,
 		// except on `update` - then documentKey is retrieved
 		const { operationType, fullDocument, documentKey } = data
@@ -10,13 +10,13 @@ module.exports = pubsub => {
 			? fullDocument._id.toString()
 			: documentKey._id.toString()
 
-		const measurement = { id }
+		const firmware = { id }
 
 		// relevant `operationType`s:
 		// ['insert','update', 'delete', 'replace']
 		switch (operationType) {
 			case 'insert': {
-				pubsub.publish('newMeasurements', { newMeasurements: measurement })
+				pubsub.publish('newFirmwares', { newFirmwares: firmware })
 				break
 			}
 			default:

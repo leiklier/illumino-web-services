@@ -1,4 +1,8 @@
-const { getUserByToken, getDeviceByToken } = require('../lib/token')
+const {
+	getUserByToken,
+	getDeviceByToken,
+	getAuthTypeByToken,
+} = require('../lib/token')
 const createDataLoaders = require('../dataloaders')
 
 const context = async ({ req, connection }) => {
@@ -15,8 +19,12 @@ const context = async ({ req, connection }) => {
 		switch (authType) {
 			case 'Bearer': {
 				const token = authContent
+
 				context.user = await getUserByToken(token)
 				context.device = await getDeviceByToken(token)
+
+				context.authType = getAuthTypeByToken(token)
+
 				break
 			}
 
@@ -24,6 +32,7 @@ const context = async ({ req, connection }) => {
 				const deployKey = authContent
 				if (deployKey === process.env.DEPLOY_KEY) {
 					context.isDeploying = true
+					context.authType = 'deployKey'
 				}
 				break
 			}

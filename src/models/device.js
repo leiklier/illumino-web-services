@@ -1,10 +1,25 @@
 const mongoose = require('mongoose')
+const { Schema } = mongoose
 const bcryptPlugin = require('mongoose-bcrypt')
 const SHA256 = require('crypto-js/sha256')
 
 const { DEPLOY_KEY } = process.env
 
-const { Schema } = mongoose
+const { semanticVersionSchema } = require('./_schemas')
+
+const deviceTypeSchema = new Schema(
+	{
+		model: {
+			type: String,
+			required: true,
+		},
+		version: {
+			type: semanticVersionSchema,
+			required: true,
+		},
+	},
+	{ toObject: { virtuals: true } },
+)
 
 const deviceSchema = new Schema(
 	{
@@ -28,11 +43,20 @@ const deviceSchema = new Schema(
 			bcrypt: true,
 		},
 		secret: {
-			// 8 first chars of SHA256(mac + deployKey)
+			// 12 first chars of SHA256(mac + deployKey)
 			// Used in `loginDevice` GraphQL query
 			type: String,
 			required: true,
 			bcrypt: true,
+		},
+		type: {
+			type: deviceTypeSchema,
+			required: true,
+		},
+		installedFirmware: {
+			type: Schema.Types.ObjectId,
+			ref: 'Firmware',
+			required: true,
 		},
 		name: String,
 		lastSeenAt: {
@@ -50,11 +74,7 @@ const deviceSchema = new Schema(
 			},
 		],
 	},
-	{
-		toObject: {
-			virtuals: true,
-		},
-	},
+	{ toObject: { virtuals: true } },
 )
 
 deviceSchema.virtual('hasOwner').get(function() {

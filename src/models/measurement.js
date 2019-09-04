@@ -21,7 +21,10 @@ const measurementSchema = new Schema(
 			required: true,
 		},
 	},
-	{ timestamps: true },
+	{
+		timestamps: true,
+		toObject: { virtuals: true },
+	},
 )
 
 measurementSchema.statics.findLatestMeasurements = async function(device) {

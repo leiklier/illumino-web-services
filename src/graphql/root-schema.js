@@ -1,4 +1,4 @@
-const { gql } = require('apollo-server')
+const { gql } = require('apollo-server-express')
 
 const { context, onConnect } = require('./context')
 
@@ -7,12 +7,14 @@ const { scalarDefs, scalarResolvers } = require('./scalars')
 const authSchema = require('./schema/auth')
 const userSchema = require('./schema/user')
 const deviceSchema = require('./schema/device')
+const firmwareSchema = require('./schema/firmware')
 const measurementSchema = require('./schema/measurement')
 
 const rootTypeDefs = gql`
 	type RootSubsription {
 		user(email: String!): User!
 		newMeasurements(mac: String!): Measurement!
+		newFirmwares(mac: String): Firmware!
 	}
 
 	type RootQuery {
@@ -44,6 +46,8 @@ const rootTypeDefs = gql`
 			value: Float!
 		): Measurement! @requiresAuth(acceptsOnly: DEVICE)
 
+		publishFirmware(firmwareInput: FirmwareInput!): Boolean!
+
 		createDevice(deviceInput: DeviceInput!): Device!
 			@requiresAuth(acceptsOnly: [DEPLOYER, ADMIN])
 
@@ -63,6 +67,7 @@ const rootSchema = {
 		authSchema.typeDefs,
 		userSchema.typeDefs,
 		deviceSchema.typeDefs,
+		firmwareSchema.typeDefs,
 		measurementSchema.typeDefs,
 		rootTypeDefs,
 	],
@@ -70,6 +75,7 @@ const rootSchema = {
 		...scalarResolvers,
 		RootSubsription: {
 			...userSchema.subscriptionResolvers,
+			...firmwareSchema.subscriptionResolvers,
 			...measurementSchema.subscriptionResolvers,
 		},
 		RootQuery: {
@@ -82,11 +88,13 @@ const rootSchema = {
 			...authSchema.mutationResolvers,
 			...userSchema.mutationResolvers,
 			...deviceSchema.mutationResolvers,
+			...firmwareSchema.mutationResolvers,
 			...measurementSchema.mutationResolvers,
 		},
 		AuthData: authSchema.AuthDataResolver,
 		User: userSchema.UserResolver,
 		Device: deviceSchema.DeviceResolver,
+		Firmware: firmwareSchema.FirmwareResolver,
 		Measurement: measurementSchema.MeasurementResolver,
 	},
 	context,

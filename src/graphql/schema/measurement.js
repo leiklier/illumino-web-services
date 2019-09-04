@@ -1,4 +1,4 @@
-const { gql, withFilter } = require('apollo-server')
+const { gql, withFilter } = require('apollo-server-express')
 
 const Measurement = require('../../models/measurement')
 

@@ -1,7 +1,7 @@
 const { GraphQLScalarType } = require('graphql')
 const { GraphQLError } = require('graphql/error')
 const { Kind } = require('graphql/language')
-const { gql } = require('apollo-server')
+const { gql } = require('apollo-server-express')
 const { DateTime, EmailAddress } = require('@okgrow/graphql-scalars')
 
 const scalarDefs = gql`
@@ -55,7 +55,7 @@ scalarResolvers.PIN = new GraphQLScalarType({
 	parseLiteral(ast) {
 		if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
 			throw new GraphQLError(
-				`Can only parse strings & integers to dates but got a: ${ast.kind}`,
+				`Can only parse strings & integers to PIN but got a: ${ast.kind}`,
 			)
 		}
 
