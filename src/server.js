@@ -1,6 +1,12 @@
 require('dotenv').config()
+const path = require('path')
+global.appRoot = path
+	.resolve(__dirname)
+	.substring(0, path.resolve(__dirname).lastIndexOf('/'))
+
 const http = require('http')
 const express = require('express')
+const bodyParser = require('body-parser')
 const { ApolloServer } = require('apollo-server-express')
 const mongoose = require('mongoose')
 
@@ -10,6 +16,7 @@ const enableRestEndpoints = require('./rest')
 const graphqlSchema = require('./graphql/root-schema')
 
 const app = express()
+app.use(bodyParser.json())
 enableRestEndpoints(app)
 
 const server = new ApolloServer(graphqlSchema)
