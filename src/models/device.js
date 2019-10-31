@@ -78,6 +78,7 @@ const deviceTypeSchema = new Schema(
 	{ toObject: { virtuals: true } },
 )
 
+//* ------------------- DEVICE ---------------------
 const deviceSchema = new Schema(
 	{
 		mac: {
@@ -109,6 +110,7 @@ const deviceSchema = new Schema(
 			required: true,
 		},
 		name: String,
+		ledStrips: [ledStripSchema],
 		lastSeenAt: {
 			type: Date,
 			required: true,
