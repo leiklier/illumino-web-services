@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `installedFirmware` attribute for `Devices` - points to the `Firmware` currently installed and running on a certain `Device`.
 - `newFirmwares` GraphQL subscription for subscribing to new `Firmware` releases.
 - `/latest-firmware-binary` REST endpoint lets authorized `Device` download latest `Firmware` binary.
+- `ledStrip` mongoose schema for storing settings for `ledStrips` belonging to `Device`s.
+- `ledStrips` attribute for `Device`s - contains the settings for the `ledStrip`s belonging to a certain `Device`.
 
 ## [v0.2.0] - 2019-06-29
 

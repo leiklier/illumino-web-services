@@ -23,6 +23,8 @@ const typeDefs = gql`
 
 		latestMeasurements(types: [MeasurementType!]): [Measurement!]!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		ledStrips: [LedStrip!]! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
 	type DeviceType {
@@ -119,6 +121,16 @@ const DeviceResolver = {
 		}
 
 		return measurements
+	},
+	ledStrips: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return []
+		}
+
+		return deviceFound.ledStrips
 	},
 }
 

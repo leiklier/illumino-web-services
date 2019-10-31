@@ -9,6 +9,7 @@ const userSchema = require('./schema/user')
 const deviceSchema = require('./schema/device')
 const firmwareSchema = require('./schema/firmware')
 const measurementSchema = require('./schema/measurement')
+const ledStripSchema = require('./schema/led-strip')
 
 const rootTypeDefs = gql`
 	type RootSubsription {
@@ -69,6 +70,7 @@ const rootSchema = {
 		deviceSchema.typeDefs,
 		firmwareSchema.typeDefs,
 		measurementSchema.typeDefs,
+		ledStripSchema.typeDefs,
 		rootTypeDefs,
 	],
 	resolvers: {
