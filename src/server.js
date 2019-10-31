@@ -12,6 +12,7 @@ const mongoose = require('mongoose')
 
 const { PORT, MONGO_DB } = process.env
 
+const logger = require('./logger')
 const enableRestEndpoints = require('./rest')
 const graphqlSchema = require('./graphql/root-schema')
 
@@ -37,13 +38,11 @@ mongoose
 	})
 	.then(() => {
 		httpServer.listen(PORT, () => {
-			console.log(
-				`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`,
-			)
-			console.log(
-				`🚀 Subscriptions ready at ws://localhost:${PORT}${
-					server.subscriptionsPath
-				}`,
+			logger.info(
+				`Server started with endpoints http://localhost:${PORT}${
+					server.graphqlPath
+				}, ws://localhost:${PORT}${server.subscriptionsPath}`,
+				{ target: 'SERVER', event: 'STARTED' },
 			)
 		})
 	})

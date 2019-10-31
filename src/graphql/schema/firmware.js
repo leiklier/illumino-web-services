@@ -1,5 +1,7 @@
 const { gql, withFilter } = require('apollo-server-express')
 
+const logger = require('../../logger')
+
 const Firmware = require('../../models/firmware')
 
 const pubsub = require('../pubsub')
@@ -105,6 +107,7 @@ subscriptionResolvers.newFirmwares = {
 }
 
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
+	const { clientIp } = context
 	const { target, name, description, version, binary } = firmwareInput
 	const { createReadStream, filename, mimetype, encoding } = await binary
 
@@ -122,6 +125,18 @@ mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 	readStream.close()
 	await firmware.save()
 
+	logger.info(
+		`Firmware with version ${version} for ${target} has been published`,
+		{
+			target: 'FIRMWARE',
+			event: 'PUBLISH_SUCCEEDED',
+			meta: {
+				clientIp,
+			},
+		},
+	)
+
+	// TODO: Should return the firmware, and not boolean
 	return true
 }
 

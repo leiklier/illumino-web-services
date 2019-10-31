@@ -67,9 +67,7 @@ const DeviceResolver = {
 		if (!deviceFound) {
 			return null
 		}
-		return SHA256(deviceFound.mac + DEPLOY_KEY)
-			.toString()
-			.substr(0, 12)
+		return deviceFound.secret
 	},
 	name: async (device, args, context) => {
 		const { deviceByIdLoader } = context
@@ -150,6 +148,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		userByEmailLoader,
 		deviceByMacLoader,
 		firmwareByUniqueVersionLoader,
+		clientIp,
 	} = context
 
 	if (!isMACAddress(deviceInput.mac)) {
@@ -191,6 +190,12 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	}
 
 	if (!deviceInput.ownerEmail) {
+		logger.info(`Device with mac ${device.mac} authorized`, {
+			target: 'DEVICE',
+			event: 'CREATION_SUCCEEDED',
+			meta: { device: device.id, clientIp },
+		})
+
 		await device.save()
 
 		return { id: device.id }
@@ -219,7 +224,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 }
 
 mutationResolvers.claimDevice = async (obj, { mac }, context) => {
-	const { userByIdLoader, deviceByMacLoader } = context
+	const { userByIdLoader, deviceByMacLoader, clientIp } = context
 
 	const ownerId = context.user.id
 
@@ -247,6 +252,12 @@ mutationResolvers.claimDevice = async (obj, { mac }, context) => {
 	try {
 		await owner.save()
 		await device.save()
+
+		logger.info(`Device with mac ${device.mac} authorized`, {
+			target: 'DEVICE',
+			event: 'CLAIM_SUCCEEDED',
+			meta: { device: device.id, user: owner.id, clientIp },
+		})
 		return { id: device.id }
 	} catch (err) {
 		await session.abortTransaction()

@@ -136,6 +136,12 @@ mutationResolvers.createUser = async (obj, { userInput }, context) => {
 		})
 		await user.save()
 
+		logger.info(`User with email ${user.email} created`, {
+			target: 'USER',
+			event: 'CREATION_SUCCEEDED',
+			meta: { user: user.id, clientIp },
+		})
+
 		return { id: user.id }
 	} catch (err) {
 		throw err

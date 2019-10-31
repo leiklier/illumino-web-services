@@ -1,6 +1,8 @@
 const { gql, ApolloError } = require('apollo-server-express')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
 
+const logger = require('../../logger')
+
 const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
 const { keepOnlyAlphaNumeric } = require('../../lib/string')
 
@@ -59,48 +61,120 @@ const queryResolvers = {}
 const mutationResolvers = {}
 
 queryResolvers.loginUser = async (obj, { email, password }, context) => {
-	const { userByEmailLoader } = context
+	const { userByEmailLoader, clientIp } = context
 	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
+		logger.warn(`Non-existing user with email ${user.email} tried to login`, {
+			target: 'USER',
+			event: 'LOGIN_FAILED',
+			meta: { errorCode: error.USER_DOES_NOT_EXIST, clientIp },
+		})
 		throw new ApolloError(error.USER_DOES_NOT_EXIST)
 	}
 
 	const passwordIsCorrect = await user.verifyPassword(password)
 	if (!passwordIsCorrect) {
+		logger.error(
+			`User with email ${user.email} tried to login with wrong password`,
+			{
+				target: 'USER',
+				event: 'LOGIN_FAILED',
+				meta: {
+					user: user.id,
+					errorCode: error.PASSWORD_IS_INCORRECT,
+					clientIp,
+				},
+			},
+		)
 		throw new ApolloError(error.PASSWORD_IS_INCORRECT)
 	}
 
 	const expiresAt = Date.now() + 1000 * 60 * 60
 	const token = getTokenByUser(user, 'password', expiresAt)
 
+	logger.info(`User with email ${user.email} logged in`, {
+		target: 'USER',
+		event: 'LOGIN_SUCCEEDED',
+		meta: { user: user.id, clientIp },
+	})
+
 	return { userId: user.id, token, expiresAt }
 }
 
 queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
-	const { deviceByMacLoader } = context
+	const { deviceByMacLoader, clientIp } = context
 	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
+		logger.warn(`Non-existing device with mac ${device.mac} tried to login`, {
+			target: 'DEVICE',
+			event: 'LOGIN_FAILED',
+			meta: { errorCode: error.DEVICE_DOES_NOT_EXIST, clientIp },
+		})
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const secretIsCorrect = await device.verifySecret(secret)
 	if (!secretIsCorrect) {
+		logger.warn(
+			`Device with mac ${device.mac} tried to login with wrong secret`,
+			{
+				target: 'DEVICE',
+				event: 'LOGIN_FAILED',
+				meta: {
+					device: device.id,
+					errorCode: error.SECRET_IS_INCORRECT,
+					clientIp,
+				},
+			},
+		)
 		throw new ApolloError(error.SECRET_IS_INCORRECT)
 	}
 
 	if (pin && !device.pin) {
+		logger.warn(
+			`Device with mac ${
+				device.mac
+			} tried to login with pin, but pin is not set`,
+			{
+				target: 'DEVICE',
+				event: 'LOGIN_FAILED',
+				meta: { device: device.id, errorCode: error.PIN_IS_NOT_SET, clientIp },
+			},
+		)
 		throw new ApolloError(error.PIN_IS_NOT_SET)
 	}
 
 	if (device.pin && !pin) {
+		logger.warn(
+			`Device with mac ${
+				device.mac
+			} tried to login without pin, but pin is required`,
+			{
+				target: 'DEVICE',
+				event: 'LOGIN_FAILED',
+				meta: { device: device.id, errorCode: error.PIN_IS_INVALID, clientIp },
+			},
+		)
 		throw new ApolloError(error.PIN_IS_INVALID)
 	}
 
 	if (device.pin) {
 		const pinIsCorrect = await device.verifyPin(pin.toString())
 		if (!pinIsCorrect) {
+			logger.warn(
+				`Device with mac ${device.mac} tried to login with wrong pin`,
+				{
+					target: 'DEVICE',
+					event: 'LOGIN_FAILED',
+					meta: {
+						device: device.id,
+						errorCode: error.PIN_IS_INCORRECT,
+						clientIp,
+					},
+				},
+			)
 			throw new ApolloError(error.PIN_IS_INCORRECT)
 		}
 	}
@@ -108,24 +182,52 @@ queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
 	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
 	const token = getTokenByDevice(device, 'pin', expiresAt)
 
+	logger.info(`Device with mac ${device.mac} logged in`, {
+		target: 'DEVICE',
+		event: 'LOGIN_SUCCEEDED',
+		meta: { device: device.id, clientIp },
+	})
+
 	return { deviceId: device.id, token, expiresAt }
 }
 
 queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
-	const { deviceByMacLoader } = context
+	const { deviceByMacLoader, clientIp } = context
 	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
+		logger.warn(
+			`Non-existing device with mac ${device.mac} tried to authorize`,
+			{
+				target: 'DEVICE',
+				event: 'AUTH_FAILED',
+				meta: { errorCode: error.DEVICE_DOES_NOT_EXIST, clientIp },
+			},
+		)
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const authKeyIsCorrect = await device.verifyAuthKey(authKey)
 	if (!authKeyIsCorrect) {
+		logger.warn(
+			`Device with mac ${device.mac} tried to authorize with wrong authKey`,
+			{
+				target: 'DEVICE',
+				event: 'AUTH_FAILED',
+				meta: { errorCode: error.AUTHKEY_IS_INCORRECT, clientIp },
+			},
+		)
 		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
 	}
 
 	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
 	const token = getTokenByDevice(device, 'authKey', expiresAt)
+
+	logger.info(`Device with mac ${device.mac} authorized`, {
+		target: 'DEVICE',
+		event: 'AUTH_SUCCEEDED',
+		meta: { device: device.id, clientIp },
+	})
 
 	return { deviceId: device.id, token, expiresAt }
 }
@@ -135,18 +237,32 @@ queryResolvers.isAuth = async (obj, args, context, info) => {
 }
 
 queryResolvers.refreshToken = async (obj, args, context) => {
-	if (context.user) {
-		const expiresAt = Date.now() + 1000 * 60 * 60 // 1 hour
-		const token = getTokenByUser(context.user, context.authType, expiresAt)
+	const { user, device, authType, clientIp } = context
 
-		return { userId: context.user.id, token, expiresAt } // returns UserAuthData
+	if (user) {
+		const expiresAt = Date.now() + 1000 * 60 * 60 // 1 hour
+		const token = getTokenByUser(user, authType, expiresAt)
+
+		logger.info(`User with email ${user.email} refreshed token`, {
+			target: 'USER',
+			event: 'TOKEN_REFRESH_SUCCEEDED',
+			meta: { user: user.id, clientIp },
+		})
+
+		return { userId: user.id, token, expiresAt } // returns UserAuthData
 	}
 
-	if (context.device) {
+	if (device) {
 		const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
-		const token = getTokenByDevice(context.device, context.authType, expiresAt)
+		const token = getTokenByDevice(device, authType, expiresAt)
 
-		return { deviceId: context.device.id, token, expiresAt } // returns DeviceAuthData
+		logger.info(`Device with mac ${device.mac} refreshed token`, {
+			target: 'DEVICE',
+			event: 'TOKEN_REFRESH_SUCCEEDED',
+			meta: { device: device.id, clientIp },
+		})
+
+		return { deviceId: device.id, token, expiresAt } // returns DeviceAuthData
 	}
 
 	throw new ApolloError(error.NOT_AUTHENTICATED)
@@ -358,7 +474,6 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				//           ,---- The only authTypes that don't accept humans
 				!['authKey', 'deployKey'].includes(context.authType)
 			) {
-				console.log()
 				throw new ApolloError(error.NOT_AUTHORIZED)
 			}
 

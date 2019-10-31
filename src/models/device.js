@@ -42,13 +42,6 @@ const deviceSchema = new Schema(
 			type: String,
 			bcrypt: true,
 		},
-		secret: {
-			// 12 first chars of SHA256(mac + deployKey)
-			// Used in `loginDevice` GraphQL query
-			type: String,
-			required: true,
-			bcrypt: true,
-		},
 		type: {
 			type: deviceTypeSchema,
 			required: true,
@@ -81,16 +74,15 @@ deviceSchema.virtual('hasOwner').get(function() {
 	return Boolean(this.owner)
 })
 
-// Generate `Device.secret` when new `Device` has been created
-deviceSchema.pre('validate', function(next) {
-	if (!this.isNew) next()
-
-	this.secret = SHA256(this.mac + DEPLOY_KEY)
+deviceSchema.virtual('secret').get(function() {
+	return SHA256(this.mac + DEPLOY_KEY)
 		.toString()
 		.substr(0, 12)
-
-	next()
 })
+
+deviceSchema.methods.verifySecret = function(secret) {
+	return secret === this.secret
+}
 
 deviceSchema.plugin(bcryptPlugin)
 
