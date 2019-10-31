@@ -2,6 +2,8 @@ const { gql, ApolloError } = require('apollo-server-express')
 const { isMACAddress } = require('validator')
 const SHA256 = require('crypto-js/sha256')
 
+const logger = require('../../logger')
+
 const Device = require('../../models/device')
 const Measurement = require('../../models/measurement')
 
@@ -32,6 +34,8 @@ const typeDefs = gql`
 
 	enum DeviceModel {
 		DEVICE
+		ILLUMINODE
+		ILLUMINODE_PLUS
 	}
 
 	input DeviceInput {
@@ -161,7 +165,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	}
 
 	const firmware = await firmwareByUniqueVersionLoader.load(
-		`DEVICE+${deviceInput.firmwareVersion}`,
+		`${deviceInput.typeInput.model}+${deviceInput.firmwareVersion}`,
 	)
 
 	if (!firmware) {
@@ -181,6 +185,12 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 		},
 	})
 
+	if (device.type.model === 'ILLUMINODE') {
+		device.ledStrips = [{ name: 'Primary' }]
+	} else if (device.type.model === 'ILLUMINODE_PLUS') {
+		device.ledStrips = [{ name: 'Primary' }, { name: 'Secondary' }]
+	}
+
 	if (deviceInput.pin) {
 		device.pin = deviceInput.pin.toString()
 	}
@@ -190,7 +200,7 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	}
 
 	if (!deviceInput.ownerEmail) {
-		logger.info(`Device with mac ${device.mac} authorized`, {
+		logger.info(`Device with mac ${device.mac} created`, {
 			target: 'DEVICE',
 			event: 'CREATION_SUCCEEDED',
 			meta: { device: device.id, clientIp },

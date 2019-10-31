@@ -7,6 +7,60 @@ const { DEPLOY_KEY } = process.env
 
 const { semanticVersionSchema } = require('./_schemas')
 
+//* ------------------ LED_STRIP -------------------
+const ledStripSchema = new Schema({
+	name: {
+		type: String,
+		default: 'Primary',
+	},
+	intensity: {
+		type: Number,
+		min: 0,
+		max: 1,
+		default: 1,
+	},
+	colorPreset: {
+		red: {
+			type: Number,
+			validator: Number.isInteger,
+			message: '{VALUE} is not an integer value',
+			min: 0,
+			max: 255,
+			default: 0,
+		},
+		green: {
+			type: Number,
+			validator: Number.isInteger,
+			message: '{VALUE} is not an integer value',
+			min: 0,
+			max: 255,
+			default: 0,
+		},
+		blue: {
+			type: Number,
+			validator: Number.isInteger,
+			message: '{VALUE} is not an integer value',
+			min: 0,
+			max: 255,
+			default: 0,
+		},
+	},
+	animation: {
+		type: {
+			type: String,
+			enum: ['MANUAL', 'LAVA', 'RAINBOW', 'SUNRISE', 'SUNSET'],
+			default: 'MANUAL',
+		},
+		speed: {
+			type: Number,
+			min: 0,
+			max: 1,
+			default: 0.5,
+		},
+	},
+})
+
+//* ----------------- DEVICE_TYPE ------------------
 const deviceTypeSchema = new Schema(
 	{
 		model: {
@@ -21,6 +75,7 @@ const deviceTypeSchema = new Schema(
 	{ toObject: { virtuals: true } },
 )
 
+//* ------------------- DEVICE ---------------------
 const deviceSchema = new Schema(
 	{
 		mac: {
@@ -52,6 +107,7 @@ const deviceSchema = new Schema(
 			required: true,
 		},
 		name: String,
+		ledStrips: [ledStripSchema],
 		lastSeenAt: {
 			type: Date,
 			required: true,
