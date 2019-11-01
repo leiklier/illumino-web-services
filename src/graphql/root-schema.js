@@ -35,6 +35,12 @@ const rootTypeDefs = gql`
 			brightness: Float
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		setColorOnLedStrip(
+			mac: String!
+			ledStripId: ID!
+			color: ColorInput!
+		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
