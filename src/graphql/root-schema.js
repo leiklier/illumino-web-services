@@ -29,6 +29,12 @@ const rootTypeDefs = gql`
 	}
 
 	type RootMutation {
+		setBrightnessOnLedStrip(
+			mac: String!
+			ledStripId: ID!
+			brightness: Float
+		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
@@ -92,6 +98,7 @@ const rootSchema = {
 			...deviceSchema.mutationResolvers,
 			...firmwareSchema.mutationResolvers,
 			...measurementSchema.mutationResolvers,
+			...ledStripSchema.mutationResolvers,
 		},
 		AuthData: authSchema.AuthDataResolver,
 		User: userSchema.UserResolver,

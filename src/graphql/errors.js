@@ -16,6 +16,8 @@ module.exports = {
 
 	FIRMWARE_DOES_NOT_EXIST: 'FIRMWARE_DOES_NOT_EXIST',
 
+	LED_STRIP_DOES_NOT_EXIST: 'LED_STRIP_DOES_NOT_EXIST',
+
 	NOT_AUTHENTICATED: 'NOT_AUTHENTICATED', // is not 'logged in'
 	NOT_AUTHORIZED: 'NOT_AUTHORIZED', // does not have access to requested resource
 }

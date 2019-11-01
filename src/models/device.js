@@ -14,7 +14,7 @@ const ledStripSchema = new Schema(
 			type: String,
 			default: 'Primary',
 		},
-		intensity: {
+		brightness: {
 			type: Number,
 			min: 0,
 			max: 1,
@@ -60,7 +60,7 @@ const ledStripSchema = new Schema(
 			},
 		},
 	},
-	{ _id: false },
+	{ toObject: { virtuals: true } },
 )
 
 //* ----------------- DEVICE_TYPE ------------------
