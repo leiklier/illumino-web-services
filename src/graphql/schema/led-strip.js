@@ -87,6 +87,30 @@ mutationResolvers.setColorOnLedStrip = async (
 	return ledStrip
 }
 
+mutationResolvers.setAnimationTypeOnLedStrip = async (
+	obj,
+	{ mac, ledStripId, animationType },
+	context,
+) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+
+	if (!mac) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
+
+	if (!ledStrip) {
+		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
+	}
+
+	ledStrip.animation.type = animationType
+	await device.save()
+
+	return ledStrip
+}
+
 module.exports = {
 	typeDefs,
 	mutationResolvers,

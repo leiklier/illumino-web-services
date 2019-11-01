@@ -41,6 +41,12 @@ const rootTypeDefs = gql`
 			color: ColorInput!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		setAnimationTypeOnLedStrip(
+			mac: String!
+			ledStripId: ID!
+			animationType: AnimationType!
+		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
