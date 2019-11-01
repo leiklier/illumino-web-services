@@ -47,6 +47,12 @@ const rootTypeDefs = gql`
 			animationType: AnimationType!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		setAnimationSpeedOnLedStrip(
+			mac: String!
+			ledStripId: ID!
+			animationSpeed: Float!
+		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
