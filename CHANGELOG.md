@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Authentication is now enhanced by migrating to a refresh- and access token scheme. A long lived refresh token is set as cookie upon authenticating. This cookie is used in the `authToken` query to retrieve a token which is used as previously for authorization.
+
 ### Added
 
 - `Firmware` mongoose model for storing firmware belonging to `Device`s.
@@ -18,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ledStrips` attribute for `Device`s - contains the settings for the `ledStrip`s belonging to a certain `Device`.
 - `ledStrip` GraphQL query for querying a specific ledStrip based on `mac` and `ledStripId`.
 - `ledStrips` GraphQL query for querying all ledStrips belonging to a `Device` with a certain `mac`.
+- `setBrightnessOnLedStrip` GraphQL mutation changes `brightness` for a certain ledStrip.
+- `setColorOnLedStrip` GraphQL mutation changes `color` for a certain ledStrip.
+- `setAnimationTypeOnLedStrip` GraphQL mutation changes `animationType` for a certain ledStrip.
+- `setAnimationTypeOnLedStrip` GraphQL mutation changes `animationType` for a certain ledStrip.
+
+### Changed
+
+- `loginDevice` GraphQL query no longer requires `mac`.
 
 ## [v0.2.0] - 2019-06-29
 

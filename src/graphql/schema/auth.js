@@ -1,8 +1,7 @@
 const { gql, ApolloError } = require('apollo-server-express')
 const { SchemaDirectiveVisitor } = require('graphql-tools')
-
 const logger = require('../../logger')
-
+const Device = require('../../models/device')
 const {
 	getRefreshTokenByUser,
 	getAccessTokenByUser,
@@ -13,7 +12,6 @@ const {
 	getAuthTypeByToken,
 } = require('../../lib/token')
 const { keepOnlyAlphaNumeric } = require('../../lib/string')
-
 const error = require('../errors')
 
 const typeDefs = gql`
@@ -118,34 +116,21 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 	}
 }
 
-queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
-	const { deviceByMacLoader, clientIp, res } = context
-	const device = await deviceByMacLoader.load(mac)
+queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
+	const { clientIp, res } = context
+
+	const device = await Device.findOne({ secret })
 
 	if (!device) {
-		logger.warn(`Non-existing device with mac ${device.mac} tried to login`, {
-			target: 'DEVICE',
-			event: 'LOGIN_FAILED',
-			meta: { errorCode: error.DEVICE_DOES_NOT_EXIST, clientIp },
-		})
-		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
-	}
-
-	const secretIsCorrect = await device.verifySecret(secret)
-	if (!secretIsCorrect) {
 		logger.warn(
-			`Device with mac ${device.mac} tried to login with wrong secret`,
+			`Non-existing device with secret ${device.secret} tried to login`,
 			{
 				target: 'DEVICE',
 				event: 'LOGIN_FAILED',
-				meta: {
-					device: device.id,
-					errorCode: error.SECRET_IS_INCORRECT,
-					clientIp,
-				},
+				meta: { errorCode: error.DEVICE_DOES_NOT_EXIST, clientIp },
 			},
 		)
-		throw new ApolloError(error.SECRET_IS_INCORRECT)
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	if (pin && !device.pin) {

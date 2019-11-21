@@ -100,6 +100,10 @@ const deviceSchema = new Schema(
 			type: String,
 			bcrypt: true,
 		},
+		secret: {
+			type: 'string',
+			required: true,
+		},
 		type: {
 			type: deviceTypeSchema,
 			required: true,
@@ -130,19 +134,15 @@ const deviceSchema = new Schema(
 	{ toObject: { virtuals: true } },
 )
 
-deviceSchema.virtual('hasOwner').get(function() {
-	return Boolean(this.owner)
-})
-
-deviceSchema.virtual('secret').get(function() {
-	return SHA256(this.mac + DEPLOY_KEY)
+deviceSchema.pre('validate', function() {
+	this.secret = SHA256(this.mac + DEPLOY_KEY)
 		.toString()
 		.substr(0, 12)
 })
 
-deviceSchema.methods.verifySecret = function(secret) {
-	return secret === this.secret
-}
+deviceSchema.virtual('hasOwner').get(function() {
+	return Boolean(this.owner)
+})
 
 deviceSchema.plugin(bcryptPlugin)
 
