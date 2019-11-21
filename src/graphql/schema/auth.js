@@ -3,7 +3,15 @@ const { SchemaDirectiveVisitor } = require('graphql-tools')
 
 const logger = require('../../logger')
 
-const { getTokenByUser, getTokenByDevice } = require('../../lib/token')
+const {
+	getRefreshTokenByUser,
+	getAccessTokenByUser,
+	getRefreshTokenByDevice,
+	getAccessTokenByDevice,
+	getTokenPayload,
+	getTokenExpiration,
+	getAuthTypeByToken,
+} = require('../../lib/token')
 const { keepOnlyAlphaNumeric } = require('../../lib/string')
 
 const error = require('../errors')
@@ -26,18 +34,18 @@ const typeDefs = gql`
 	}
 
 	interface AuthData {
-		token: String!
+		accessToken: String!
 		expiresAt: String!
 	}
 
 	type UserAuthData implements AuthData {
-		token: String!
+		accessToken: String!
 		expiresAt: String!
 		userId: ID!
 	}
 
 	type DeviceAuthData implements AuthData {
-		token: String!
+		accessToken: String!
 		expiresAt: String!
 		deviceId: ID!
 	}
@@ -61,7 +69,7 @@ const queryResolvers = {}
 const mutationResolvers = {}
 
 queryResolvers.loginUser = async (obj, { email, password }, context) => {
-	const { userByEmailLoader, clientIp } = context
+	const { userByEmailLoader, clientIp, res } = context
 	const user = await userByEmailLoader.load(email)
 
 	if (!user) {
@@ -90,8 +98,12 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 		throw new ApolloError(error.PASSWORD_IS_INCORRECT)
 	}
 
-	const expiresAt = Date.now() + 1000 * 60 * 60
-	const token = getTokenByUser(user, 'password', expiresAt)
+	const accessToken = getAccessTokenByUser(user, 'password')
+	const refreshToken = getRefreshTokenByUser(user, 'password')
+
+	res.cookie('refresh-token', refreshToken, {
+		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+	})
 
 	logger.info(`User with email ${user.email} logged in`, {
 		target: 'USER',
@@ -99,11 +111,15 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 		meta: { user: user.id, clientIp },
 	})
 
-	return { userId: user.id, token, expiresAt }
+	return {
+		userId: user.id,
+		accessToken,
+		expiresAt: getTokenExpiration(accessToken),
+	}
 }
 
 queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
-	const { deviceByMacLoader, clientIp } = context
+	const { deviceByMacLoader, clientIp, res } = context
 	const device = await deviceByMacLoader.load(mac)
 
 	if (!device) {
@@ -179,8 +195,12 @@ queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
 		}
 	}
 
-	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
-	const token = getTokenByDevice(device, 'pin', expiresAt)
+	const accessToken = getAccessTokenByDevice(device, 'pin')
+	const refreshToken = getRefreshTokenByDevice(device, 'pin')
+
+	res.cookie('refresh-token', refreshToken, {
+		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+	})
 
 	logger.info(`Device with mac ${device.mac} logged in`, {
 		target: 'DEVICE',
@@ -188,7 +208,11 @@ queryResolvers.loginDevice = async (obj, { mac, secret, pin }, context) => {
 		meta: { device: device.id, clientIp },
 	})
 
-	return { deviceId: device.id, token, expiresAt }
+	return {
+		deviceId: device.id,
+		accessToken,
+		expiresAt: getTokenExpiration(accessToken),
+	}
 }
 
 queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
@@ -220,8 +244,12 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
 	}
 
-	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
-	const token = getTokenByDevice(device, 'authKey', expiresAt)
+	const accessToken = getAccessTokenByDevice(device, 'authKey')
+	const refreshToken = getRefreshTokenByDevice(device, 'authKey')
+
+	res.cookie('refresh-token', refreshToken, {
+		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+	})
 
 	logger.info(`Device with mac ${device.mac} authorized`, {
 		target: 'DEVICE',
@@ -229,40 +257,53 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 		meta: { device: device.id, clientIp },
 	})
 
-	return { deviceId: device.id, token, expiresAt }
+	return {
+		deviceId: device.id,
+		accessToken,
+		expiresAt: getTokenExpiration(accessToken),
+	}
 }
 
 queryResolvers.isAuth = async (obj, args, context, info) => {
 	return context.user || context.device ? true : false
 }
 
-queryResolvers.refreshToken = async (obj, args, context) => {
-	const { user, device, authType, clientIp } = context
+queryResolvers.accessToken = async (obj, args, context) => {
+	const { userByIdLoader, deviceByIdLoader, clientIp, req } = context
+	const refreshToken = req.cookies['refresh-token']
+	const { userId, deviceId, purpose } = getTokenPayload(refreshToken)
+	const authType = getAuthTypeByToken(refreshToken)
 
-	if (user) {
-		const expiresAt = Date.now() + 1000 * 60 * 60 // 1 hour
-		const token = getTokenByUser(user, authType, expiresAt)
+	if (purpose !== 'REFRESH') throw new ApolloError(error.NOT_AUTHENTICATED)
+
+	if (userId) {
+		const user = await userByIdLoader.load(userId)
+		const accessToken = getAccessTokenByUser(user, authType)
 
 		logger.info(`User with email ${user.email} refreshed token`, {
 			target: 'USER',
 			event: 'TOKEN_REFRESH_SUCCEEDED',
-			meta: { user: user.id, clientIp },
+			meta: { user: userId, clientIp },
 		})
 
-		return { userId: user.id, token, expiresAt } // returns UserAuthData
+		return {
+			userId,
+			accessToken,
+			expiresAt: getTokenExpiration(accessToken),
+		} // returns UserAuthData
 	}
 
-	if (device) {
-		const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 7 // 1 week
-		const token = getTokenByDevice(device, authType, expiresAt)
+	if (deviceId) {
+		const device = await deviceByIdLoader.load(deviceId)
+		const accessToken = getAccessTokenByDevice(device, authType)
 
 		logger.info(`Device with mac ${device.mac} refreshed token`, {
 			target: 'DEVICE',
 			event: 'TOKEN_REFRESH_SUCCEEDED',
-			meta: { device: device.id, clientIp },
+			meta: { device: deviceId, clientIp },
 		})
 
-		return { deviceId: device.id, token, expiresAt } // returns DeviceAuthData
+		return { deviceId, accessToken, expiresAt: getTokenExpiration(accessToken) } // returns DeviceAuthData
 	}
 
 	throw new ApolloError(error.NOT_AUTHENTICATED)

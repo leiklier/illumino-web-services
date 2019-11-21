@@ -28,7 +28,7 @@ const rootTypeDefs = gql`
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(mac: String!, secret: String!, pin: PIN): DeviceAuthData!
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
-		refreshToken: AuthData! @requiresAuth(acceptsOnly: [USER, DEVICE])
+		accessToken: AuthData!
 		isAuth: Boolean!
 	}
 

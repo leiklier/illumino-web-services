@@ -5,9 +5,11 @@ const {
 } = require('../lib/token')
 const createDataLoaders = require('../dataloaders')
 
-const context = async ({ req, connection }) => {
+const context = async ({ req, res, connection }) => {
 	let context = {
 		...createDataLoaders(),
+		req,
+		res,
 		//                     ,-- for HTTP           ,-- for WS
 		clientIp: (req && req.ip) || connection.remoteAddress,
 	}

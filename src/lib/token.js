@@ -6,19 +6,46 @@ const Device = require('../models/device')
 /**
  * This function creates a signed JWT with a payload containing
  * the `userId` of the `user` provided as input. The
- * token returned is used in e.g. auth.
+ * token returned is used in e.g. auth. purpose: REFRESH
  *
  * @param {User} user - The User that should be wrapped in the `token`´s payload.
  * @param {string} authType - What type of credentials was provided, e.g. 'password'
  * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
  * @return {string} The JSON Web Token with `userId` and `authType` as payload
  */
-const getTokenByUser = (user, authType, expiresAt) => {
+const getRefreshTokenByUser = (user, authType) => {
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
 			payload: {
 				userId: user.id,
 				authType,
+				purpose: 'REFRESH',
+			},
+			exp: Math.floor(parseInt(expiresAt) / 1000),
+		},
+		process.env.JWT_SECRET,
+	)
+}
+
+/**
+ * This function creates a signed JWT with a payload containing
+ * the `userId` of the `user` provided as input. The
+ * token returned is used in e.g. auth. purpose: ACCESS
+ *
+ * @param {User} user - The User that should be wrapped in the `token`´s payload.
+ * @param {string} authType - What type of credentials was provided, e.g. 'password'
+ * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
+ * @return {string} The JSON Web Token with `userId` and `authType` as payload
+ */
+const getAccessTokenByUser = (user, authType) => {
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
+	return jwt.sign(
+		{
+			payload: {
+				userId: user.id,
+				authType,
+				purpose: 'ACCESS',
 			},
 			exp: Math.floor(parseInt(expiresAt) / 1000),
 		},
@@ -29,19 +56,46 @@ const getTokenByUser = (user, authType, expiresAt) => {
 /**
  * This function creates a signed JWT with a payload containing
  * the `deviceId` of the `device` provided as input. The
- * token returned is used in e.g. auth.
+ * token returned is used in e.g. auth. purpose: REFRESH
  *
  * @param {Device} device - The Device that should be wrapped in a token
  * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
  * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
  * @return {string} The JSON Web Token with `deviceId` and `authType` as payload
  */
-const getTokenByDevice = (device, authType, expiresAt) => {
+const getRefreshTokenByDevice = (device, authType) => {
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
 			payload: {
 				deviceId: device.id,
 				authType,
+				purpose: 'REFRESH',
+			},
+			exp: Math.floor(parseInt(expiresAt) / 1000),
+		},
+		process.env.JWT_SECRET,
+	)
+}
+
+/**
+ * This function creates a signed JWT with a payload containing
+ * the `deviceId` of the `device` provided as input. The
+ * token returned is used in e.g. auth. purpose: REFRESH
+ *
+ * @param {Device} device - The Device that should be wrapped in a token
+ * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
+ * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
+ * @return {string} The JSON Web Token with `deviceId` and `authType` as payload
+ */
+const getAccessTokenByDevice = (device, authType) => {
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
+	return jwt.sign(
+		{
+			payload: {
+				deviceId: device.id,
+				authType,
+				purpose: 'ACCESS',
 			},
 			exp: Math.floor(parseInt(expiresAt) / 1000),
 		},
@@ -110,6 +164,22 @@ const getDeviceByToken = async token => {
 	}
 }
 
+const getTokenPayload = token => {
+	try {
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
+		const tokenPayload = decryptedToken.payload || {}
+		return tokenPayload
+	} catch (err) {
+		// Token did invalidate
+		return {}
+	}
+}
+
+const getTokenExpiration = token => {
+	const decodedToken = jwt.decode(token)
+	return decodedToken.exp * 1000
+}
+
 const getAuthTypeByToken = token => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
@@ -123,11 +193,15 @@ const getAuthTypeByToken = token => {
 }
 
 module.exports = {
-	getTokenByUser,
-	getTokenByDevice,
+	getRefreshTokenByUser,
+	getAccessTokenByUser,
+	getRefreshTokenByDevice,
+	getAccessTokenByDevice,
 
 	getUserByToken,
 	getDeviceByToken,
 
+	getTokenPayload,
+	getTokenExpiration,
 	getAuthTypeByToken,
 }
