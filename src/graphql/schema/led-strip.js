@@ -37,7 +37,42 @@ const typeDefs = gql`
 	}
 `
 
+const queryResolvers = {}
 const mutationResolvers = {}
+
+queryResolvers.ledStrip = async (obj, { mac, ledStripId }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
+
+	if (!ledStrip) {
+		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
+	}
+
+	return ledStrip
+}
+
+queryResolvers.ledStrips = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	const { ledStrips } = device
+
+	if (!ledStrips) {
+		throw new ApolloError(error.LED_STRIPS_DO_NOT_EXIST)
+	}
+
+	return ledStrips
+}
 
 mutationResolvers.setBrightnessOnLedStrip = async (
 	obj,
@@ -47,7 +82,7 @@ mutationResolvers.setBrightnessOnLedStrip = async (
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 
-	if (!mac) {
+	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
@@ -71,7 +106,7 @@ mutationResolvers.setColorOnLedStrip = async (
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 
-	if (!mac) {
+	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
@@ -95,7 +130,7 @@ mutationResolvers.setAnimationTypeOnLedStrip = async (
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 
-	if (!mac) {
+	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
@@ -119,7 +154,7 @@ mutationResolvers.setAnimationSpeedOnLedStrip = async (
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 
-	if (!mac) {
+	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
@@ -132,12 +167,11 @@ mutationResolvers.setAnimationSpeedOnLedStrip = async (
 	ledStrip.animation.speed = animationSpeed
 	await device.save()
 
-	console.log(device)
-
 	return ledStrip
 }
 
 module.exports = {
 	typeDefs,
+	queryResolvers,
 	mutationResolvers,
 }

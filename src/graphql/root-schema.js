@@ -21,6 +21,10 @@ const rootTypeDefs = gql`
 	type RootQuery {
 		user(email: String): User
 		device(mac: String): Device
+		ledStrip(mac: String!, ledStripId: String!): LedStrip!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+		ledStrips(mac: String!): [LedStrip!]!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(mac: String!, secret: String!, pin: PIN): DeviceAuthData!
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
@@ -108,6 +112,7 @@ const rootSchema = {
 			...authSchema.queryResolvers,
 			...userSchema.queryResolvers,
 			...deviceSchema.queryResolvers,
+			...ledStripSchema.queryResolvers,
 			...measurementSchema.queryResolvers,
 		},
 		RootMutation: {

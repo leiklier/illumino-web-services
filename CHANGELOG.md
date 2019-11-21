@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/latest-firmware-binary` REST endpoint lets authorized `Device` download latest `Firmware` binary.
 - `ledStrip` mongoose schema for storing settings for `ledStrips` belonging to `Device`s.
 - `ledStrips` attribute for `Device`s - contains the settings for the `ledStrip`s belonging to a certain `Device`.
+- `ledStrip` GraphQL query for querying a specific ledStrip based on `mac` and `ledStripId`.
+- `ledStrips` GraphQL query for querying all ledStrips belonging to a `Device` with a certain `mac`.
 
 ## [v0.2.0] - 2019-06-29
 
