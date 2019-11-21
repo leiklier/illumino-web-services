@@ -8,7 +8,8 @@ const createDataLoaders = require('../dataloaders')
 const context = async ({ req, connection }) => {
 	let context = {
 		...createDataLoaders(),
-		clientIp: req.ip,
+		//                     ,-- for HTTP           ,-- for WS
+		clientIp: (req && req.ip) || connection.remoteAddress,
 	}
 
 	// Authorization:
