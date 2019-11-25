@@ -172,6 +172,11 @@ queryResolvers.device = async (obj, { mac, secret }, context) => {
 	return { id: device.id }
 }
 
+queryResolvers.devices = async (obj, { secrets }, context) => {
+	const devices = await Device.find({ secret: { $in: secrets } })
+	return devices
+}
+
 mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	const {
 		userByEmailLoader,

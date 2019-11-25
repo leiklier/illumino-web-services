@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setColorOnLedStrip` GraphQL mutation changes `color` for a certain ledStrip.
 - `setAnimationTypeOnLedStrip` GraphQL mutation changes `animationType` for a certain ledStrip.
 - `setAnimationTypeOnLedStrip` GraphQL mutation changes `animationType` for a certain ledStrip.
+- `devices` GraphQL query - lets a user query `Device`s on an array of `secret`s.
 
 ### Changed
 
