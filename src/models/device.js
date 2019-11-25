@@ -144,6 +144,10 @@ deviceSchema.virtual('hasOwner').get(function() {
 	return Boolean(this.owner)
 })
 
+deviceSchema.virtual('hasPin').get(function() {
+	return Boolean(this.pin)
+})
+
 deviceSchema.plugin(bcryptPlugin)
 
 module.exports = mongoose.model('Device', deviceSchema)

@@ -133,20 +133,6 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
-	if (pin && !device.pin) {
-		logger.warn(
-			`Device with mac ${
-				device.mac
-			} tried to login with pin, but pin is not set`,
-			{
-				target: 'DEVICE',
-				event: 'LOGIN_FAILED',
-				meta: { device: device.id, errorCode: error.PIN_IS_NOT_SET, clientIp },
-			},
-		)
-		throw new ApolloError(error.PIN_IS_NOT_SET)
-	}
-
 	if (device.pin && !pin) {
 		logger.warn(
 			`Device with mac ${

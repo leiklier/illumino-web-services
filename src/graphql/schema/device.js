@@ -20,6 +20,8 @@ const typeDefs = gql`
 		owner: User
 		managers: [User!]!
 
+		hasPin: Boolean!
+
 		installedFirmware: Firmware!
 			@requiresAuth(acceptsOnly: [SELF, ADMIN, OWNER, MANAGER])
 
@@ -102,6 +104,15 @@ const DeviceResolver = {
 		}
 		return deviceFound.managers
 	},
+	hasPin: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return []
+		}
+		return deviceFound.hasPin
+	},
 	installedFirmware: async (device, args, context) => {
 		const { deviceByIdLoader } = context
 
@@ -141,11 +152,13 @@ const DeviceResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.device = async (obj, { mac }, context) => {
+queryResolvers.device = async (obj, { mac, secret }, context) => {
 	const { deviceByIdLoader, deviceByMacLoader } = context
 	let device
 	if (mac) {
 		device = await deviceByMacLoader.load(mac)
+	} else if (secret) {
+		device = await Device.findOne({ secret })
 	} else if (context.device) {
 		device = await deviceByIdLoader.load(context.device.id)
 	} else {

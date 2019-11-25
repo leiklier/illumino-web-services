@@ -20,7 +20,7 @@ const rootTypeDefs = gql`
 
 	type RootQuery {
 		user(email: String): User
-		device(mac: String): Device
+		device(mac: String, secret: String): Device
 		ledStrip(mac: String!, ledStripId: String!): LedStrip!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		ledStrips(mac: String!): [LedStrip!]!
@@ -36,7 +36,7 @@ const rootTypeDefs = gql`
 		setBrightnessOnLedStrip(
 			mac: String!
 			ledStripId: ID!
-			brightness: Float
+			brightness: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		setColorOnLedStrip(

@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `loginDevice` GraphQL query no longer requires `mac`.
+- `refreshToken` is renamed `accessToken` and returns an `accessToken` when the actor has a valid `refreshToken`.
+- `device` GraphQL query now also takes `secret` as parameter.
+- `Device`s can be queried on `hasPin`attribute.
 
 ## [v0.2.0] - 2019-06-29
 
