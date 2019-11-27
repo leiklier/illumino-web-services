@@ -1,8 +1,10 @@
-const { gql, ApolloError } = require('apollo-server-express')
+const { gql, ApolloError, withFilter } = require('apollo-server-express')
 const { isMACAddress } = require('validator')
 const SHA256 = require('crypto-js/sha256')
 
 const logger = require('../../logger')
+
+const pubsub = require('../pubsub')
 
 const Device = require('../../models/device')
 const Measurement = require('../../models/measurement')
@@ -15,7 +17,7 @@ const typeDefs = gql`
 	type Device {
 		id: ID!
 		mac: String!
-		secret: String! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER, ADMIN])
+		secret: String!
 		name: String
 		owner: User
 		managers: [User!]!
@@ -149,8 +151,20 @@ const DeviceResolver = {
 	},
 }
 
+const subscriptionResolvers = {}
 const queryResolvers = {}
 const mutationResolvers = {}
+
+subscriptionResolvers.device = {
+	subscribe: withFilter(
+		() => pubsub.asyncIterator('device'),
+		async (payload, args, context) => {
+			const { deviceByIdLoader } = context
+			const device = await deviceByIdLoader.load(payload.device.id)
+			return device.mac === args.mac
+		},
+	),
+}
 
 queryResolvers.device = async (obj, { mac, secret }, context) => {
 	const { deviceByIdLoader, deviceByMacLoader } = context
@@ -350,6 +364,7 @@ mutationResolvers.txBeacon = async (obj, args, context) => {
 
 module.exports = {
 	typeDefs,
+	subscriptionResolvers,
 	queryResolvers,
 	mutationResolvers,
 	DeviceResolver,

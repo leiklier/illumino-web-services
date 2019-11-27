@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setAnimationTypeOnLedStrip` GraphQL mutation changes `animationType` for a certain ledStrip.
 - `devices` GraphQL query lets a user query `Device`s on an array of `secret`s.
 - `secretIsValid` GraphQL query lets a user check if a secret belongs to a `Device`.
+- `device` GraphQL subscription lets a user listen for changes to a certain `Device`.
 
 ### Changed
 
