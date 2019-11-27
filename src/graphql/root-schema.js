@@ -22,6 +22,7 @@ const rootTypeDefs = gql`
 		user(email: String): User
 		device(mac: String, secret: String): Device
 		devices(secrets: [String!]!): [Device!]!
+		secretIsValid(secret: String!): Boolean!
 		ledStrip(mac: String!, ledStripId: String!): LedStrip!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		ledStrips(mac: String!): [LedStrip!]!

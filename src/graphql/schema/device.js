@@ -177,6 +177,11 @@ queryResolvers.devices = async (obj, { secrets }, context) => {
 	return devices
 }
 
+queryResolvers.secretIsValid = async (obj, { secret }, context) => {
+	const deviceIsFound = await Device.findOne({ secret })
+	return Boolean(deviceIsFound)
+}
+
 mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	const {
 		userByEmailLoader,
