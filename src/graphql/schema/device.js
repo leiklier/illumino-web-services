@@ -159,9 +159,13 @@ subscriptionResolvers.device = {
 	subscribe: withFilter(
 		() => pubsub.asyncIterator('device'),
 		async (payload, args, context) => {
-			const { deviceByIdLoader } = context
+			// TODO: Cache clearing should be done in context
+			const { deviceByIdLoader, deviceByMacLoader } = context
 			const device = await deviceByIdLoader.load(payload.device.id)
-			return device.mac === args.mac
+			deviceByIdLoader.clear(device.id)
+			deviceByMacLoader.clear(device.mac)
+
+			return context.device && payload.device.id === context.device.id
 		},
 	),
 }

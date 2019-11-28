@@ -14,7 +14,7 @@ const ledStripSchema = require('./schema/led-strip')
 const rootTypeDefs = gql`
 	type RootSubsription {
 		user(email: String!): User!
-		device(mac: String!): Device!
+		device: Device!
 		newMeasurements(mac: String!): Measurement!
 		newFirmwares(mac: String): Firmware!
 	}

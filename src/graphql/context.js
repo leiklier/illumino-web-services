@@ -65,9 +65,6 @@ const context = async ({ req, res, connection }) => {
 const onConnect = async (connectionParams, webSocket) => {
 	let context = {}
 
-	// TODO: connectionParams is not tested, test in
-	// ApolloClient and remove this comment when
-	// confirmed working
 	if (connectionParams.authToken) {
 		const token = connectionParams.authToken
 
