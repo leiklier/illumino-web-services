@@ -31,11 +31,18 @@ const typeDefs = gql`
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		ledStrips: [LedStrip!]! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		sunset: Sunset! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
 	type DeviceType {
 		model: DeviceModel!
 		version: String!
+	}
+
+	type Sunset {
+		startedAt: DateTime
+		endingAt: DateTime
 	}
 
 	enum DeviceModel {
@@ -148,6 +155,16 @@ const DeviceResolver = {
 		}
 
 		return deviceFound.ledStrips
+	},
+	sunset: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return []
+		}
+
+		return deviceFound.sunset
 	},
 }
 
@@ -364,6 +381,36 @@ mutationResolvers.txBeacon = async (obj, args, context) => {
 	await device.save()
 
 	return device.lastSeenAt.toISOString()
+}
+
+mutationResolvers.setSunset = async (
+	obj,
+	{ mac, startedAt, endingAt },
+	context,
+) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunset = { startedAt, endingAt }
+	await device.save()
+
+	return device.sunset
+}
+
+mutationResolvers.clearSunset = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunset = { startedAt: null, endingAt: null }
+	await device.save()
+
+	return device.sunset
 }
 
 module.exports = {

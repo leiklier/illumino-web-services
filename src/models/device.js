@@ -130,6 +130,10 @@ const deviceSchema = new Schema(
 			},
 		],
 		ledStrips: [ledStripSchema],
+		sunset: {
+			startedAt: Date,
+			endingAt: Date,
+		},
 	},
 	{ toObject: { virtuals: true } },
 )

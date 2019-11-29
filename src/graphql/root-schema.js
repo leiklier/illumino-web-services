@@ -60,6 +60,12 @@ const rootTypeDefs = gql`
 			animationSpeed: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		setSunset(mac: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		clearSunset(mac: String!): Sunset!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
@@ -70,7 +76,7 @@ const rootTypeDefs = gql`
 
 		grantAdmin(email: String!): User! @requiresAuth(acceptsOnly: ROOT)
 
-		txBeacon: String! @requiresAuth(acceptsOnly: DEVICE)
+		txBeacon: String! @requiresAuth(acceptsOnly: DEVICE, cannotBeHuman: true)
 
 		txMeasurement(
 			type: MeasurementType!

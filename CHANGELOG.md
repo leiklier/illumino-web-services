@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `devices` GraphQL query lets a user query `Device`s on an array of `secret`s.
 - `secretIsValid` GraphQL query lets a user check if a secret belongs to a `Device`.
 - `device` GraphQL subscription lets a user listen for changes to a certain `Device`.
+- `setSunset` GraphQL mutation.
+- `clearSunset` GraphQL mutation.
 
 ### Changed
 
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `refreshToken` is renamed `accessToken` and returns an `accessToken` when the actor has a valid `refreshToken`.
 - `device` GraphQL query now also takes `secret` as parameter.
 - `Device`s can be queried on `hasPin`attribute.
+- `Device`s also has a `sunset` attribute.
 
 ## [v0.2.0] - 2019-06-29
 
