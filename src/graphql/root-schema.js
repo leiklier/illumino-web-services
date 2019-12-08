@@ -60,6 +60,12 @@ const rootTypeDefs = gql`
 			animationSpeed: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		setLedStripsAreSynced(mac: String!, masterLedStripId: ID!): Device!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		clearLedStripsAreSynced(mac: String!): Device!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		setSunset(mac: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 

@@ -32,6 +32,9 @@ const typeDefs = gql`
 
 		ledStrips: [LedStrip!]! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		ledStripsAreSynced: Boolean!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		sunset: Sunset! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
@@ -155,6 +158,16 @@ const DeviceResolver = {
 		}
 
 		return deviceFound.ledStrips
+	},
+	ledStripsAreSynced: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return false
+		}
+
+		return deviceFound.ledStripsAreSynced
 	},
 	sunset: async (device, args, context) => {
 		const { deviceByIdLoader } = context

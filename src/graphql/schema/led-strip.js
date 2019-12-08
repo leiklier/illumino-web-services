@@ -80,21 +80,29 @@ mutationResolvers.setBrightnessOnLedStrip = async (
 	context,
 ) => {
 	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
 
+	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
-
 	if (!ledStrip) {
 		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
 	}
 
-	ledStrip.brightness = brightness
-	await device.save()
+	if (device.ledStripsAreSynced) {
+		device.ledStrips = device.toObject().ledStrips.map(ledStrip => {
+			return {
+				...ledStrip,
+				brightness,
+			}
+		})
+	} else {
+		ledStrip.brightness = brightness
+	}
 
+	await device.save()
 	return ledStrip
 }
 
@@ -104,21 +112,29 @@ mutationResolvers.setColorOnLedStrip = async (
 	context,
 ) => {
 	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
 
+	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
-
 	if (!ledStrip) {
 		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
 	}
 
-	ledStrip.color = color
-	await device.save()
+	if (device.ledStripsAreSynced) {
+		device.ledStrips = device.toObject().ledStrips.map(ledStrip => {
+			return {
+				...ledStrip,
+				color,
+			}
+		})
+	} else {
+		ledStrip.color = color
+	}
 
+	await device.save()
 	return ledStrip
 }
 
@@ -128,21 +144,32 @@ mutationResolvers.setAnimationTypeOnLedStrip = async (
 	context,
 ) => {
 	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
 
+	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
-
 	if (!ledStrip) {
 		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
 	}
 
-	ledStrip.animation.type = animationType
-	await device.save()
+	if (device.ledStripsAreSynced) {
+		device.ledStrips = device.toObject().ledStrips.map(ledStrip => {
+			return {
+				...ledStrip,
+				animation: {
+					...ledStrip.animation,
+					type: animationType,
+				},
+			}
+		})
+	} else {
+		ledStrip.animation.type = animationType
+	}
 
+	await device.save()
 	return ledStrip
 }
 
@@ -152,22 +179,78 @@ mutationResolvers.setAnimationSpeedOnLedStrip = async (
 	context,
 ) => {
 	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
 
+	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
 	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
-
 	if (!ledStrip) {
 		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
 	}
 
-	ledStrip.animation.speed = animationSpeed
+	if (device.ledStripsAreSynced) {
+		device.ledStrips = device.toObject().ledStrips.map(ledStrip => {
+			return {
+				...ledStrip,
+				animation: {
+					...ledStrip.animation,
+					speed: animationSpeed,
+				},
+			}
+		})
+	} else {
+		ledStrip.animation.speed = animationSpeed
+	}
+
+	await device.save()
+	return ledStrip
+}
+
+mutationResolvers.setLedStripsAreSynced = async (
+	obj,
+	{ mac, masterLedStripId },
+	context,
+) => {
+	const { deviceByMacLoader } = context
+
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	const { brightness, color, animation } = device.ledStrips.find(
+		ledStrip => ledStrip.id === masterLedStripId,
+	)
+
+	device.ledStrips = device.toObject().ledStrips.map(ledStrip => {
+		return {
+			...ledStrip,
+			brightness,
+			color,
+			animation,
+		}
+	})
+
+	device.ledStripsAreSynced = true
 	await device.save()
 
-	return ledStrip
+	return device
+}
+
+mutationResolvers.clearLedStripsAreSynced = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.ledStripsAreSynced = false
+	await device.save()
+
+	return device
 }
 
 module.exports = {

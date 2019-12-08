@@ -16,6 +16,7 @@ const ledStripSchema = new Schema(
 		},
 		brightness: {
 			type: Number,
+			required: true,
 			min: 0,
 			max: 1,
 			default: 1,
@@ -25,6 +26,7 @@ const ledStripSchema = new Schema(
 				type: Number,
 				validator: Number.isInteger,
 				message: '{VALUE} is not an integer value',
+				required: true,
 				min: 0,
 				max: 255,
 				default: 0,
@@ -33,6 +35,7 @@ const ledStripSchema = new Schema(
 				type: Number,
 				validator: Number.isInteger,
 				message: '{VALUE} is not an integer value',
+				required: true,
 				min: 0,
 				max: 255,
 				default: 0,
@@ -41,6 +44,7 @@ const ledStripSchema = new Schema(
 				type: Number,
 				validator: Number.isInteger,
 				message: '{VALUE} is not an integer value',
+				required: true,
 				min: 0,
 				max: 255,
 				default: 0,
@@ -49,11 +53,13 @@ const ledStripSchema = new Schema(
 		animation: {
 			type: {
 				type: String,
+				required: true,
 				enum: ['MANUAL', 'LAVA', 'RAINBOW', 'SUNRISE', 'SUNSET'],
 				default: 'MANUAL',
 			},
 			speed: {
 				type: Number,
+				required: true,
 				min: 0,
 				max: 1,
 				default: 0.5,
@@ -94,7 +100,7 @@ const deviceSchema = new Schema(
 			bcrypt: true,
 		},
 		pin: {
-			// 4 digit number, used to unlock Device
+			// 6 digit number, used to unlock Device
 			// optional sec-feature for `loginDevice`
 			// GraphQL query
 			type: String,
@@ -130,6 +136,11 @@ const deviceSchema = new Schema(
 			},
 		],
 		ledStrips: [ledStripSchema],
+		ledStripsAreSynced: {
+			type: Boolean,
+			required: true,
+			default: false,
+		},
 		sunset: {
 			startedAt: Date,
 			endingAt: Date,
