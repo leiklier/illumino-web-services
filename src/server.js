@@ -23,7 +23,13 @@ app.use(bodyParser.json())
 enableRestEndpoints(app)
 
 const server = new ApolloServer(graphqlSchema)
-server.applyMiddleware({ app })
+server.applyMiddleware({
+	app,
+	cors: {
+		origin: ['http://192.168.1.14:3000', 'http://localhost:8080'],
+		credentials: true,
+	},
+})
 
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)

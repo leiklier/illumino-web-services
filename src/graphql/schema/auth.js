@@ -7,6 +7,7 @@ const {
 	getAccessTokenByUser,
 	getRefreshTokenByDevice,
 	getAccessTokenByDevice,
+	tokenIsValid,
 	getTokenPayload,
 	getTokenExpiration,
 	getAuthTypeByToken,
@@ -101,6 +102,7 @@ queryResolvers.loginUser = async (obj, { email, password }, context) => {
 
 	res.cookie('refresh-token', refreshToken, {
 		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+		httpOnly: true,
 	})
 
 	logger.info(`User with email ${user.email} logged in`, {
@@ -171,6 +173,7 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 
 	res.cookie('refresh-token', refreshToken, {
 		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+		httpOnly: true,
 	})
 
 	logger.info(`Device with mac ${device.mac} logged in`, {
@@ -220,6 +223,7 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 
 	res.cookie('refresh-token', refreshToken, {
 		maxAge: getTokenExpiration(refreshToken) - Date.now(),
+		httpOnly: true,
 	})
 
 	logger.info(`Device with mac ${device.mac} authorized`, {
@@ -237,6 +241,13 @@ queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
 
 queryResolvers.isAuth = async (obj, args, context, info) => {
 	return context.user || context.device ? true : false
+}
+
+queryResolvers.hasRefreshToken = async (obj, args, context) => {
+	const { req } = context
+	const refreshToken = req.cookies['refresh-token']
+	if (!refreshToken) return false
+	return tokenIsValid(refreshToken)
 }
 
 queryResolvers.accessToken = async (obj, args, context) => {

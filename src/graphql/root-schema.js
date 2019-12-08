@@ -33,6 +33,7 @@ const rootTypeDefs = gql`
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
 		accessToken: AuthData!
 		isAuth: Boolean!
+		hasRefreshToken: Boolean!
 	}
 
 	type RootMutation {

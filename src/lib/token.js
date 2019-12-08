@@ -164,6 +164,16 @@ const getDeviceByToken = async token => {
 	}
 }
 
+const tokenIsValid = token => {
+	try {
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET)
+		if (!decryptedToken) return false
+		return true
+	} catch (err) {
+		return false
+	}
+}
+
 const getTokenPayload = token => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
@@ -200,6 +210,8 @@ module.exports = {
 
 	getUserByToken,
 	getDeviceByToken,
+
+	tokenIsValid,
 
 	getTokenPayload,
 	getTokenExpiration,
