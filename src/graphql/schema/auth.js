@@ -67,6 +67,19 @@ const AuthDataResolver = {
 const queryResolvers = {}
 const mutationResolvers = {}
 
+queryResolvers.logout = async (obj, args, context) => {
+	const { req, res } = context
+
+	const refreshToken = req.cookies['refresh-token']
+	if (!refreshToken) return false
+
+	res.cookie('refresh-token', null, {
+		maxAge: 1,
+		httpOnly: true,
+	})
+	return true
+}
+
 queryResolvers.loginUser = async (obj, { email, password }, context) => {
 	const { userByEmailLoader, clientIp, res } = context
 	const user = await userByEmailLoader.load(email)

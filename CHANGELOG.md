@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `clearSunset` GraphQL mutation.
 - `ledStrips` can be synced for a certain `Device` - overriding `brightness`, `color` and `animation` across the `ledStrips` and making them become equal.
 - `hasRefreshToken` GraphQL query for checking whether or not the client has a valid `refreshToken`.
+- `logout` GraphQL query clears the refreshToken set in cookie.
 
 ### Changed
 

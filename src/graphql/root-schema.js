@@ -28,6 +28,7 @@ const rootTypeDefs = gql`
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		ledStrips(mac: String!): [LedStrip!]!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+		logout: Boolean!
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(secret: String!, pin: PIN): DeviceAuthData!
 		authDevice(mac: String!, authKey: String!): DeviceAuthData!
