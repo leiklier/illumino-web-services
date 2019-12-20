@@ -17,7 +17,7 @@ const typeDefs = gql`
 	type Device {
 		id: ID!
 		mac: String!
-		secret: String!
+		secret: String! @requiresAuth(acceptsOnly: [SELF, ADMIN, OWNER, MANAGER])
 		name: String
 		owner: User
 		managers: [User!]!

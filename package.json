@@ -1,5 +1,5 @@
 {
-	"name": "ambientalarm-api",
+	"name": "illumino-api",
 	"version": "v0.1.0",
 	"private": true,
 	"main": "src/server.js",
@@ -8,7 +8,7 @@
 		"restart": "pm2 reload api-server --update-env",
 		"stop": "pm2 stop api-server",
 		"stag": "NODE_ENV=staging pm2 start ./src/server.js -i 0 --name \"api-server\"",
-		"dev": "NODE_ENV=development nodemon .",
+		"dev": "PORT=4000 NODE_ENV=development nodemon .",
 		"test": "NODE_ENV=test jest --coverage"
 	},
 	"repository": "https://github.com/leiklier/ambientalarm-api.git",

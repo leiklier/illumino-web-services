@@ -41,9 +41,12 @@ server.installSubscriptionHandlers(httpServer)
 // https://gist.github.com/davisford/bb37079900888c44d2bbcb2c52a5d6e8
 
 mongoose
-	.connect(`mongodb://localhost:27017/${MONGO_DB}?replicaSet=replocal`, {
-		useNewUrlParser: true,
-	})
+	.connect(
+		`mongodb+srv://dbUser:OdlHOQDukkJkjNy8@illumino-p68vt.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`,
+		{
+			useNewUrlParser: true,
+		},
+	)
 	.then(() => {
 		httpServer.listen(PORT, () => {
 			logger.info(

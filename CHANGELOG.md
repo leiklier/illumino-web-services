@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Renamed API to `illumino-api`.
+- Moved from local db to `MongoDB Atlas`.
 - `loginDevice` GraphQL query no longer requires `mac`.
 - `refreshToken` is renamed `accessToken` and returns an `accessToken` when the actor has a valid `refreshToken`.
 - `device` GraphQL query now also takes `secret` as parameter.
@@ -82,6 +84,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `createUser` GraphQL mutation.
 - `login` GraphQL query for logging in a `User`.
 
-[unreleased]: https://github.com/leiklier/ambientalarm-api/compare/v0.2.0...HEAD
-[v0.2.0]: https://github.com/leiklier/ambientalarm-api/compare/v0.1.0...v0.2.0
-[v0.1.0]: https://github.com/leiklier/ambientalarm-api/releases/tag/v0.1.0
+[unreleased]: https://github.com/leiklier/illumino-api/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/leiklier/illumino-api/compare/v0.1.0...v0.2.0
+[v0.1.0]: https://github.com/leiklier/illumino-api/releases/tag/v0.1.0
