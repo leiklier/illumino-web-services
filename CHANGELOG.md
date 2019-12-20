@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0] - 2019-12-20
+
 ### Security
 
 - Authentication is now enhanced by migrating to a refresh- and access token scheme. A long lived refresh token is set as cookie upon authenticating. This cookie is used in the `authToken` query to retrieve a token which is used as previously for authorization.
@@ -84,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `createUser` GraphQL mutation.
 - `login` GraphQL query for logging in a `User`.
 
-[unreleased]: https://github.com/leiklier/illumino-api/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/leiklier/illumino-api/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/leiklier/illumino-api/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/leiklier/illumino-api/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/leiklier/illumino-api/releases/tag/v0.1.0
