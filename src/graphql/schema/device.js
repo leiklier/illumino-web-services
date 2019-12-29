@@ -24,6 +24,8 @@ const typeDefs = gql`
 
 		hasPin: Boolean!
 
+		type: DeviceType!
+
 		installedFirmware: Firmware!
 			@requiresAuth(acceptsOnly: [SELF, ADMIN, OWNER, MANAGER])
 
@@ -124,6 +126,15 @@ const DeviceResolver = {
 			return []
 		}
 		return deviceFound.hasPin
+	},
+	type: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return []
+		}
+		return deviceFound.type
 	},
 	installedFirmware: async (device, args, context) => {
 		const { deviceByIdLoader } = context
