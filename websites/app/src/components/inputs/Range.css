@@ -1,0 +1,55 @@
+.container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+}
+
+.fill {
+	background: rgba(255, 255, 255, 0.7);
+	border-bottom-left-radius: 1rem;
+}
+
+.icon {
+	position: absolute;
+	color: #777;
+}
+
+/* Conditional styling */
+
+.fillIfDisabled {
+	background: rgba(255, 255, 255, 0.55);
+}
+
+/* - if horizontal - */
+.containerIfHorizontal {
+	flex-direction: row;
+}
+
+.fillIfHorizontal {
+	height: 100%;
+	border-top-left-radius: 1rem;
+}
+
+.iconIfHorizontal {
+	left: 0;
+	margin-left: 1rem;
+}
+
+/* - if vertical - */
+.containerIfVertical {
+	flex-direction: column;
+}
+
+.fillIfVertical {
+	width: 100%;
+	margin-top: auto;
+	border-bottom-right-radius: 1rem;
+}
+
+.iconIfVertical {
+	bottom: 0;
+	margin-bottom: 1rem;
+}

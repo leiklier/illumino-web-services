@@ -1,0 +1,23 @@
+.container {
+	z-index: 9999;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.containerIfIdle {
+	display: none;
+}
+
+.text {
+	margin: 2rem 0;
+	font-size: 1.8rem;
+}

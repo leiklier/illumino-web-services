@@ -1,0 +1,1 @@
+docker image build -t illumino/frontend-api --target=dev ./apis/frontend
