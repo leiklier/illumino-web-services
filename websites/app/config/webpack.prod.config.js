@@ -8,7 +8,7 @@ const workboxPlugin = require('workbox-webpack-plugin')
 // Configs
 const baseConfig = require('./webpack.base.config')
 
-const prodConfiguration = env => {
+const prodConfig = env => {
 	return merge([
 		{
 			optimization: {
@@ -39,5 +39,5 @@ const prodConfiguration = env => {
 }
 
 module.exports = env => {
-	return merge(baseConfig(env), prodConfiguration(env))
+	return merge(baseConfig(env), prodConfig(env))
 }
