@@ -1,0 +1,22 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: illumino-ingress
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: web-app-service
+              servicePort: 80
+
+    - host: api.localhost
+      http:
+        paths:
+          - path: /graphql
+            backend:
+              serviceName: frontend-api-service
+              servicePort: 80

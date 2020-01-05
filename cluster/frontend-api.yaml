@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-api
+spec:
+  selector:
+    matchLabels:
+      app: frontend-api
+      tier: backend
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: frontend-api
+        tier: backend
+    spec:
+      containers:
+        - name: frontend-api
+          image: leiklier/illumino:frontend-api-prod
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend-api
+  name: frontend-api-service
+spec:
+  ports:
+    - name: web
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: frontend-api
+---
+
