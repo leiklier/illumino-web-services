@@ -8,7 +8,7 @@ import {
 export default function reducer(
 	state = {
 		background: {
-			color: { red: 60, green: 92, blue: 115 },
+			color: { red: 80, green: 5, blue: 30 },
 		},
 		content: {
 			isBlurred: false,

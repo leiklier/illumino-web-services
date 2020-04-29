@@ -1,7 +1,7 @@
 # ---- BASE IMAGE ----
 
 # Latest LTS (major: 12)
-FROM node:12-slim as base
+FROM node:12-slim AS base
 
 ENV NODE_ENV production
 
@@ -30,7 +30,7 @@ RUN yarn install --no-optional && yarn cache clean --force
 # ---- DEV IMAGE ----
 
 # Start from base image
-FROM base as dev
+FROM base AS dev
 
 # Expose debugger port
 EXPOSE $PORT 9229
@@ -38,18 +38,18 @@ EXPOSE $PORT 9229
 # Install devDependencies
 ENV NODE_ENV development
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN yarn install --only=development
+RUN yarn install --only=development && yarn cache clean --force
 
 # NB: Notice that no application is bundled!
 # This has to be done in Kubernetes as a bind mount
 
 # Restart on file changes
-CMD ["nodemon", "./src/server.js"]
+CMD ["nodemon", "./src/server.js", "--inspect=0.0.0.0:9229"]
 
 # ---- PROD IMAGE ----
 
 # Start from base image
-FROM base as prod
+FROM base AS prod
 
 # Bundle our application code
 COPY --chown=node:node . .

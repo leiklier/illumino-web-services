@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-api
+spec:
+  selector:
+    matchLabels:
+      app: frontend-api
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend-api
+        tier: backend
+    spec:
+      containers:
+        - name: frontend-api
+          image: localhost:32000/illumino:frontend-api-dev
+          volumeMounts:
+            - mountPath: /app/src
+              name: src-volume
+            - mountPath: /app/package.json
+              name: dependencies-volume
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          ports:
+            - containerPort: 3000
+      volumes:
+        - name: src-volume
+          hostPath:
+            # TODO: Migrate to helm and make this a relative path
+            path: /home/leiklier/illumino/apis/frontend/src
+            type: Directory
+        - name: dependencies-volume
+          hostPath:
+            path: /home/leiklier/illumino/apis/frontend/package.json
+            type: File
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend-api
+  name: frontend-api-service
+spec:
+  ports:
+    - name: web
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: frontend-api
+---
+

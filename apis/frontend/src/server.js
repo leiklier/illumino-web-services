@@ -11,7 +11,7 @@ const bodyParser = require('body-parser')
 const { ApolloServer } = require('apollo-server-express')
 const mongoose = require('mongoose')
 
-const { PORT, MONGO_DB } = process.env
+const { NODE_ENV, PORT, MONGO_DB } = process.env
 
 const logger = require('./logger')
 const enableRestEndpoints = require('./rest')
@@ -26,13 +26,36 @@ const server = new ApolloServer(graphqlSchema)
 server.applyMiddleware({
 	app,
 	cors: {
-		origin: ['http://192.168.1.14:3000', 'http://localhost:8080'],
+		origin: 'http://get-illumi.no',
 		credentials: true,
 	},
 })
 
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
+
+// Since this application may be dockerized, we want to
+// watch for changes in package.json, and install new
+// packages if file changes:
+if (NODE_ENV === 'development') {
+	const { exec } = require('child_process')
+	function installPackages() {
+		exec('yarn install', (err, stdout, stderr) => {
+			if (err) {
+				// node couldn't execute the command
+				return
+			}
+
+			//console.log(stdout)
+		})
+	}
+
+	// Install new packages on spawn:
+	// ( since nodemon restarts server on
+	// package.json change, this is
+	// sufficient )
+	installPackages()
+}
 
 // NB: The application is utilizing change streams,
 // and thus requires the mongod instance to be a
@@ -48,10 +71,11 @@ mongoose
 		},
 	)
 	.then(() => {
-		httpServer.listen(PORT, () => {
+
+		httpServer.listen(PORT || 3000, () => {
 			logger.info(
 				`Server started with endpoints http://localhost:${PORT}${
-					server.graphqlPath
+				server.graphqlPath
 				}, ws://localhost:${PORT}${server.subscriptionsPath}`,
 				{ target: 'SERVER', event: 'STARTED' },
 			)

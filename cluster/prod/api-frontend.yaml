@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: frontend-api
       tier: backend
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend-api
-          image: leiklier/illumino:frontend-api-prod
+          image: localhost:32000/illumino-frontend-api:latest
           resources:
             limits:
               cpu: 100m

@@ -12,7 +12,7 @@ The following **prerequisities** are required on your machine:
 
 If you are using Docker Desktop, this bundles both `docker-machine` and Kubernetes.
 
-**NB**: The cluster is exposed on PORT 80, so please make sure that this port is available.
+**NB**: The cluster is exposed on PORT 80, so please make sure that this port is available on the host machine.
 
 Since you are deploying the cluster on bare metal (no cloud provider), an `IngressController` is necessary for using URLs to route services. A sufficiently good controller can most easily be configured using `helm`:
 
@@ -24,7 +24,7 @@ $ helm install illumino-ic stable/traefik --namespace kube-system
 To **deploy the cluster** on your machine for development purposes, simply run
 
 ```bash
-$ kubectl apply -f cluster --namespace=illumino-dev
+$ kubectl apply -f cluster/dev
 ```
 
 from the root of this repository.
@@ -32,7 +32,7 @@ from the root of this repository.
 To **remove the cluster** from your machine, you should run
 
 ```bash
-$ kubectl delete -f cluster --namespace=illumino-dev
+$ kubectl delete -f cluster/dev
 ```
 
 from the root of this repository.
@@ -51,9 +51,8 @@ from the root of this repository.
 │   ├── admin
 │   └── app
 ├── cluster
-│   ├── app.yaml
-│   ├── frontend-api.yaml
-│   └── ingress.yaml
+│   ├── dev
+│   └── prod
 └── db
 
 ```
@@ -66,9 +65,9 @@ In **prod**: `<BASE-URL> = get-illumi.no`
 
 ## How to develop
 
-When using the `development` cluster, the source files are bind mounted inside their respective pods. Also, all pods are configured in such a way that they will restart when files are changing. Therefore, your development workflow should not differ much from what you are used to.
+When using the `dev` cluster, the source files are bind mounted inside their respective pods. Also, all pods are configured in such a way that they will restart when files are changing. Therefore, your development workflow should not differ much from what you are used to.
 
-Using docker does however come with a caveat; since compiled modules are OS dependent, you cannot simply run `yarn add` inside a directory, since this may result in an incompatibility issue if OS != Linux. Instead, such a command should be run inside a Kubernetes `Job`.
+Using docker does however come with a caveat; since compiled modules are OS dependent, you cannot simply run `yarn add` inside a directory, since this may result in an incompatibility issue if your OS != Linux. Instead, such a command should be run inside a Kubernetes `Job`.
 
 **TLDR**:
 
