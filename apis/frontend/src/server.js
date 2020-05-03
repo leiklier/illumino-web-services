@@ -34,29 +34,6 @@ server.applyMiddleware({
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
-// Since this application may be dockerized, we want to
-// watch for changes in package.json, and install new
-// packages if file changes:
-if (NODE_ENV === 'development') {
-	const { exec } = require('child_process')
-	function installPackages() {
-		exec('yarn install', (err, stdout, stderr) => {
-			if (err) {
-				// node couldn't execute the command
-				return
-			}
-
-			//console.log(stdout)
-		})
-	}
-
-	// Install new packages on spawn:
-	// ( since nodemon restarts server on
-	// package.json change, this is
-	// sufficient )
-	installPackages()
-}
-
 // NB: The application is utilizing change streams,
 // and thus requires the mongod instance to be a
 // replica set. For info on how to configure it
