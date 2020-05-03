@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend-api
-          image: localhost:32000/illumino:frontend-api-dev
+          image: localhost:32000/illumino-frontend-api--dev:latest
           volumeMounts:
             - mountPath: /app/src
               name: src-volume
@@ -25,19 +25,19 @@ spec:
               name: dependencies-volume
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 1
+              memory: 500M
           ports:
             - containerPort: 3000
       volumes:
         - name: src-volume
           hostPath:
             # TODO: Migrate to helm and make this a relative path
-            path: /home/leiklier/illumino/apis/frontend/src
+            path: /home/leiklier/illumino-web-services/apis/frontend/src
             type: Directory
         - name: dependencies-volume
           hostPath:
-            path: /home/leiklier/illumino/apis/frontend/package.json
+            path: /home/leiklier/illumino-web-services/apis/frontend/package.json
             type: File
 
 ---

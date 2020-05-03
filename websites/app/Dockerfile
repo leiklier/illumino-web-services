@@ -19,6 +19,13 @@ WORKDIR /app
 # node is an unprivileged user
 USER node
 
+# Add runtimes files
+# ( These should stay static, and thus requires
+# a rebuild if changed )
+COPY --chown=node:node config ./config
+COPY --chown=node:node server ./server
+COPY --chown=node:node postcss.config.js .babelrc ./
+
 # Install packages before bundling
 # to take advantage of cached layers
 COPY --chown=node:node package.json yarn.lock ./
@@ -30,7 +37,7 @@ RUN yarn install && yarn cache clean --force
 CMD ["webpack-dev-server", \
     "--mode", "development", \
     "--config", "config/webpack.dev.config.js", \
-    "--env.PORT", "${PORT}"]
+    "--env.PORT", "3000"] # TODO: replace 3000 with ${PORT}
 
 
 

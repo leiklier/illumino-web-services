@@ -10,6 +10,7 @@ const APP_DIR = path.resolve(__dirname, '../src')
 const devConfig = env => {
 	return {
 		devServer: {
+			disableHostCheck: true,
 			contentBase: APP_DIR,
 			hot: true,
 			inline: true,

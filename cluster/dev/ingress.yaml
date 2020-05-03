@@ -3,14 +3,25 @@ kind: Ingress
 apiVersion: extensions/v1beta1
 metadata:
   name: illumino-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://get-illumi.no"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.org/websocket-services: "frontend-api-service"
 spec:
   rules:
-    - host: api.localhost
+    - host: get-illumi.no
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: web-app-service
+              servicePort: 80
+
+    - host: api.get-illumi.no
       http:
         paths:
           - path: /graphql
             backend:
               serviceName: frontend-api-service
               servicePort: 80
----
-
