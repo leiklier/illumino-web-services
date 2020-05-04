@@ -21,6 +21,9 @@ WORKDIR /app
 # node is an unprivileged user
 USER node
 
+# Add environment variables from .env file
+COPY --chown=node:node .env ./
+
 # Install packages before bundling
 # to take advantage of cached layers
 COPY --chown=node:node package.json yarn.lock ./
