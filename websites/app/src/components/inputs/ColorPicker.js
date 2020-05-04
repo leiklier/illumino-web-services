@@ -1,17 +1,46 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styles from './ColorPicker.css'
+import { useDrag } from 'react-use-gesture'
+import useDimensions from '../../hooks/use-dimensions'
 
 const ColorPicker = () => {
+	const [rotationCW, setRotationCW] = useState(0)
+	const [ref, { width, height, y: top, x: left }] = useDimensions()
+	const bindDrag = useDrag(({ down, previous: [x0, y0], xy: [x, y] }) => {
+		// Make coordinates relative to component:
+		x0 -= left
+		x -= left
+		y0 -= top
+		y -= top
+
+		// Center of component is (0, 0):
+		x0 -= width / 2
+		x -= width / 2
+		y0 -= height / 2
+		y -= height / 2
+
+		// Flip y-axis so positive is up:
+		y0 *= -1
+		y *= -1
+
+		const initialAngleCW = Math.atan2(y0, x0)
+		const currentAngleCW = Math.atan2(y, x)
+
+		const angleOffsetCW = currentAngleCW - initialAngleCW
+		const newAngleCW = (rotationCW + angleOffsetCW) % (2 * Math.PI)
+
+		setRotationCW(newAngleCW)
+	})
 	return (
 		<div className={styles.container}>
-			<div className={styles.wrapper}>
-				<ColorWheel />
+			<div className={styles.wrapper} {...bindDrag()} ref={ref}>
+				<ColorWheel rotationCW={rotationCW} />
 			</div>
 		</div>
 	)
 }
 
-function ColorWheel() {
+function ColorWheel({ rotationCW, ...props }) {
 	const svg = {
 		width: 100,
 		height: 100,
@@ -38,6 +67,7 @@ function ColorWheel() {
 			className={styles.colorWheel}
 			viewBox={`0 0 ${svg.width} ${svg.height}`}
 			xmlns="http://www.w3.org/2000/svg"
+			{...props}
 		>
 			<defs>
 				<pattern
@@ -50,6 +80,7 @@ function ColorWheel() {
 						xlinkHref="/images/color-wheel.png"
 						x="0"
 						y="0"
+						transform={`rotate(${-1 * rotationCW / (2 * Math.PI) * 365} 50 50)`}
 						width="100"
 						height="100"
 					/>
