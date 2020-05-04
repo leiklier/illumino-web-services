@@ -42,7 +42,7 @@ server.installSubscriptionHandlers(httpServer)
 
 mongoose
 	.connect(
-		`mongodb+srv://dbUser:OdlHOQDukkJkjNy8@illumino-p68vt.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`,
+		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/test?retryWrites=true&w=majority`,
 		{
 			useNewUrlParser: true,
 		},
@@ -51,7 +51,7 @@ mongoose
 
 		httpServer.listen(PORT || 3000, () => {
 			logger.info(
-				`Server started with endpoints http://localhost:${PORT}${
+				`Server started with endpoints http://api.get-illumi.no:${PORT}${
 				server.graphqlPath
 				}, ws://localhost:${PORT}${server.subscriptionsPath}`,
 				{ target: 'SERVER', event: 'STARTED' },
