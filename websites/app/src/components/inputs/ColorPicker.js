@@ -1,20 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './ColorPicker.css'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../hooks/use-dimensions'
 
 const ColorPicker = () => {
-
+	const [saturation, setSaturation] = useState(0.5)
 	return (
 		<div className={styles.container}>
 			<div className={styles.wrapper}>
-				<ColorWheel />
+				<ColorWheel
+					innerCircleComponent={
+						<ScrollWheel
+							value={saturation}
+							onChange={newValue => setSaturation(newValue)}
+						/>
+					}
+					bottomSectionComponent={
+						<ValueDisplay value={saturation} />
+					}
+				/>
 			</div>
 		</div>
 	)
 }
 
-function ColorWheel() {
+function ColorWheel({ innerCircleComponent, bottomSectionComponent }) {
 	// Calculate dimensions of the horse shoe:
 	const svg = {
 		width: 100,
@@ -51,31 +61,43 @@ function ColorWheel() {
 	const [isTouching, setIsTouching] = useState(false)
 
 	return (
-		<svg
-			className={styles.colorWheel}
-			viewBox={`0 0 ${svg.width} ${svg.height}`}
-			xmlns="http://www.w3.org/2000/svg"
-			{...bindDrag()} ref={ref}
-		>
-			<defs>
-				<pattern
-					id="colorWheel"
-					patternUnits="userSpaceOnUse"
-					width="100"
-					height="100"
+		<div className={styles.colorWheelContainer} {...bindDrag()} ref={ref}>
+			<div className={styles.colorWheelInnerCircleContainer}>
+				<div
+					className={styles.colorWheelInnerCircleWrapper}
+					style={{ minWidth: `${0.5 * width}px`, minHeight: `${0.5 * height}px` }}
 				>
-					<image
-						xlinkHref="/images/color-wheel.png"
-						x="0"
-						y="0"
-						transform={`rotate(${-1 * rotationCW / (2 * Math.PI) * 365} 50 50)`}
+					{innerCircleComponent}
+				</div>
+			</div>
+			<div className={styles.colorWheelBottomSectionContainer}>
+				<div className={styles.colorWheelBottomSectionWrapper}>
+					{bottomSectionComponent}
+				</div>
+			</div>
+			<svg
+				viewBox={`0 0 ${svg.width} ${svg.height}`}
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<defs>
+					<pattern
+						id="colorWheel"
+						patternUnits="userSpaceOnUse"
 						width="100"
 						height="100"
-					/>
-				</pattern>
-			</defs>
-			<path
-				d={`
+					>
+						<image
+							xlinkHref="/images/color-wheel.png"
+							x="0"
+							y="0"
+							transform={`rotate(${-1 * rotationCW / (2 * Math.PI) * 365} 50 50)`}
+							width="100"
+							height="100"
+						/>
+					</pattern>
+				</defs>
+				<path
+					d={`
 					M ${outer.startX} ${outer.startY}
 					A ${svg.width / 2} ${svg.height / 2}, 0, 1 0, ${outer.endX} ${outer.endY}
 					A 1 1, 0, 0 0, ${inner.startX} ${inner.startY}
@@ -83,16 +105,98 @@ function ColorWheel() {
 					A 1 1, 0, 0 0, ${outer.startX} ${outer.startY}
 					Z
 				`}
-				fill="url(#colorWheel)"
-				fillOpacity={0.7}
-				onTouchStart={() => setIsTouching(true)}
-				onTouchEnd={() => setIsTouching(false)}
-				onTouchCancel={() => setIsTouching(false)}
-			/>
+					fill="url(#colorWheel)"
+					fillOpacity={0.7}
+					onTouchStart={() => setIsTouching(true)}
+					onTouchEnd={() => setIsTouching(false)}
+					onTouchCancel={() => setIsTouching(false)}
+				/>
+			</svg>
+		</div>
+	)
+}
+
+function ScrollWheel({ value: initialValue, onChange }) {
+	// Input
+	const [value, setValue] = useState(initialValue)
+
+	useEffect(() => {
+		if (!onChange) return
+		onChange(value)
+	}, [value])
+
+	// Scrolling logic
+	const [ref, { y: top, x: left, height }] = useDimensions()
+
+	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {
+		const relativeDistance = (y0 - y) / height
+		let newValue = value + relativeDistance / 3
+		if (newValue > 1) newValue = 1
+		if (newValue < 0) newValue = 0
+		setValue(newValue)
+	})
+
+	const [offset, setOffset] = useState((150 * value) % 25)
+	useEffect(() => {
+		setOffset((150 * value) % 25)
+	}, [value])
+
+	return (
+		<svg
+			className={styles.scrollWheel}
+			viewBox="0 0 100 100"
+			ref={ref}
+			{...bindDrag()}
+		>
+			<ScrollLine yPosition={25 - offset} />
+			<ScrollLine yPosition={50 - offset} />
+			<ScrollLine yPosition={75 - offset} />
+			<ScrollLine yPosition={100 - offset} />
 		</svg>
 	)
 }
 
+
+function ScrollLine({ yPosition }) {
+	const [scalingFactor, setScalingFactor] = useState(getScalingFactor(yPosition))
+	useEffect(() => {
+		setScalingFactor(getScalingFactor(yPosition))
+	}, [yPosition])
+
+	function getScalingFactor(yPosition) {
+		const yCenter = 50
+		const distanceFromYCenter = Math.abs(yPosition - yCenter)
+		const scalingFactor = 1 - distanceFromYCenter / yCenter
+		return scalingFactor
+	}
+
+	return (
+		<line
+			x1={50 - 30 * scalingFactor}
+			y1={yPosition}
+
+			x2={50 + 30 * scalingFactor}
+			y2={yPosition}
+
+			style={{
+				stroke: `rgb(255,255,255, ${0.7 * scalingFactor + 0.2})`,
+				strokeWidth: 7 * scalingFactor + 2,
+				strokeLinecap: 'round',
+			}}
+		/>
+	)
+}
+
+function ValueDisplay({ value }) {
+	return (
+		<div className={styles.valueDisplayContainer}>
+			<div className={styles.valueDisplayContent}>
+				{Math.round(value * 100)}%
+			</div>
+			<div className={styles.valueDisplayHeader}>Saturation</div>
+		</div>
+	)
+}
 
 function getAngleOffset(x0, y0, x, y, top, left, width, height) {
 	// Make coordinates relative to component:
