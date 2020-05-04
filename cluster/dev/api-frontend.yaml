@@ -23,10 +23,6 @@ spec:
               name: src-volume
             - mountPath: /app/package.json
               name: dependencies-volume
-          resources:
-            limits:
-              cpu: 1
-              memory: 500M
           ports:
             - containerPort: 3000
       volumes:
