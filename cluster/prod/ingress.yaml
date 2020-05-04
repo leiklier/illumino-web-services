@@ -7,6 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://get-illumi.no"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.org/websocket-services: "frontend-api-service"
 spec:
   rules:
     - host: get-illumi.no
