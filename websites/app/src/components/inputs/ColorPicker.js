@@ -4,43 +4,18 @@ import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../hooks/use-dimensions'
 
 const ColorPicker = () => {
-	const [rotationCW, setRotationCW] = useState(0)
-	const [ref, { width, height, y: top, x: left }] = useDimensions()
-	const bindDrag = useDrag(({ down, previous: [x0, y0], xy: [x, y] }) => {
-		// Make coordinates relative to component:
-		x0 -= left
-		x -= left
-		y0 -= top
-		y -= top
 
-		// Center of component is (0, 0):
-		x0 -= width / 2
-		x -= width / 2
-		y0 -= height / 2
-		y -= height / 2
-
-		// Flip y-axis so positive is up:
-		y0 *= -1
-		y *= -1
-
-		const initialAngleCW = Math.atan2(y0, x0)
-		const currentAngleCW = Math.atan2(y, x)
-
-		const angleOffsetCW = currentAngleCW - initialAngleCW
-		const newAngleCW = (rotationCW + angleOffsetCW) % (2 * Math.PI)
-
-		setRotationCW(newAngleCW)
-	})
 	return (
 		<div className={styles.container}>
-			<div className={styles.wrapper} {...bindDrag()} ref={ref}>
-				<ColorWheel rotationCW={rotationCW} />
+			<div className={styles.wrapper}>
+				<ColorWheel />
 			</div>
 		</div>
 	)
 }
 
-function ColorWheel({ rotationCW, ...props }) {
+function ColorWheel() {
+	// Calculate dimensions of the horse shoe:
 	const svg = {
 		width: 100,
 		height: 100,
@@ -62,12 +37,25 @@ function ColorWheel({ rotationCW, ...props }) {
 		endY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
 	}
 
+	// Enable dragging of the wheel:
+	const [rotationCW, setRotationCW] = useState(0)
+	const [ref, { y: top, x: left, width, height }] = useDimensions()
+
+	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {
+		if (!isTouching) return
+		const angleOffsetCW = getAngleOffset(x0, y0, x, y, top, left, width, height)
+		const newAngleCW = (rotationCW + angleOffsetCW) % (2 * Math.PI)
+		setRotationCW(newAngleCW)
+	})
+
+	const [isTouching, setIsTouching] = useState(false)
+
 	return (
 		<svg
 			className={styles.colorWheel}
 			viewBox={`0 0 ${svg.width} ${svg.height}`}
 			xmlns="http://www.w3.org/2000/svg"
-			{...props}
+			{...bindDrag()} ref={ref}
 		>
 			<defs>
 				<pattern
@@ -97,9 +85,37 @@ function ColorWheel({ rotationCW, ...props }) {
 				`}
 				fill="url(#colorWheel)"
 				fillOpacity={0.7}
+				onTouchStart={() => setIsTouching(true)}
+				onTouchEnd={() => setIsTouching(false)}
+				onTouchCancel={() => setIsTouching(false)}
 			/>
 		</svg>
 	)
+}
+
+
+function getAngleOffset(x0, y0, x, y, top, left, width, height) {
+	// Make coordinates relative to component:
+	x0 -= left
+	x -= left
+	y0 -= top
+	y -= top
+
+	// Center of component is (0, 0):
+	x0 -= width / 2
+	x -= width / 2
+	y0 -= height / 2
+	y -= height / 2
+
+	// Flip y-axis so positive is up:
+	y0 *= -1
+	y *= -1
+
+	const initialAngleCW = Math.atan2(y0, x0)
+	const currentAngleCW = Math.atan2(y, x)
+
+	const angleOffsetCW = currentAngleCW - initialAngleCW
+	return angleOffsetCW
 }
 
 export default ColorPicker
