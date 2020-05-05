@@ -183,20 +183,26 @@ function ScrollWheel({ value: initialValue, onChange }) {
 			ref={ref}
 			{...bindDrag()}
 		>
-			<ScrollLine yPosition={25 - offset} />
-			<ScrollLine yPosition={50 - offset} />
-			<ScrollLine yPosition={75 - offset} />
-			<ScrollLine yPosition={100 - offset} />
+			<ScrollLine yStart={25} yOffset={-offset} />
+			<ScrollLine yStart={50} yOffset={-offset} />
+			<ScrollLine yStart={75} yOffset={-offset} />
+			<ScrollLine yStart={100} yOffset={-offset} />
 		</svg>
 	)
 }
 
 
-function ScrollLine({ yPosition }) {
-	const [scalingFactor, setScalingFactor] = useState(getScalingFactor(yPosition))
+function ScrollLine({ yStart, yOffset }) {
+	const [state, setState] = useState({
+		yPosition: yStart + yOffset,
+		scalingFactor: getScalingFactor(yStart + yOffset),
+	})
 	useEffect(() => {
-		setScalingFactor(getScalingFactor(yPosition))
-	}, [yPosition])
+		setState({
+			yPosition: yStart + yOffset,
+			scalingFactor: getScalingFactor(yStart + yOffset),
+		})
+	}, [yOffset])
 
 	function getScalingFactor(yPosition) {
 		const yCenter = 50
@@ -207,15 +213,15 @@ function ScrollLine({ yPosition }) {
 
 	return (
 		<line
-			x1={50 - 30 * scalingFactor}
-			y1={yPosition}
+			x1={50 - 30 * state.scalingFactor}
+			y1={state.yPosition}
 
-			x2={50 + 30 * scalingFactor}
-			y2={yPosition}
+			x2={50 + 30 * state.scalingFactor}
+			y2={state.yPosition}
 
 			style={{
-				stroke: `rgb(255,255,255, ${0.7 * scalingFactor + 0.2})`,
-				strokeWidth: 7 * scalingFactor + 2,
+				stroke: `rgb(255,255,255, ${0.7 * state.scalingFactor + 0.2})`,
+				strokeWidth: 7 * state.scalingFactor + 2,
 				strokeLinecap: 'round',
 			}}
 		/>
