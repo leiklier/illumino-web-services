@@ -223,15 +223,37 @@ function ScrollLine({ yPosition }) {
 }
 
 function ValueDisplay({ saturation, hue }) {
-	useEffect(() => {
+	const [timeoutId, setTimeoutId] = useState(null)
 
+	// Display Hue value after it has changed
+	useEffect(() => {
+		if (typeShowing === 'hue') return
+		setTypeShowing('hue')
+
+		// Reset back to saturation after 1500ms:
+		window.clearTimeout(timeoutId)
+		setTimeoutId(window.setTimeout(function () {
+			setTypeShowing('saturation')
+		}, 1500))
 	}, [hue])
+
+	useEffect(() => {
+		if (typeShowing === 'saturation') return
+		setTypeShowing('saturation')
+	}, [saturation])
+
+	const [typeShowing, setTypeShowing] = useState('saturation')
 	return (
 		<div className={styles.valueDisplayContainer}>
 			<div className={styles.valueDisplayContent}>
-				{Math.round(value * 100)}%
+				{typeShowing === 'saturation' ?
+					Math.round(saturation * 100) + '%' :
+					Math.round(hueToDegrees(hue)) + '°'
+				}
 			</div>
-			<div className={styles.valueDisplayHeader}>Saturation</div>
+			<div className={styles.valueDisplayHeader}>
+				{typeShowing === 'saturation' ? 'Saturation' : 'Hue'}
+			</div>
 		</div>
 	)
 }
