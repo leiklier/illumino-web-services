@@ -31,24 +31,14 @@ const logger = createLogger({
 	format: format.combine(format.json(), format.timestamp()),
 	defaultMeta: { service: 'user-service' },
 	transports: [
-		new transports.File({
-			filename: `${logDir}/error.log`,
-			level: 'error',
-		}),
-		new transports.File({
-			filename: `${logDir}/combined.log`,
+		new transports.Console({
+			format: format.simple(),
+			json: false,
 		}),
 		new MongooseTransport(),
 	],
 })
 
-
-logger.add(
-	new transports.Console({
-		format: format.simple(),
-		json: false,
-	}),
-)
 
 
 module.exports = logger

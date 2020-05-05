@@ -42,7 +42,7 @@ server.installSubscriptionHandlers(httpServer)
 
 mongoose
 	.connect(
-		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/test?retryWrites=true&w=majority`,
+		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/illumino?retryWrites=true&w=majority`,
 		{
 			useNewUrlParser: true,
 		},

@@ -145,21 +145,49 @@ const deviceSchema = new Schema(
 			startedAt: Date,
 			endingAt: Date,
 		},
+		sunrise: {
+			isActive: Boolean,
+			startingAt: {
+				// Defaults to 07:30
+				hour: {
+					type: Number,
+					required: true,
+					min: 1,
+					max: 24,
+					default: 7,
+					validate: {
+						validator: Number.isInteger,
+						message: '{VALUE} is not an integer value'
+					},
+				},
+				minute: {
+					type: Number,
+					required: true,
+					min: 0,
+					max: 59,
+					default: 30,
+					validate: {
+						validator: Number.isInteger,
+						message: '{VALUE} is not an integer value'
+					},
+				},
+			},
+		},
 	},
 	{ toObject: { virtuals: true } },
 )
 
-deviceSchema.pre('validate', function() {
+deviceSchema.pre('validate', function () {
 	this.secret = SHA256(this.mac + DEPLOY_KEY)
 		.toString()
 		.substr(0, 12)
 })
 
-deviceSchema.virtual('hasOwner').get(function() {
+deviceSchema.virtual('hasOwner').get(function () {
 	return Boolean(this.owner)
 })
 
-deviceSchema.virtual('hasPin').get(function() {
+deviceSchema.virtual('hasPin').get(function () {
 	return Boolean(this.pin)
 })
 

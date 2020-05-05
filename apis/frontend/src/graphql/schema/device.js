@@ -38,6 +38,7 @@ const typeDefs = gql`
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		sunset: Sunset! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+		sunrise: Sunrise! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 	}
 
 	type DeviceType {
@@ -48,6 +49,21 @@ const typeDefs = gql`
 	type Sunset {
 		startedAt: DateTime
 		endingAt: DateTime
+	}
+
+	type Sunrise {
+		isActive: Boolean!
+		startingAt: Time!
+	}
+
+	type Time {
+		hour: Int!
+		minute: Int!
+	}
+
+	input TimeInput {
+		hour: Int!
+		minute: Int!
 	}
 
 	enum DeviceModel {
@@ -189,6 +205,16 @@ const DeviceResolver = {
 		}
 
 		return deviceFound.sunset
+	},
+	sunrise: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return []
+		}
+
+		return deviceFound.sunrise
 	},
 }
 
@@ -435,6 +461,50 @@ mutationResolvers.clearSunset = async (obj, { mac }, context) => {
 	await device.save()
 
 	return device.sunset
+}
+
+mutationResolvers.activateSunrise = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunrise.isActive = true
+	await device.save()
+
+	return device.sunrise
+}
+
+mutationResolvers.deactivateSunrise = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunrise.isActive = false
+	await device.save()
+
+	return device.sunrise
+}
+
+mutationResolvers.setSunriseTime = async (obj, { mac, startingAt }, context) => {
+
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunrise = {
+		...device.sunrise,
+		startingAt,
+	}
+	await device.save()
+
+
+	return device.sunrise
 }
 
 module.exports = {

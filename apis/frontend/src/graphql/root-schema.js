@@ -74,6 +74,15 @@ const rootTypeDefs = gql`
 		clearSunset(mac: String!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		activateSunrise(mac: String!): Sunrise!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		deactivateSunrise(mac: String!): Sunrise!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
+		setSunriseTime(mac: String!, startingAt: TimeInput): Sunrise!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(mac: String!, pin: PIN!): Device!
