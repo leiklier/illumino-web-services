@@ -3,11 +3,15 @@ body {
 	position: relative;
 	width: 100vw;
 	height: 100vh;
-	overflow: hidden;
 	padding: 0;
 	margin: 0;
 	font-family: 'AppleSDGothicNeo-Light';
 	user-select: none;
+
+	/* The folowing (+ fixed height/max-height)
+	   is required for iNoBounce to work: */
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .content {
