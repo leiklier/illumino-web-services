@@ -65,13 +65,21 @@ function ColorWheel({
 	}
 
 	// Enable dragging of the wheel:
-	const [rotationCW, setRotationCW] = useState(hueToAngle(initialValue))
+	const [rotationCW, setRotationCW] = useState(hueToRadians(initialValue))
 	const [ref, { y: top, x: left, width, height }] = useDimensions()
 
 	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {
 		if (!isTouching) return
+
 		const angleOffsetCW = getAngleOffset(x0, y0, x, y, top, left, width, height)
-		const newAngleCW = (rotationCW + angleOffsetCW) % (2 * Math.PI)
+
+		// 											   ,-- Restrict to [-2*PI, 2*PI]
+		let newAngleCW = (rotationCW + angleOffsetCW) % (2 * Math.PI)
+
+		if (newAngleCW < 0) {
+			newAngleCW += 2 * Math.PI
+		}
+
 		setRotationCW(newAngleCW)
 	})
 
@@ -80,7 +88,7 @@ function ColorWheel({
 	// Input logic
 	useEffect(() => {
 		if (!onChange) return
-		onChange(angleToHue(rotationCW))
+		onChange(radiansToHue(rotationCW))
 	}, [rotationCW])
 
 	return (
@@ -288,12 +296,17 @@ function getAngleOffset(x0, y0, x, y, top, left, width, height) {
 	return angleOffsetCW
 }
 
-function angleToHue(angle) {
-	return angle * (255 / (2 * Math.PI))
+function radiansToHue(radians) {
+	return radians * (255 / (2 * Math.PI))
 }
 
-function hueToAngle(hue) {
+function hueToRadians(hue) {
 	return hue * ((2 * Math.PI) / 255)
 }
+
+function hueToDegrees(hue) {
+	return hue * (360 / 255)
+}
+
 
 export default ColorPicker
