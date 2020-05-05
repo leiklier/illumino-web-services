@@ -46,3 +46,8 @@ body {
 	border-radius: 1rem;
 	box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.45);
 }
+
+@font-face {
+    font-family: 'seven-segment';
+    src: url('/fonts/seven-segment.ttf');
+}

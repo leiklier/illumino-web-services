@@ -10,7 +10,7 @@ import {
 	clearAccessToken,
 } from '../store/actions'
 
-import { faSun, faRunning, faAdjust } from '@fortawesome/free-solid-svg-icons'
+import { faSun, faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
 
 import DeviceTitle from '../components/DeviceTitle'
 import SelectInput from '../components/inputs/Select'
@@ -161,7 +161,7 @@ const Device = () => {
 	const [setBrightness, { loading: isSettingBrightness }] = useMutation(
 		SET_BRIGHTNESS,
 		{
-			onCompleted: function() {},
+			onCompleted: function () { },
 		},
 	)
 	const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
@@ -180,7 +180,6 @@ const Device = () => {
 			updateQuery: (prev, { subscriptionData }) => {
 				if (!subscriptionData.data) return prev
 				const updatedDevice = subscriptionData.data.device
-				console.log(subscriptionData)
 
 				return Object.assign({}, prev, { device: updatedDevice })
 			},
@@ -274,7 +273,7 @@ const Device = () => {
 				onInput={handleAnimationSpeedChange}
 			/>
 			<SunRiseInput />
-			<CircularButton icon={faAdjust} />
+			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
 			<CycleButton
 				selected={selectedLedStrip}
 				allAreSelected={data.device.ledStripsAreSynced}
@@ -284,7 +283,7 @@ const Device = () => {
 			>
 				Ledstrip
 			</CycleButton>
-			<ColorPicker />
+			<ColorPicker value={{ saturation: 0, hue: 0 }} />
 			<SunsetInput
 				duration={5 * 60}
 				startedAt={data.device.sunset.startedAt}

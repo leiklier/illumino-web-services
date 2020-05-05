@@ -16,6 +16,7 @@ const Select = ({
 	rows,
 	cols,
 	name,
+	font,
 	selected: initialSelected,
 	options,
 	onSelect,
@@ -124,44 +125,31 @@ const Select = ({
 			>
 				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
 				<div
-					style={
-						isHorizontal ?
-							{ left: (indexDiff - 1) * 100 + '%' } :
-							{ top: (indexDiff - 1) * 100 + '%' }
-					}
+					style={{
+						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : null,
+						top: !isHorizontal ? + `${(indexDiff - 1) * 100}%` : null,
+					}}
 					className={classNames({
 						[styles.selectedContainer]: true,
 						[styles.selectedContainer__horizontal]: isHorizontal,
 						[styles.selectedContainer__vertical]: !isHorizontal,
 					})}
 				>
-					<div
-						className={classNames({
-							[styles.selected]: true,
-							[styles.selected__horizontal]: isHorizontal,
-							[styles.selected__vertical]: !isHorizontal,
-						})}
-					>
-						<span>{formatSelected(getPreviousSelected())}</span>
-					</div>
-					<div
-						className={classNames({
-							[styles.selected]: true,
-							[styles.selected__horizontal]: isHorizontal,
-							[styles.selected__vertical]: !isHorizontal,
-						})}
-					>
-						<span>{formatSelected(selected)}</span>
-					</div>
-					<div
-						className={classNames({
-							[styles.selected]: true,
-							[styles.selected__horizontal]: isHorizontal,
-							[styles.selected__vertical]: !isHorizontal,
-						})}
-					>
-						<span>{formatSelected(getNextSelected())}</span>
-					</div>
+					<Selected
+						font={font}
+						isHorizontal={isHorizontal}
+						selected={getPreviousSelected()}
+					/>
+					<Selected
+						font={font}
+						isHorizontal={isHorizontal}
+						selected={selected}
+					/>
+					<Selected
+						font={font}
+						isHorizontal={isHorizontal}
+						selected={getNextSelected()}
+					/>
 				</div>
 			</div>
 			<div
@@ -177,6 +165,31 @@ const Select = ({
 					size="2x"
 				/>
 			</div>
+		</div >
+	)
+}
+
+function Selected({ font, isHorizontal, selected }) {
+	function formatSelected(selected) {
+		const formatted =
+			selected.charAt(0).toUpperCase() +
+			selected
+				.replace('_', ' ')
+				.toLowerCase()
+				.slice(1)
+		return formatted
+	}
+
+	return (
+		<div
+			className={classNames({
+				[styles.selected]: true,
+				[styles.selected__horizontal]: isHorizontal,
+				[styles.selected__vertical]: !isHorizontal,
+			})}
+			style={font ? { fontFamily: font } : {}}
+		>
+			<span>{formatSelected(selected)}</span>
 		</div>
 	)
 }

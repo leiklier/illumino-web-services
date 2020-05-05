@@ -37,3 +37,25 @@
 	height: 4rem;
 	grid-row-start: 2;
 }
+
+.clockInputContainer {
+	position: relative;
+	grid-row-end: span 2;
+	grid-column-end: span 2;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+}
+
+.clockInputSeparator {
+	position: absolute;
+	left: 50%;
+	height: 100%;
+	line-height: 100%;
+	width: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2rem;
+	font-weight: bolder;
+}
