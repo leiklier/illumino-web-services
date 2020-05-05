@@ -3,32 +3,52 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	faChevronLeft,
 	faChevronRight,
+	faChevronUp,
+	faChevronDown,
 } from '@fortawesome/free-solid-svg-icons'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../hooks/use-dimensions'
+import classNames from 'classnames'
 import styles from './Select.css'
 
+
 const Select = ({
+	rows,
 	cols,
 	name,
 	selected: initialSelected,
 	options,
 	onSelect,
 }) => {
+	const isHorizontal = Boolean(cols)
+	const size = isHorizontal ? cols : rows
+
 	const [selected, setSelected] = useState(initialSelected)
 	const [indexDiff, setIndexDiff] = useState(0)
-	const [ref, { width }] = useDimensions()
+	const [ref, { width, height }] = useDimensions()
 	const [isTouching, setIsTouching] = useState(false)
-	const [dragX, setDrag] = useState(0)
+	const [drag, setDrag] = useState(0)
+
 	const bindDrag = useDrag(({ down, movement: [mx, my] }) => {
-		setDrag(mx)
+		if (isHorizontal) {
+			setDrag(mx)
+		} else {
+			setDrag(my)
+		}
+
 		setIsTouching(down)
 	})
 
 	// Enable drag through carousel
 	useEffect(() => {
-		if (isTouching) setIndexDiff(dragX / width)
-	}, [dragX])
+		if (!isTouching) return
+
+		if (isHorizontal) {
+			setIndexDiff(drag / width)
+		} else {
+			setIndexDiff(drag / height)
+		}
+	}, [drag])
 
 	// Finish drag when over halfway and releasing
 	useEffect(() => {
@@ -70,35 +90,92 @@ const Select = ({
 	return (
 		<div
 			{...bindDrag()}
-			style={{ gridColumnEnd: `span ${cols}` }}
-			className={styles.container}
+			style={
+				isHorizontal ?
+					{ gridColumnEnd: `span ${cols}` } :
+					{ gridRowEnd: `span ${rows}` }
+			}
+			className={classNames({
+				[styles.container]: true,
+				[styles.container__horizontal]: isHorizontal,
+				[styles.container__vertical]: !isHorizontal,
+			})}
 		>
 			<div
 				onClick={() => setSelected(getPreviousSelected())}
-				className={styles.arrow}
+				className={classNames({
+					[styles.arrow]: true,
+					[styles.arrow__medium]: size > 2,
+					[styles.arrow__small]: size <= 2,
+				})}
 			>
-				<FontAwesomeIcon icon={faChevronLeft} size="2x" />
+				<FontAwesomeIcon
+					icon={isHorizontal ? faChevronLeft : faChevronUp}
+					size="2x"
+				/>
 			</div>
-			<div ref={ref} className={styles.content}>
-				<h2 className={styles.subHeader}>{name}</h2>
+			<div
+				ref={ref}
+				className={classNames({
+					[styles.content]: true,
+					[styles.content__horizontal]: isHorizontal,
+					[styles.content__vertical]: !isHorizontal,
+				})}
+			>
+				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
 				<div
-					style={{ left: (indexDiff - 1) * 100 + '%' }}
-					className={styles.selectedContainer}
+					style={
+						isHorizontal ?
+							{ left: (indexDiff - 1) * 100 + '%' } :
+							{ top: (indexDiff - 1) * 100 + '%' }
+					}
+					className={classNames({
+						[styles.selectedContainer]: true,
+						[styles.selectedContainer__horizontal]: isHorizontal,
+						[styles.selectedContainer__vertical]: !isHorizontal,
+					})}
 				>
-					<div className={styles.selected}>
-						{formatSelected(getPreviousSelected())}
+					<div
+						className={classNames({
+							[styles.selected]: true,
+							[styles.selected__horizontal]: isHorizontal,
+							[styles.selected__vertical]: !isHorizontal,
+						})}
+					>
+						<span>{formatSelected(getPreviousSelected())}</span>
 					</div>
-					<div className={styles.selected}>{formatSelected(selected)}</div>
-					<div className={styles.selected}>
-						{formatSelected(getNextSelected())}
+					<div
+						className={classNames({
+							[styles.selected]: true,
+							[styles.selected__horizontal]: isHorizontal,
+							[styles.selected__vertical]: !isHorizontal,
+						})}
+					>
+						<span>{formatSelected(selected)}</span>
+					</div>
+					<div
+						className={classNames({
+							[styles.selected]: true,
+							[styles.selected__horizontal]: isHorizontal,
+							[styles.selected__vertical]: !isHorizontal,
+						})}
+					>
+						<span>{formatSelected(getNextSelected())}</span>
 					</div>
 				</div>
 			</div>
 			<div
 				onClick={() => setSelected(getNextSelected())}
-				className={styles.arrow}
+				className={classNames({
+					[styles.arrow]: true,
+					[styles.arrow__medium]: size > 2,
+					[styles.arrow__small]: size <= 2,
+				})}
 			>
-				<FontAwesomeIcon icon={faChevronRight} size="2x" />
+				<FontAwesomeIcon
+					icon={isHorizontal ? faChevronRight : faChevronDown}
+					size="2x"
+				/>
 			</div>
 		</div>
 	)
