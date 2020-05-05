@@ -3,8 +3,15 @@ import styles from './ColorPicker.css'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../hooks/use-dimensions'
 
-const ColorPicker = () => {
-	const [saturation, setSaturation] = useState(0.5)
+const ColorPicker = ({ value: { saturation: initialSaturation, hue: initialHue }, onChange }) => {
+	const [saturation, setSaturation] = useState(initialSaturation || 0)
+	const [hue, setHue] = useState(initialHue || 0)
+
+	useEffect(() => {
+		if (!onChange) return
+		onChange({ saturation, hue })
+	}, [hue, saturation])
+
 	return (
 		<div className={styles.container}>
 			<div className={styles.wrapper}>
@@ -16,15 +23,25 @@ const ColorPicker = () => {
 						/>
 					}
 					bottomSectionComponent={
-						<ValueDisplay value={saturation} />
+						<ValueDisplay
+							saturation={saturation}
+							hue={hue}
+						/>
 					}
+					value={hue}
+					onChange={newValue => setHue(newValue)}
 				/>
 			</div>
 		</div>
 	)
 }
 
-function ColorWheel({ innerCircleComponent, bottomSectionComponent }) {
+function ColorWheel({
+	innerCircleComponent,
+	bottomSectionComponent,
+	value: initialValue,
+	onChange
+}) {
 	// Calculate dimensions of the horse shoe:
 	const svg = {
 		width: 100,
@@ -48,7 +65,7 @@ function ColorWheel({ innerCircleComponent, bottomSectionComponent }) {
 	}
 
 	// Enable dragging of the wheel:
-	const [rotationCW, setRotationCW] = useState(0)
+	const [rotationCW, setRotationCW] = useState(hueToAngle(initialValue))
 	const [ref, { y: top, x: left, width, height }] = useDimensions()
 
 	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {
@@ -59,6 +76,12 @@ function ColorWheel({ innerCircleComponent, bottomSectionComponent }) {
 	})
 
 	const [isTouching, setIsTouching] = useState(false)
+
+	// Input logic
+	useEffect(() => {
+		if (!onChange) return
+		onChange(angleToHue(rotationCW))
+	}, [rotationCW])
 
 	return (
 		<div className={styles.colorWheelContainer} {...bindDrag()} ref={ref}>
@@ -110,6 +133,18 @@ function ColorWheel({ innerCircleComponent, bottomSectionComponent }) {
 					onTouchStart={() => setIsTouching(true)}
 					onTouchEnd={() => setIsTouching(false)}
 					onTouchCancel={() => setIsTouching(false)}
+				/>
+				<line
+					x1={Math.round(svg.width / 2)}
+					y1={Math.round(svg.height / 2 - innerRadius)}
+
+					x2={Math.round(svg.width / 2)}
+					y2={0}
+
+					style={{
+						stroke: 'rgb(255,255,255, 0.4)',
+						strokeWidth: 3,
+					}}
 				/>
 			</svg>
 		</div>
@@ -187,7 +222,10 @@ function ScrollLine({ yPosition }) {
 	)
 }
 
-function ValueDisplay({ value }) {
+function ValueDisplay({ saturation, hue }) {
+	useEffect(() => {
+
+	}, [hue])
 	return (
 		<div className={styles.valueDisplayContainer}>
 			<div className={styles.valueDisplayContent}>
@@ -220,6 +258,14 @@ function getAngleOffset(x0, y0, x, y, top, left, width, height) {
 
 	const angleOffsetCW = currentAngleCW - initialAngleCW
 	return angleOffsetCW
+}
+
+function angleToHue(angle) {
+	return angle * (255 / (2 * Math.PI))
+}
+
+function hueToAngle(hue) {
+	return hue * ((2 * Math.PI) / 255)
 }
 
 export default ColorPicker
