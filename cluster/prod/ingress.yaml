@@ -4,11 +4,20 @@ apiVersion: extensions/v1beta1
 metadata:
   name: illumino-ingress
   annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://get-illumi.no"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://get-illumi.no"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
     nginx.org/websocket-services: "frontend-api-service"
 spec:
+  tls:
+    - hosts:
+      - get-illumi.no
+      - api.get-illumi.no
+      secretName: illumino-tls
   rules:
     - host: get-illumi.no
       http:

@@ -22,6 +22,8 @@ spec:
               name: src-volume
             - mountPath: /app/package.json
               name: dependencies-volume
+            - mountPath: /app/yarn.lock
+              name: lockfile-volume
           ports:
             - containerPort: 3000
       volumes:
@@ -32,6 +34,10 @@ spec:
         - name: dependencies-volume
           hostPath:
             path: /home/leiklier/illumino-web-services/websites/app/package.json
+            type: File
+        - name: lockfile-volume
+          hostPath:
+            path: /home/leiklier/illumino-web-services/websites/app/yarn.lock
             type: File
 ---
 apiVersion: v1

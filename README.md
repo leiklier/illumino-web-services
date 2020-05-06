@@ -50,6 +50,19 @@ $ microk8s inspect
 ```
 It should give you the details on how to correctly configure the firewall if problems are detected.
 
+Since we are using `https`, we also need to configure a CertManager. This is responsible for retrieving SSL certificates by LetsEncrypt. CertManager is installed by issuinng the following commands:
+
+```bash
+$ kubectl create namespace cert-manager
+$ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+```
+
+Proceed by starting the `ssl-certificate-issuer`s:
+```bash
+$ kubectl apply -f cluster/_ssl
+```
+(should be done from the root of this repository)
+
 The next step is to install `docker-ce` on your machine. This is required for building the Docker images. The configuration of Docker is pretty straight forward:
 
 ```bash
@@ -93,7 +106,7 @@ from the root of this repository. This shuts down all the microservices. You may
 The docker images are all built by issuing
 
 ```bash
-./docker-build.sh
+$ ./docker-build.sh
 ```
 
 from the root of this repository. This will create images for both production and development, and all the images are automatically pushed to the local registry available at `localhost:32000`

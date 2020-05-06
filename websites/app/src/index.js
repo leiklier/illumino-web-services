@@ -62,7 +62,7 @@ ReactDOM.render(
 
 function createApolloClient(accessToken) {
 	const uploadLink = createUploadLink({
-		uri: 'http://api.get-illumi.no/graphql',
+		uri: 'https://api.get-illumi.no/graphql',
 		credentials: 'include',
 	})
 
@@ -76,7 +76,7 @@ function createApolloClient(accessToken) {
 	})
 
 	const wsLink = new WebSocketLink({
-		uri: `ws://api.get-illumi.no/graphql`,
+		uri: `wss://api.get-illumi.no/graphql`,
 		options: {
 			reconnect: true,
 			connectionParams: {

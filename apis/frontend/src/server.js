@@ -26,7 +26,7 @@ const server = new ApolloServer(graphqlSchema)
 server.applyMiddleware({
 	app,
 	cors: {
-		origin: 'http://get-illumi.no',
+		origin: 'https://get-illumi.no',
 		credentials: true,
 	},
 })
@@ -53,7 +53,7 @@ mongoose
 			logger.info(
 				`Server started with endpoints http://api.get-illumi.no:${PORT}${
 				server.graphqlPath
-				}, ws://localhost:${PORT}${server.subscriptionsPath}`,
+				}, wss://localhost:${PORT}${server.subscriptionsPath}`,
 				{ target: 'SERVER', event: 'STARTED' },
 			)
 		})
