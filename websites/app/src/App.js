@@ -41,18 +41,18 @@ const SECRET_IS_VALID = gql`
 	}
 `
 
-const App = props => {
+const App = (props) => {
 	// prettier-ignore
-	const { match: { params }} = props
+	const { match: { params } } = props
 
 	const dispatch = useDispatch()
 	const history = useHistory()
 
-	const secretIsSelected = useSelector(state => state.auth.selectedSecret)
-	const accessToken = useSelector(state => state.auth.accessToken)
+	const secretIsSelected = useSelector((state) => state.auth.selectedSecret)
+	const accessToken = useSelector((state) => state.auth.accessToken)
 
-	const contentIsBlurred = useSelector(state => state.ui.content.isBlurred)
-	const bgColor = useSelector(state => state.ui.background.color)
+	const contentIsBlurred = useSelector((state) => state.ui.content.isBlurred)
+	const bgColor = useSelector((state) => state.ui.background.color)
 	const [currentView, setCurrentView] = useState(<SelectDeviceView />)
 
 	// Redirect to login if secret is received in URL
@@ -67,23 +67,26 @@ const App = props => {
 		login()
 	}, [])
 
-	// Get accessToken if having refreshToken
+	// Function for geting accessToken
+	// _if_ having refreshToken
 	const [login] = useLazyQuery(HAS_REFRESH_TOKEN, {
-		onCompleted: function(data) {
+		onCompleted: function (data) {
 			if (!data || !data.hasRefreshToken) return
 			getAccessToken()
 		},
 	})
 
+	// Function for getting accessToking
+	// using refreshToken
 	const [getAccessToken] = useLazyQuery(GET_ACCESS_TOKEN, {
-		onCompleted: function(data) {
+		onCompleted: function (data) {
 			dispatch(setAccessToken(data.accessToken.accessToken))
 		},
 	})
 
 	const [checkSecret] = useLazyQuery(SECRET_IS_VALID, {
 		variables: { secret: params.secret },
-		onCompleted: function(data) {
+		onCompleted: function (data) {
 			if (!data || !data.secretIsValid) return
 
 			dispatch(addRecentSecret(params.secret))
@@ -94,13 +97,15 @@ const App = props => {
 
 	// Renew accessToken before expiration
 	useEffect(() => {
-		if (accessToken) {
-			const { exp: expiresAt } = jwt.decode(accessToken)
-			setTimeout(
-				() => getAccessToken(),
-				expiresAt * 1000 - Date.now() - 5 * 60 * 1000,
-			)
-		}
+		if (!accessToken) return
+
+		const { exp: expiresAt } = jwt.decode(accessToken)
+		const refreshTimeout = setTimeout(
+			() => getAccessToken(),
+			expiresAt * 1000 - Date.now() - 5 * 60 * 1000,
+		)
+
+		return () => clearTimeout(refreshTimeout)
 	}, [accessToken])
 
 	// Render correct view
