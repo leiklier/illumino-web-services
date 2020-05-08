@@ -16,16 +16,22 @@ const ColorPicker = ({ value: { saturation: initialSaturation, hue: initialHue }
 		<div className={styles.container}>
 			<div className={styles.wrapper}>
 				<ColorWheel
-					innerCircleComponent={
+					innerCircleComponent={() =>
 						<ScrollWheel
 							value={saturation}
 							onChange={newValue => setSaturation(newValue)}
 						/>
 					}
-					bottomSectionComponent={
+					bottomSectionComponent={() =>
 						<ValueDisplay
-							saturation={saturation}
-							hue={hue}
+							primary={{
+								name: 'Saturation',
+								value: `${Math.round(saturation * 100)}%`
+							}}
+							secondary={{
+								name: 'Hue',
+								value: `${Math.round(hueToDegrees(hue))}°`
+							}}
 						/>
 					}
 					value={hue}
@@ -98,12 +104,12 @@ function ColorWheel({
 					className={styles.colorWheelInnerCircleWrapper}
 					style={{ minWidth: `${0.5 * width}px`, minHeight: `${0.5 * height}px` }}
 				>
-					{innerCircleComponent}
+					{innerCircleComponent()}
 				</div>
 			</div>
 			<div className={styles.colorWheelBottomSectionContainer}>
 				<div className={styles.colorWheelBottomSectionWrapper}>
-					{bottomSectionComponent}
+					{bottomSectionComponent()}
 				</div>
 			</div>
 			<svg
@@ -236,37 +242,36 @@ function ScrollLine({ yStart, yOffset }) {
 	)
 }
 
-function ValueDisplay({ saturation, hue }) {
+function ValueDisplay({ primary, secondary }) {
 	const [timeoutId, setTimeoutId] = useState(null)
 
-	// Display Hue value after it has changed
+	// Display secondary value after it has changed
 	useEffect(() => {
-		if (typeShowing === 'hue') return
-		setTypeShowing('hue')
+		if (typeShowing === secondary.name) return
+		setTypeShowing(secondary.name)
 
-		// Reset back to saturation after 1500ms:
+		// Reset back to primary value after 1500ms:
 		window.clearTimeout(timeoutId)
 		setTimeoutId(window.setTimeout(function () {
-			setTypeShowing('saturation')
+			setTypeShowing(primary.name)
 		}, 1500))
-	}, [hue])
+
+		return () => window.clearTimeout(timeoutId)
+	}, [secondary.value])
 
 	useEffect(() => {
-		if (typeShowing === 'saturation') return
-		setTypeShowing('saturation')
-	}, [saturation])
+		if (typeShowing === primary.name) return
+		setTypeShowing(primary.name)
+	}, [primary.value])
 
 	const [typeShowing, setTypeShowing] = useState('saturation')
 	return (
 		<div className={styles.valueDisplayContainer}>
 			<div className={styles.valueDisplayContent}>
-				{typeShowing === 'saturation' ?
-					Math.round(saturation * 100) + '%' :
-					Math.round(hueToDegrees(hue)) + '°'
-				}
+				{ typeShowing === primary.name ? primary.value : secondary.value }
 			</div>
 			<div className={styles.valueDisplayHeader}>
-				{typeShowing === 'saturation' ? 'Saturation' : 'Hue'}
+				{typeShowing}
 			</div>
 		</div>
 	)
