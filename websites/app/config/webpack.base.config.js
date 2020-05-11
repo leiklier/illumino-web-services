@@ -8,9 +8,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const APP_DIR = path.resolve(__dirname, '../src')
+const { NODE_ENV } = process.env
 
 module.exports = env => {
-	const { PLATFORM, VERSION } = env
 	return merge([
 		{
 			entry: ['@babel/polyfill', APP_DIR],
@@ -41,7 +41,7 @@ module.exports = env => {
 					{
 						test: /\.css$/,
 						use: [
-							PLATFORM === 'production'
+							NODE_ENV === 'production'
 								? MiniCssExtractPlugin.loader
 								: 'style-loader',
 							{
@@ -56,7 +56,7 @@ module.exports = env => {
 					{
 						test: /\.scss$/,
 						use: [
-							PLATFORM === 'production'
+							NODE_ENV === 'production'
 								? MiniCssExtractPlugin.loader
 								: 'style-loader',
 							'css-loader',
@@ -69,7 +69,7 @@ module.exports = env => {
 						use: [
 							{
 								loader:
-									PLATFORM === 'production'
+									NODE_ENV === 'production'
 										? MiniCssExtractPlugin.loader
 										: 'style-loader',
 							},
@@ -93,20 +93,22 @@ module.exports = env => {
 					template: './src/index.html',
 					filename: './index.html',
 				}),
-				new webpack.DefinePlugin({
-					'process.env.VERSION': JSON.stringify(env.VERSION),
-					'process.env.PLATFORM': JSON.stringify(env.PLATFORM),
+				new webpack.EnvironmentPlugin({
+					NODE_ENV: process.env.NODE_ENV,
+					PORT: env.PORT,
+					FRONTEND_API_HTTP_ENDPOINT: null,
+					FRONTEND_API_WS_ENDPOINT: null,
 				}),
 				new CopyWebpackPlugin([{ from: 'src/static' }]),
 				new webpack.HashedModuleIdsPlugin(),
 			],
 			output: {
 				filename:
-					PLATFORM === 'production'
+					NODE_ENV === 'production'
 						? '[name].bundle.[contenthash].js'
 						: '[name].bundle.js',
 				chunkFilename:
-					PLATFORM === 'production'
+					NODE_ENV === 'production'
 						? '[name].chunk.bundle.[contenthash].js'
 						: '[name].chunk.bundle.js',
 				path: path.resolve(__dirname, '..', 'dist'),

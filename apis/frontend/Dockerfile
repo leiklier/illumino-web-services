@@ -9,8 +9,8 @@ ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
-# App runs as default on port 3000
-ARG PORT=3000
+# App runs as default on port 30000
+ARG PORT=30000
 ENV PORT $PORT
 EXPOSE $PORT
 
@@ -30,10 +30,21 @@ COPY --chown=node:node package.json yarn.lock ./
 RUN yarn install --no-optional && yarn cache clean --force
 
 
+
+
 # ---- DEV IMAGE ----
 
 # Start from base image
 FROM base as dev
+
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+
+# Separate hosts by ";"                    ,-- web-app
+ENV ACCESS_CONTROL_ALLOW_ORIGIN=http://localhost:31000
+
+#! ----- process.env definitions END -----
 
 # Expose debugger port
 EXPOSE $PORT 9229
@@ -49,10 +60,40 @@ RUN yarn install --only=development
 # Restart on file changes
 CMD ["nodemon", "./src/server.js"]
 
-# ---- PROD IMAGE ----
 
+
+
+# ---- STAG IMAGE ----
+# Staging image is identical to the
+# developmennt image except that it is
+# run behind an ingress, and thus
+# requires a different CORS header
+FROM dev as stag
+
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+
+# Separate hosts by ";"                    ,-- web-app
+ENV ACCESS_CONTROL_ALLOW_ORIGIN=https://get-illumi.no
+
+#! ----- process.env definitions END -----
+
+
+
+
+# ---- PROD IMAGE ----
 # Start from base image
 FROM base as prod
+
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+
+# Separate hosts by ";"                    ,-- web-app
+ENV ACCESS_CONTROL_ALLOW_ORIGIN=https://get-illumi.no
+
+#! ----- process.env definitions END -----
 
 # Bundle our application code
 COPY --chown=node:node . .

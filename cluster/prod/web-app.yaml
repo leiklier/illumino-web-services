@@ -17,12 +17,17 @@ spec:
       containers:
         - name: web-app
           image: localhost:32000/illumino-web-app:latest
+          env:
+            - name: FRONTEND_API_HTTP_ENDPOINT
+              value: https://api.get-illumi.no/graphql
+            - name: FRONTEND_API_WS_ENDPOINT
+              value: wss://api.get-illumi.no/graphql
           resources:
             limits:
               cpu: 100m
               memory: 100Mi
           ports:
-            - containerPort: 3000
+            - containerPort: 31000
 ---
 apiVersion: v1
 kind: Service
@@ -34,7 +39,7 @@ spec:
   ports:
     - name: web
       port: 80
-      targetPort: 3000
+      targetPort: 31000
       protocol: TCP
   selector:
     app: web-app

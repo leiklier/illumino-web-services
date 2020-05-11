@@ -14,10 +14,10 @@ metadata:
     nginx.org/websocket-services: "frontend-api-service"
 spec:
   tls:
-      - hosts:
-        - get-illumi.no
-        - api.get-illumi.no
-        secretName: illumino-tls
+    - hosts:
+      - get-illumi.no
+      - api.get-illumi.no
+      secretName: illumino-tls
   rules:
     - host: get-illumi.no
       http:

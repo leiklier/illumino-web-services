@@ -1,22 +1,23 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-app
+  name: frontend-api
 spec:
   selector:
     matchLabels:
-      app: web-app
-      tier: frontend
+      app: frontend-api
+      tier: backend
   replicas: 1
   template:
     metadata:
       labels:
-        app: web-app
-        tier: frontend
+        app: frontend-api
+        tier: backend
     spec:
       containers:
-        - name: web-app
-          image: localhost:32000/illumino-web-app--dev:latest
+        - name: frontend-api
+          image: localhost:32000/illumino-frontend-api--stag:latest
           volumeMounts:
             - mountPath: /app/src
               name: src-volume
@@ -25,7 +26,7 @@ spec:
             - mountPath: /app/yarn.lock
               name: lockfile-volume
           ports:
-            - containerPort: 31000
+            - containerPort: 30000
           resources:
             limits:
               cpu: 750m
@@ -33,31 +34,30 @@ spec:
       volumes:
         - name: src-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/websites/app/src
+            path: /home/leiklier/illumino-web-services/apis/frontend/src
             type: Directory
         - name: dependencies-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/websites/app/package.json
+            path: /home/leiklier/illumino-web-services/apis/frontend/package.json
             type: File
         - name: lockfile-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/websites/app/yarn.lock
+            path: /home/leiklier/illumino-web-services/apis/frontend/yarn.lock
             type: File
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: frontend-api-service
   labels:
-    app: web-app
-  name: web-app-service
+    app: frontend-api
 spec:
-  type: NodePort
   ports:
     - name: web
-      port: 31000
-      nodePort: 31000
+      port: 80
+      targetPort: 30000
       protocol: TCP
   selector:
-    app: web-app
+    app: frontend-api
 ---
 

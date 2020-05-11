@@ -23,7 +23,7 @@ spec:
               cpu: 100m
               memory: 100Mi
           ports:
-            - containerPort: 3000
+            - containerPort: 30000
 ---
 apiVersion: v1
 kind: Service
@@ -35,7 +35,7 @@ spec:
   ports:
     - name: web
       port: 80
-      targetPort: 3000
+      targetPort: 30000
       protocol: TCP
   selector:
     app: frontend-api

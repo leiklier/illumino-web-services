@@ -16,7 +16,13 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: localhost:32000/illumino-web-app--dev:latest
+          image: localhost:32000/illumino-web-app--stag:latest
+          env: # NB! Environment variables added here needs to be added to CMD
+               # in Dockerfile as well
+            - name: FRONTEND_API_HTTP_ENDPOINT
+              value: https://api.get-illumi.no/graphql
+            - name: FRONTEND_API_WS_ENDPOINT
+              value: wss://api.get-illumi.no/graphql
           volumeMounts:
             - mountPath: /app/src
               name: src-volume
@@ -51,11 +57,10 @@ metadata:
     app: web-app
   name: web-app-service
 spec:
-  type: NodePort
   ports:
     - name: web
-      port: 31000
-      nodePort: 31000
+      port: 80
+      targetPort: 31000
       protocol: TCP
   selector:
     app: web-app

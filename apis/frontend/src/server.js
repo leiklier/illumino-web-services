@@ -11,7 +11,7 @@ const bodyParser = require('body-parser')
 const { ApolloServer } = require('apollo-server-express')
 const mongoose = require('mongoose')
 
-const { NODE_ENV, PORT, MONGO_DB } = process.env
+const { PORT } = process.env
 
 const logger = require('./logger')
 const enableRestEndpoints = require('./rest')
@@ -26,7 +26,7 @@ const server = new ApolloServer(graphqlSchema)
 server.applyMiddleware({
 	app,
 	cors: {
-		origin: 'https://get-illumi.no',
+		origin: getCorsOriginsFromEnv(),
 		credentials: true,
 	},
 })
@@ -49,7 +49,7 @@ mongoose
 	)
 	.then(() => {
 
-		httpServer.listen(PORT || 3000, () => {
+		httpServer.listen(PORT, () => {
 			logger.info(
 				`Server started with endpoints http://api.get-illumi.no:${PORT}${
 				server.graphqlPath
@@ -58,3 +58,11 @@ mongoose
 			)
 		})
 	})
+
+function getCorsOriginsFromEnv() {
+	const { ACCESS_CONTROL_ALLOW_ORIGIN: corsString } = process.env
+	if(!corsString) return false
+
+	const corsOrigins = String(corsString).split(';')
+	return corsOrigins
+}

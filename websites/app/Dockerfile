@@ -3,11 +3,18 @@
 # Latest LTS (major: 12)
 FROM node:12-slim AS dev
 
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+ENV FRONTEND_API_HTTP_ENDPOINT=http://localhost:30000/graphql
+ENV FRONTEND_API_WS_ENDPOINT=ws://localhost:30000/graphql
+#! ----- process.env definitions END -----
+
 ENV NODE_ENV develop
 ENV PATH=/app/node_modules/.bin:$PATH
 
-# App runs as default on port 3000
-ARG PORT=3000
+# App runs as default on port 31000
+ARG PORT=31000
 ENV PORT ${PORT}
 #              ,-- debugger port
 EXPOSE $PORT 9229
@@ -37,15 +44,39 @@ RUN yarn install && yarn cache clean --force
 CMD ["webpack-dev-server", \
     "--mode", "development", \
     "--config", "config/webpack.dev.config.js", \
-    "--env.PORT", "3000"] # TODO: replace 3000 with ${PORT}
+    "--env.PORT", "31000"]
+
+
+
+
+# ---- STAG IMAGE ----
+FROM dev as stag
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+ENV FRONTEND_API_HTTP_ENDPOINT=https://api.get-illumi.no/graphql
+ENV FRONTEND_API_WS_ENDPOINT=wss://api.get-illumi.no/graphql
+#! ----- process.env definitions END -----
+
 
 
 
 # ---- BUILDER IMAGE ----
+# This image downloads all dependencies,
+# Builds the website and places it in
+# /app/dist
 
 # Latest LTS (major: 12)
 FROM node:12-slim as builder
 
+#! ----- process.env definitions START -----
+# (NB: remember to enable them in
+# config/webpack.base.config.js)
+ENV FRONTEND_API_HTTP_ENDPOINT=https://api.get-illumi.no/graphql
+ENV FRONTEND_API_WS_ENDPOINT=wss://api.get-illumi.no/graphql
+#! ----- process.env definitions END -----
+
+#               ,-- needed for downloading all dev-dependencies
 ENV NODE_ENV develop
 ENV PATH=/app/node_modules/.bin:$PATH
 
@@ -63,8 +94,10 @@ RUN yarn install && yarn cache clean --force
 
 COPY --chown=node:node . .
 
+#                      ,-- sets NODE_ENV back to production
 RUN webpack --mode production --config config/webpack.prod.config.js \
-    --env.PLATFORM=production --env.VERSION=stag --progress
+    --env.PORT=31000 --progress
+
 
 
 
@@ -79,8 +112,8 @@ ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
-# App runs as default on port 3000
-ARG PORT=3000
+# App runs as default on port 31000
+ARG PORT=31000
 ENV PORT $PORT
 EXPOSE $PORT
 

@@ -24,7 +24,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import App from './App'
 
-if (process.env.PLATFORM === 'production') {
+if (process.env.NODE_ENV === 'production') {
 	if ('serviceWorker' in navigator) {
 		window.addEventListener('load', () => {
 			navigator.serviceWorker
@@ -62,7 +62,7 @@ ReactDOM.render(
 
 function createApolloClient(accessToken) {
 	const uploadLink = createUploadLink({
-		uri: 'https://api.get-illumi.no/graphql',
+		uri: process.env.FRONTEND_API_HTTP_ENDPOINT,
 		credentials: 'include',
 	})
 
@@ -76,7 +76,7 @@ function createApolloClient(accessToken) {
 	})
 
 	const wsLink = new WebSocketLink({
-		uri: `wss://api.get-illumi.no/graphql`,
+		uri: process.env.FRONTEND_API_WS_ENDPOINT,
 		options: {
 			reconnect: true,
 			connectionParams: {

@@ -26,11 +26,14 @@ spec:
             - mountPath: /app/yarn.lock
               name: lockfile-volume
           ports:
-            - containerPort: 3000
+            - containerPort: 30000
+          resources:
+            limits:
+              cpu: 750m
+              memory: 800Mi
       volumes:
         - name: src-volume
           hostPath:
-            # TODO: Migrate to helm and make this a relative path
             path: /home/leiklier/illumino-web-services/apis/frontend/src
             type: Directory
         - name: dependencies-volume
@@ -41,19 +44,19 @@ spec:
           hostPath:
             path: /home/leiklier/illumino-web-services/apis/frontend/yarn.lock
             type: File
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: frontend-api-service
   labels:
     app: frontend-api
-  name: frontend-api-service
 spec:
+  type: NodePort
   ports:
     - name: web
-      port: 80
-      targetPort: 3000
+      port: 30000
+      nodePort: 30000
       protocol: TCP
   selector:
     app: frontend-api
