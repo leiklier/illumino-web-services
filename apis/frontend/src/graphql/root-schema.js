@@ -74,6 +74,9 @@ const rootTypeDefs = gql`
 		clearSunset(mac: String!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+		toggleSunrise(mac: String!): Sunrise!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		activateSunrise(mac: String!): Sunrise!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 

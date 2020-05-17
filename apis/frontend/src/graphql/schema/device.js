@@ -463,6 +463,19 @@ mutationResolvers.clearSunset = async (obj, { mac }, context) => {
 	return device.sunset
 }
 
+mutationResolvers.toggleSunrise = async (obj, { mac }, context) => {
+	const { deviceByMacLoader } = context
+	const device = await deviceByMacLoader.load(mac)
+	if (!device) {
+		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+	}
+
+	device.sunrise.isActive = !device.sunrise.isActive
+	await device.save()
+
+	return device.sunrise
+}
+
 mutationResolvers.activateSunrise = async (obj, { mac }, context) => {
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
