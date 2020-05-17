@@ -17,14 +17,13 @@ const Select = ({
 	cols,
 	name,
 	font,
-	selected: initialSelected,
+	selected,
 	options,
 	onSelect,
 }) => {
 	const isHorizontal = Boolean(cols)
 	const size = isHorizontal ? cols : rows
 
-	const [selected, setSelected] = useState(initialSelected)
 	const [indexDiff, setIndexDiff] = useState(0)
 	const [ref, { width, height }] = useDimensions()
 	const [isTouching, setIsTouching] = useState(false)
@@ -54,17 +53,12 @@ const Select = ({
 	// Finish drag when over halfway and releasing
 	useEffect(() => {
 		if (!isTouching) {
-			if (indexDiff > 0.35) setSelected(getPreviousSelected())
-			if (indexDiff < -0.35) setSelected(getNextSelected())
+			if (indexDiff > 0.35) onSelect && onSelect(getPreviousSelected())
+			if (indexDiff < -0.35) onSelect && onSelect(getNextSelected())
 			setIndexDiff(0)
 		}
 	}, [isTouching])
 
-	// Emit change in selected
-	useEffect(() => {
-		if (!onSelect) return
-		onSelect(selected)
-	}, [selected])
 
 	function getPreviousSelected() {
 		const indexOfSelected = options.indexOf(selected)
@@ -76,16 +70,6 @@ const Select = ({
 		const indexOfSelected = options.indexOf(selected)
 		if (indexOfSelected === options.length - 1) return options[0]
 		return options[indexOfSelected + 1]
-	}
-
-	function formatSelected(selected) {
-		const formatted =
-			selected.charAt(0).toUpperCase() +
-			selected
-				.replace('_', ' ')
-				.toLowerCase()
-				.slice(1)
-		return formatted
 	}
 
 	return (
@@ -103,7 +87,7 @@ const Select = ({
 			})}
 		>
 			<div
-				onClick={() => setSelected(getPreviousSelected())}
+				onClick={() => onSelect && onSelect(getPreviousSelected())}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,
@@ -126,8 +110,8 @@ const Select = ({
 				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
 				<div
 					style={{
-						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : null,
-						top: !isHorizontal ? + `${(indexDiff - 1) * 100}%` : null,
+						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : undefined,
+						top: !isHorizontal ? + `${(indexDiff - 1) * 100}%` : undefined,
 					}}
 					className={classNames({
 						[styles.selectedContainer]: true,
@@ -153,7 +137,7 @@ const Select = ({
 				</div>
 			</div>
 			<div
-				onClick={() => setSelected(getNextSelected())}
+				onClick={() => onSelect && onSelect(getNextSelected())}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,

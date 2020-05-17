@@ -3,14 +3,7 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styles from './CircularButton.css'
 
-const CircularButton = ({ icon, iconColor, value: initialValue, onClick, type }) => {
-	const [value, setValue] = useState(initialValue || true)
-
-	// Emit click
-	useEffect(() => {
-		setValue(value)
-	}, [value])
-
+const CircularButton = ({ icon, iconColor, value, onClick, type }) => {
 	return (
 		<div className={styles.container}>
 			<div
@@ -24,7 +17,7 @@ const CircularButton = ({ icon, iconColor, value: initialValue, onClick, type })
 					[styles.buttonDefaultIfOn]: value && type !== 'ghost',
 				})}
 				style={iconColor && value ? { color: iconColor } : {}}
-				onClick={onClick}
+				onClick={() => onClick && onClick(!value)}
 			>
 				{type === 'ghost' ?
 					<svg className={styles.lineThrough} viewBox="0 0 100 100">

@@ -33,8 +33,6 @@ The following **prerequisities** are required on your machine for development pu
 
 Please read the **Installation** sections for instructions on how to install these.
 
-**NB**: The cluster is exposed on PORT 80, so please make sure that this port is available on the host machine.
-
 ### Installation
 
 First, install `microk8s`. This package is a distribution of Kubernetes which comes bundled with a couple of handy add-ons. It should be installed via snap:

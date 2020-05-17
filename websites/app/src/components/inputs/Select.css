@@ -22,11 +22,11 @@
 	overflow: hidden;
 }
 .content__horizontal {
-	min-width: 0;
+	width: 0;
 	flex-direction: column;
 }
 .content__vertical {
-	min-height: 0;
+	height: 0;
 	flex-direction: row;
 }
 
@@ -80,5 +80,5 @@
 	padding: 1rem;
 }
 .arrow__small {
-	padding: 0.25rem;
+	padding: 0;
 }

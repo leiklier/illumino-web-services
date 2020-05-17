@@ -51,6 +51,13 @@ const DEVICE_QUERY = gql`
 				startedAt
 				endingAt
 			}
+			sunrise {
+				isActive
+				startingAt {
+					hour
+					minute
+				}
+			}
 		}
 	}
 `
@@ -78,6 +85,13 @@ const DEVICE_SUBSCRIPTION = gql`
 			sunset {
 				startedAt
 				endingAt
+			}
+			sunrise {
+				isActive
+				startingAt {
+					hour
+					minute
+				}
 			}
 		}
 	}
@@ -135,6 +149,30 @@ const CLEAR_SUNSET = gql`
 	}
 `
 
+const TOGGLE_SUNRISE = gql`
+	mutation toggleSunrise($mac: String!) {
+		toggleSunrise(mac: $mac) {
+			isActive
+			startingAt {
+				hour
+				minute
+			}
+		}
+	}
+`
+
+const SET_SUNRISE_TIME = gql`
+	mutation setSunriseTime($mac: String!, $startingAt: TimeInput!) {
+		setSunriseTime(mac: $mac, startingAt: $startingAt) {
+			isActive
+			startingAt {
+				hour
+				minute
+			}
+		}
+	}
+`
+
 const SET_LEDSTRIPS_ARE_SYNCED = gql`
 	mutation setLedStripsAreSynced($mac: String!, $masterLedStripId: ID!) {
 		setLedStripsAreSynced(mac: $mac, masterLedStripId: $masterLedStripId) {
@@ -165,13 +203,17 @@ const Device = () => {
 		},
 	)
 	const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
+
 	const [setSunset] = useMutation(SET_SUNSET)
 	const [clearSunset] = useMutation(CLEAR_SUNSET)
+
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
 
+	const [toggleSunrise] = useMutation(TOGGLE_SUNRISE)
+	const [setSunriseTime] = useMutation(SET_SUNRISE_TIME)
+
 	const [selectedLedStrip, setSelectedLedStrip] = useState(1)
-	const [cache, setCache] = useState({})
 
 	// Receive realtime updates for device:
 	useEffect(() => {
@@ -222,6 +264,16 @@ const Device = () => {
 		else setSunset({ variables: { mac: data.device.mac, startedAt, endingAt } })
 	}
 
+	function handleSunriseChange({ isActive, startingAt }) {
+		if (isActive !== data.device.sunrise.isActive) {
+			toggleSunrise({ variables: { mac: data.device.mac } })
+		}
+
+		if (startingAt !== data.device.sunrise.startingAt) {
+			setSunriseTime({ variables: { mac: data.device.mac, startingAt } })
+		}
+	}
+
 	function handleSelectAllLedStrips(allAreSelected) {
 		if (allAreSelected) {
 			setLedStripsAreSynced({
@@ -254,7 +306,7 @@ const Device = () => {
 				cols={3}
 				name="animation"
 				selected="MANUAL"
-				options={['RAINBOW', 'MANUAL', 'LAVA']}
+				options={['MANUAL', 'FIREPLACE', 'VIVID', 'SPECTRUM', 'STARS']}
 			/>
 			<RangeInput
 				rows={3}
@@ -272,7 +324,16 @@ const Device = () => {
 				value={data.device.ledStrips[selectedLedStrip - 1].animation.speed}
 				onInput={handleAnimationSpeedChange}
 			/>
-			<SunRiseInput />
+			<SunRiseInput
+				value={{
+					isActive: data.device.sunrise.isActive,
+					startingAt: {
+						hour: data.device.sunrise.startingAt.hour,
+						minute: data.device.sunrise.startingAt.minute,
+					},
+				}}
+				onInput={handleSunriseChange}
+			/>
 			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
 			<CycleButton
 				selected={selectedLedStrip}

@@ -8,7 +8,7 @@ body {
 	font-family: 'AppleSDGothicNeo-Light';
 	user-select: none;
 
-	/* The folowing (+ fixed height/max-height)
+	/* The following (+ fixed height/max-height)
 	   is required for iNoBounce to work: */
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
