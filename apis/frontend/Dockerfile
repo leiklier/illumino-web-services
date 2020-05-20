@@ -58,7 +58,7 @@ RUN yarn install --only=development
 # This has to be done in Kubernetes as a bind mount
 
 # Restart on file changes
-CMD ["nodemon", "./src/server.js"]
+CMD ["nodemon", "--expose-gc", "--inspect=0.0.0.0:9229",  "./src/server.js"]
 
 
 

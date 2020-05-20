@@ -6,17 +6,19 @@ This repository contains all web services required by Illumino. This includes AP
 
 ## Endpoints
 
-### [DEV]
 
 **Convention**:
 
-* API services use ports 30 000 - 30 999
-* Websites use ports 31000 - 31999
+* API services use ports 30 000 - 30 499 for exposing services and 30 500 - 30 999 for debuggers.
+* Websites * API services use ports 31 000 - 31 499 for exposing services and 31 500 - 31 999 for debuggers.
 
-|  Service name | Available at  |  TLS enabled? |
-|---|---|---|
-| frontend-api | [localhost:30000/graphql](localhost:30000/graphql) | No |
-| web-app | [localhost:31000](localhost:31000) | No |
+
+### [DEV]
+
+|  Service name | Available at  |  TLS enabled? | Debugger port |
+|---|---|---|---|
+| frontend-api | [localhost:30000/graphql](localhost:30000/graphql) | No | 30500 |
+| web-app | [localhost:31000](localhost:31000) | No | N/A |
 
 ### [PROD] / [STAG]
 |  Service name | Available at  |  TLS enabled? |

@@ -27,6 +27,9 @@ spec:
               name: lockfile-volume
           ports:
             - containerPort: 30000
+              name: web
+            - containerPort: 9229
+              name: node-debugger
           resources:
             limits:
               cpu: 750m
@@ -58,6 +61,9 @@ spec:
       port: 30000
       nodePort: 30000
       protocol: TCP
+    - name: node-debugger
+      port: 9229
+      nodePort: 30500
   selector:
     app: frontend-api
 ---
