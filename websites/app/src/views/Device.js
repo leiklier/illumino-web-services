@@ -15,11 +15,16 @@ import { faSun, faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
 import DeviceTitle from '../components/DeviceTitle'
 import SelectInput from '../components/inputs/Select'
 import RangeInput from '../components/inputs/Range'
-import SunRiseInput from '../components/inputs/SunRise'
+import SunriseInput from '../components/inputs/SunRise'
 import SunsetInput from '../components/inputs/Sunset'
 import CircularButton from '../components/inputs/CircularButton'
 import CycleButton from '../components/inputs/CycleButton'
 import ColorPicker from '../components/inputs/ColorPicker'
+
+import withDebounce from '../HOCs/with-debounce'
+
+// Debounced inputs:
+const DebouncedSunriseInput = withDebounce(SunriseInput)
 
 const LOGOUT = gql`
 	query logout {
@@ -324,7 +329,7 @@ const Device = () => {
 				value={data.device.ledStrips[selectedLedStrip - 1].animation.speed}
 				onInput={handleAnimationSpeedChange}
 			/>
-			<SunRiseInput
+			<DebouncedSunriseInput
 				value={{
 					isActive: data.device.sunrise.isActive,
 					startingAt: {
@@ -332,7 +337,7 @@ const Device = () => {
 						minute: data.device.sunrise.startingAt.minute,
 					},
 				}}
-				onInput={handleSunriseChange}
+				debouncedOnInput={handleSunriseChange}
 			/>
 			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
 			<CycleButton
