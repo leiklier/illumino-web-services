@@ -11,64 +11,38 @@ const Range = ({
 	icon,
 	range,
 	disabled: isDisabled,
-	value: initialValue,
+	value,
 	onInput,
 }) => {
 	const isHorizontal = cols > rows
-	const [timeoutId, setTimeoutId] = useState(null)
-	const [value, setValue] = useState(initialValue)
-	const [valueIsEmitted, setValueIsEmitted] = useState(true)
-	const [percentage, setPercentage] = useState(
-		(value / (range[1] - range[0])) * 100 + '%',
-	)
-	const [{ touchX, touchY }, setPosition] = useState({ touchX: 0, touchY: 0 })
-	const bindDrag = useDrag(({ xy: [x, y] }) =>
-		setPosition({ touchX: x, touchY: y }),
-	)
-	const [ref, { width, height, x: elemX, y: elemY }] = useDimensions()
+	const [ref, { width, height }] = useDimensions()
 
-	// Change value on touch
-	if (isHorizontal) {
-		useEffect(() => {
-			if (!isDisabled) {
-				const newValue = ((touchX - elemX) / width) * (range[1] - range[0])
-				setValue(newValue)
-				setValueIsEmitted(false)
-			}
-		}, [touchX])
-	} else {
-		useEffect(() => {
-			if (!isDisabled) {
-				const newValue = (1 - (touchY - elemY) / height) * (range[1] - range[0])
-				setValue(newValue)
-				setValueIsEmitted(false)
-			}
-		}, [touchY])
-	}
-
-	// Emit value when changing
-	useEffect(() => {
-		if (valueIsEmitted) return
+	const bindDrag = useDrag(({ delta }) => {
+		const [deltaX, deltaY] = delta
+		if (isDisabled) return
 		if (!onInput) return
-		onInput(validateValue(value))
-		setValueIsEmitted(true)
-	}, [valueIsEmitted])
 
-	// Update value when received from props
-	useEffect(() => {
-		setValue(initialValue)
-	}, [initialValue])
 
-	// Update percentage when value changes
-	useEffect(() => {
-		setPercentage((value / (range[1] - range[0])) * 100 + '%')
-	}, [value])
 
-	function validateValue(value) {
-		if (value > range[1]) return range[1]
-		if (value < range[0]) return range[0]
-		return value
+		let deltaValue
+		if (isHorizontal) {
+			deltaValue = (deltaX / width) * (range.max - range.min)
+		} else { // is vertical
+			deltaValue = -1 * (deltaY / height) * (range.max - range.min)
+			//            ^- because y-axis is flipped in html
+		}
+
+		let newValue = value + deltaValue
+		if (newValue > range.max) newValue = range.max
+		if (newValue < range.min) newValue = range.min
+
+		onInput(newValue)
+	})
+
+	function valueToPercentage(value, range) {
+		return `${value / (range.max - range.min) * 100}%`
 	}
+
 
 	return (
 		<div
@@ -85,7 +59,10 @@ const Range = ({
 			})}
 		>
 			<div
-				style={isHorizontal ? { width: percentage } : { height: percentage }}
+				style={isHorizontal ?
+					{ width: valueToPercentage(value, range) } :
+					{ height: valueToPercentage(value, range) }
+				}
 				className={classNames({
 					[styles.fill]: true,
 					[styles.fillIfHorizontal]: isHorizontal,

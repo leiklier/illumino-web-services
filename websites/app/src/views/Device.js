@@ -25,6 +25,7 @@ import withDebounce from '../HOCs/with-debounce'
 
 // Debounced inputs:
 const DebouncedSunriseInput = withDebounce(SunriseInput)
+const DebouncedRangeInput = withDebounce(RangeInput)
 
 const LOGOUT = gql`
 	query logout {
@@ -313,21 +314,21 @@ const Device = () => {
 				selected="MANUAL"
 				options={['MANUAL', 'FIREPLACE', 'VIVID', 'SPECTRUM', 'STARS']}
 			/>
-			<RangeInput
+			<DebouncedRangeInput
 				rows={3}
 				cols={1}
 				icon={faSun}
-				range={[0, 1]}
+				range={{ min: 0, max: 1 }}
 				value={data.device.ledStrips[selectedLedStrip - 1].brightness}
-				onInput={handleBrightnessChange}
+				debouncedOnInput={handleBrightnessChange}
 			/>
-			<RangeInput
+			<DebouncedRangeInput
 				rows={1}
 				cols={3}
 				icon={faRunning}
-				range={[0, 1]}
+				range={{ min: 0, max: 1 }}
 				value={data.device.ledStrips[selectedLedStrip - 1].animation.speed}
-				onInput={handleAnimationSpeedChange}
+				debouncedOnInput={handleAnimationSpeedChange}
 			/>
 			<DebouncedSunriseInput
 				value={{
