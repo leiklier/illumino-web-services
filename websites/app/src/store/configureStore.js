@@ -1,7 +1,7 @@
-import { combineReducers, applyMiddleware, compose, createStore } from 'redux'
+import { combineReducers, createStore } from 'redux'
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'localforage'
-import { createLogger } from 'redux-logger'
+import { composeWithDevTools } from 'redux-devtools-extension'
 import uiReducer from './ui/reducer'
 import authReducer from './auth/reducer'
 
@@ -27,10 +27,9 @@ const rootReducer = combineReducers({
 
 const persistedRootReducer = persistReducer(rootPersistConfig, rootReducer)
 
-const middleware = applyMiddleware(createLogger())
 
 export default function configureStore() {
-	const store = createStore(persistedRootReducer, compose(middleware))
+	const store = createStore(persistedRootReducer, composeWithDevTools())
 	const persistor = persistStore(store)
 
 	return { store, persistor }
