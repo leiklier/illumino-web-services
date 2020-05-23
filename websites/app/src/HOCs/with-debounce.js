@@ -36,11 +36,11 @@ function withDebounce(InputComponent) {
 	// this block time can be large without
 	// having an impact on the performance
 	const blockMS = 4500
-	return function DebuncedInputComponent({
+	const DebuncedInputComponent = ({
 		onInput,
 		value: initialValue,
 		debouncedOnInput,
-		...passThroughProps }) {
+		...passThroughProps }) => {
 
 		// previousValue holds the value which
 		// was previously emitted using debouncedOnInput
@@ -65,6 +65,7 @@ function withDebounce(InputComponent) {
 		const [valueWasFromProps, setValueWasFromProps] = useState(false)
 		useEffect(() => {
 			if (waitTimeout || blockTimeout) return
+			if (lodash.isEqual(initialValue, currentValue)) return
 
 			setValueWasFromProps(true)
 			setCurrentValue(initialValue)
@@ -146,6 +147,8 @@ function withDebounce(InputComponent) {
 			/>
 		)
 	}
+	DebuncedInputComponent.displayName = `WithDebounce${InputComponent.displayName || InputComponent.name || 'Component'}`
+	return DebuncedInputComponent
 }
 
 export default withDebounce
