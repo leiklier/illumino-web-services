@@ -14,6 +14,7 @@ const devConfig = env => {
 			contentBase: APP_DIR,
 			hot: true,
 			inline: true,
+			devtool: 'inline-source-map',
 			historyApiFallback: true,
 			compress: true,
 			host: '0.0.0.0',
