@@ -110,8 +110,8 @@ const Select = ({
 				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
 				<div
 					style={{
-						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : undefined,
-						top: !isHorizontal ? + `${(indexDiff - 1) * 100}%` : undefined,
+						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : '',
+						top: !isHorizontal ? + (indexDiff - 1) * 100 + '%' : '',
 					}}
 					className={classNames({
 						[styles.selectedContainer]: true,
