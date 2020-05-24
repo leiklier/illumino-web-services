@@ -8,6 +8,7 @@ import {
 	setStatusModalState,
 	clearSelectedSecret,
 	clearAccessToken,
+	setBackgroundColor,
 } from '../store/actions'
 
 import { faSun, faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
@@ -26,6 +27,7 @@ import withDebounce from '../HOCs/with-debounce'
 // Debounced inputs:
 const DebouncedSunriseInput = withDebounce(SunriseInput)
 const DebouncedRangeInput = withDebounce(RangeInput)
+const DebouncedColorPicker = withDebounce(ColorPicker)
 
 const LOGOUT = gql`
 	query logout {
@@ -221,6 +223,10 @@ const Device = () => {
 
 	const [selectedLedStrip, setSelectedLedStrip] = useState(1)
 
+	// TEMP START ---
+	const [color, setColor] = useState({ saturation: 0, hue: 0 })
+	// TEMP END ---
+
 	// Receive realtime updates for device:
 	useEffect(() => {
 		subscribeToMore({
@@ -350,7 +356,15 @@ const Device = () => {
 			>
 				Ledstrip
 			</CycleButton>
-			<ColorPicker value={{ saturation: 0, hue: 0 }} />
+			<DebouncedColorPicker
+				value={color}
+				debouncedOnInput={setColor}
+				onInput={value => {
+					if (typeof value !== 'object' || value === null) return
+					const { red, green, blue } = hsvToRgb(value.hue, value.saturation, 0.8)
+					dispatch(setBackgroundColor(red, green, blue))
+				}}
+			/>
 			<SunsetInput
 				duration={5 * 60}
 				startedAt={data.device.sunset.startedAt}
@@ -359,6 +373,41 @@ const Device = () => {
 			/>
 		</>
 	)
+}
+
+function hsvToRgb(hue, saturation, value) {
+	// Using formula as found on
+	// https://www.rapidtables.com/convert/color/hsv-to-rgb.html
+
+	// Expects:
+	// 0 <= hue <= 360
+	// 0 <= saturation <= 1
+	// 0 <= value <= 1
+
+	const C = value * saturation
+	const X = C * (1 - Math.abs((hue / 60) % 2 - 1))
+	const m = value - C
+
+	let R_, G_, B_
+	if (hue < 60) {
+		[R_, G_, B_] = [C, X, 0]
+	} else if (hue < 120) {
+		[R_, G_, B_] = [X, C, 0]
+	} else if (hue < 180) {
+		[R_, G_, B_] = [0, C, X]
+	} else if (hue < 240) {
+		[R_, G_, B_] = [0, X, C]
+	} else if (hue < 300) {
+		[R_, G_, B_] = [X, 0, C]
+	} else {
+		[R_, G_, B_] = [C, 0, X]
+	}
+
+	return {
+		red: (R_ + m) * 255,
+		green: (G_ + m) * 255,
+		blue: (B_ + m) * 255,
+	}
 }
 
 export default Device

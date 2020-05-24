@@ -3,39 +3,43 @@ import styles from './ColorPicker.css'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../hooks/use-dimensions'
 
-const ColorPicker = ({ value: { saturation: initialSaturation, hue: initialHue }, onChange }) => {
-	const [saturation, setSaturation] = useState(initialSaturation || 0)
-	const [hue, setHue] = useState(initialHue || 0)
-
-	useEffect(() => {
-		if (!onChange) return
-		onChange({ saturation, hue })
-	}, [hue, saturation])
-
+const ColorPicker = ({ value, onInput }) => {
 	return (
 		<div className={styles.container}>
 			<div className={styles.wrapper}>
 				<ColorWheel
+					value={value.hue}
+					onInput={newHue => {
+						if (!onInput) return
+						onInput({
+							...value,
+							hue: newHue,
+						})
+					}}
 					innerCircleComponent={() =>
 						<ScrollWheel
-							value={saturation}
-							onChange={newValue => setSaturation(newValue)}
+							value={value.saturation}
+							onInput={newSaturation => {
+								if (!onInput) return
+								onInput({
+									...value,
+									saturation: newSaturation,
+								})
+							}}
 						/>
 					}
 					bottomSectionComponent={() =>
 						<ValueDisplay
 							primary={{
 								name: 'Saturation',
-								value: `${Math.round(saturation * 100)}%`
+								value: `${Math.round(value.saturation * 100)}%`
 							}}
 							secondary={{
 								name: 'Hue',
-								value: `${Math.round(hueToDegrees(hue))}°`
+								value: `${Math.round(value.hue)}°`
 							}}
 						/>
 					}
-					value={hue}
-					onChange={newValue => setHue(newValue)}
 				/>
 			</div>
 		</div>
@@ -45,8 +49,8 @@ const ColorPicker = ({ value: { saturation: initialSaturation, hue: initialHue }
 function ColorWheel({
 	innerCircleComponent,
 	bottomSectionComponent,
-	value: initialValue,
-	onChange
+	value,
+	onInput,
 }) {
 	// Calculate dimensions of the horse shoe:
 	const svg = {
@@ -69,12 +73,12 @@ function ColorWheel({
 		endX: svg.width / 2 + innerRadius * Math.cos((Math.PI - angle) / 2),
 		endY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
 	}
-
-	// Enable dragging of the wheel:
-	const [rotationCW, setRotationCW] = useState(hueToRadians(initialValue))
 	const [ref, { y: top, x: left, width, height }] = useDimensions()
 
 	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {
+		if (!onInput) return
+
+		const rotationCW = degreesToRadians(value)
 		if (!isTouching) return
 
 		const angleOffsetCW = getAngleOffset(x0, y0, x, y, top, left, width, height)
@@ -86,16 +90,10 @@ function ColorWheel({
 			newAngleCW += 2 * Math.PI
 		}
 
-		setRotationCW(newAngleCW)
+		onInput(radiansToDegrees(newAngleCW))
 	})
 
 	const [isTouching, setIsTouching] = useState(false)
-
-	// Input logic
-	useEffect(() => {
-		if (!onChange) return
-		onChange(radiansToHue(rotationCW))
-	}, [rotationCW])
 
 	return (
 		<div className={styles.colorWheelContainer} {...bindDrag()} ref={ref}>
@@ -127,7 +125,7 @@ function ColorWheel({
 							xlinkHref="/images/color-wheel.png"
 							x="0"
 							y="0"
-							transform={`rotate(${-1 * rotationCW / (2 * Math.PI) * 365} 50 50)`}
+							transform={`rotate(${-1 * degreesToRadians(value) / (2 * Math.PI) * 365} 50 50)`}
 							width="100"
 							height="100"
 						/>
@@ -165,15 +163,7 @@ function ColorWheel({
 	)
 }
 
-function ScrollWheel({ value: initialValue, onChange }) {
-	// Input
-	const [value, setValue] = useState(initialValue)
-
-	useEffect(() => {
-		if (!onChange) return
-		onChange(value)
-	}, [value])
-
+function ScrollWheel({ value, onInput }) {
 	// Scrolling logic
 	const [ref, { y: top, x: left, height }] = useDimensions()
 
@@ -182,13 +172,12 @@ function ScrollWheel({ value: initialValue, onChange }) {
 		let newValue = value + relativeDistance / 3
 		if (newValue > 1) newValue = 1
 		if (newValue < 0) newValue = 0
-		setValue(newValue)
+		onInput(newValue)
 	})
 
-	const [offset, setOffset] = useState((150 * value) % 25)
-	useEffect(() => {
-		setOffset((150 * value) % 25)
-	}, [value])
+	function valueToOffset(value) {
+		return - 1 * ((150 * value) % 25)
+	}
 
 	return (
 		<svg
@@ -197,10 +186,10 @@ function ScrollWheel({ value: initialValue, onChange }) {
 			ref={ref}
 			{...bindDrag()}
 		>
-			<ScrollLine yStart={25} yOffset={-offset} />
-			<ScrollLine yStart={50} yOffset={-offset} />
-			<ScrollLine yStart={75} yOffset={-offset} />
-			<ScrollLine yStart={100} yOffset={-offset} />
+			<ScrollLine yStart={25} yOffset={valueToOffset(value)} />
+			<ScrollLine yStart={50} yOffset={valueToOffset(value)} />
+			<ScrollLine yStart={75} yOffset={valueToOffset(value)} />
+			<ScrollLine yStart={100} yOffset={valueToOffset(value)} />
 		</svg>
 	)
 }
@@ -268,7 +257,7 @@ function ValueDisplay({ primary, secondary }) {
 	return (
 		<div className={styles.valueDisplayContainer}>
 			<div className={styles.valueDisplayContent}>
-				{ typeShowing === primary.name ? primary.value : secondary.value }
+				{typeShowing === primary.name ? primary.value : secondary.value}
 			</div>
 			<div className={styles.valueDisplayHeader}>
 				{typeShowing}
@@ -301,16 +290,12 @@ function getAngleOffset(x0, y0, x, y, top, left, width, height) {
 	return angleOffsetCW
 }
 
-function radiansToHue(radians) {
-	return radians * (255 / (2 * Math.PI))
+function radiansToDegrees(radians) {
+	return radians * (360 / (2 * Math.PI))
 }
 
-function hueToRadians(hue) {
-	return hue * ((2 * Math.PI) / 255)
-}
-
-function hueToDegrees(hue) {
-	return hue * (360 / 255)
+function degreesToRadians(hue) {
+	return hue * ((2 * Math.PI) / 360)
 }
 
 
