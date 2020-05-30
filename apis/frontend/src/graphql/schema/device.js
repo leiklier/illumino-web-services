@@ -1,17 +1,17 @@
 const { gql, ApolloError, withFilter } = require('apollo-server-express')
 const { isMACAddress } = require('validator')
 const SHA256 = require('crypto-js/sha256')
+const lodash = require('lodash')
 
 const logger = require('../../logger')
 
-const pubsub = require('../pubsub')
+const asyncifyChangeStream = require('../../lib/asyncify-change-stream')
+const { expandDotkeyedObject } = require('../../lib/object')
 
 const Device = require('../../models/device')
 const Measurement = require('../../models/measurement')
 
 const error = require('../errors')
-
-const { DEPLOY_KEY } = process.env
 
 const typeDefs = gql`
 	type Device {
@@ -218,25 +218,83 @@ const DeviceResolver = {
 	},
 }
 
+
 const subscriptionResolvers = {}
 const queryResolvers = {}
 const mutationResolvers = {}
 
 subscriptionResolvers.device = {
-	subscribe: withFilter(
-		() => pubsub.asyncIterator('device'),
-		async (payload, args, context) => {
-			// TODO: Cache clearing should be done in context
-			const { deviceByIdLoader, deviceByMacLoader } = context
-			const device = await deviceByIdLoader.load(payload.device.id)
-			deviceByIdLoader.clear(device.id)
-			deviceByMacLoader.clear(device.mac)
+	subscribe: async (payload, { mac }, context) => {
+		// Happens when a subscription is initiated
+		const { deviceByIdLoader, deviceByMacLoader } = context
 
-			return context.device && payload.device.id === context.device.id
-		},
-	),
+		let device
+		if (mac) {
+			device = await deviceByMacLoader.load(mac)
+		} else if (context.device) {
+			device = await deviceByIdLoader.load(context.device.id)
+		} else {
+			throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+		}
+
+		const changeStream = Device.watch([
+			{ $match: { operationType: 'update' } },
+			{ $match: { 'documentKey._id': device._id } },
+		])
+
+		// Returns new `changeEvent` object
+		// each time the `device` has been updated:
+		const asyncIterator = asyncifyChangeStream(changeStream)
+		return asyncIterator
+	},
+	resolve: async (payload, args, context) => {
+		const { deviceByIdLoader, deviceByMacLoader } = context
+		const deviceId = payload.documentKey._id.toString()
+		const { mac } = await deviceByIdLoader.load(deviceId)
+		const updatedFields = Object.keys(payload.updateDescription.updatedFields)
+
+		const populatedFields = [
+			/^installedFirmware/,
+			/^owner/,
+			/^managers/,
+		]
+
+		// Updated fields which are populated by documents from
+		// different collections:
+		const updatedPopulatedFields = updatedFields.filter((updatedField) => {
+			for (const populatedField of populatedFields) {
+				if (populatedField.test(updatedField)) {
+					// the current updatedField is a populated field
+					return true
+				}
+			}
+			return false
+		})
+
+		if (updatedPopulatedFields.length !== 0) {
+
+			// We cannot hot patch populated fields, so
+			// flush the dataloader:
+			deviceByIdLoader.clear(deviceId)
+			deviceByMacLoader.clear(mac)
+
+			const device = await deviceByMacLoader.load(mac)
+			return device
+		}
+
+		// The updated fields are not populated,
+		// and so we can just merge in the changes
+		// with the version stored in the dataloaders:
+		const deviceDiff = expandDotkeyedObject(payload.updateDescription.updatedFields)
+		const cachedDevice = await deviceByIdLoader.load(deviceId)
+		const updatedDevice = lodash.merge(cachedDevice, deviceDiff)
+
+		deviceByIdLoader.clear(deviceId).prime(deviceId, updatedDevice)
+		deviceByMacLoader.clear(mac).prime(mac, updatedDevice)
+
+		return updatedDevice
+	}
 }
-
 queryResolvers.device = async (obj, { mac, secret }, context) => {
 	const { deviceByIdLoader, deviceByMacLoader } = context
 	let device
