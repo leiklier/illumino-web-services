@@ -94,7 +94,7 @@ RUN yarn install && yarn cache clean --force
 
 COPY --chown=node:node . .
 
-#                      ,-- sets NODE_ENV back to production
+ENV NODE_ENV production
 RUN webpack --mode production --config config/webpack.prod.config.js \
     --env.PORT=31000 --progress
 
