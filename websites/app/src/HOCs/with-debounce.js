@@ -62,12 +62,10 @@ function withDebounce(InputComponent) {
 		// values from the DebouncedInputComponent
 		// can propagate down into the raw component
 		const [blockTimeout, setBlockTimeout] = useState(null)
-		const [valueWasFromProps, setValueWasFromProps] = useState(false)
 		useEffect(() => {
 			if (waitTimeout || blockTimeout) return
 			if (lodash.isEqual(initialValue, currentValue)) return
 
-			setValueWasFromProps(true)
 			setCurrentValue(initialValue)
 		}, [initialValue, blockTimeout])
 
@@ -80,37 +78,17 @@ function withDebounce(InputComponent) {
 			}
 		}, [])
 
-		// Run each time onInput from
-		// InputComponent fires:
 		useEffect(() => {
-			if (valueWasFromProps) {
-				// the state change did NOT come from
-				// onInput, and so do not perform
-				// side-effects:
-				setValueWasFromProps(false)
-				return
-			}
+			if (!waitTimeout) return
 
-			// onInput is used as pass-through:
-			if (onInput) onInput(currentValue)
-
-			if (waitTimeout) return
-
-			// > waitMS has passed since last time debouncedOnInput
-			// was called, and so we should emit it again since
-			// new value has been received:
-			emitDebouncedValue()
-		}, [currentValue])
-
-		useEffect(() => {
-			if (waitTimeout) return
-
-			// the waitTimeout has just expired,
-			// so we need to start a blockTimeout:
+			// the waitTimeout has just started,
+			// so we need to start a blockTimeout
+			// as well. This gets renewed each time
+			// waitTimeout is renewed
 			if (blockTimeout) window.clearTimeout(blockTimeout)
 			setBlockTimeout(window.setTimeout(() => {
 				setBlockTimeout(null)
-			}, blockMS))
+			}, waitMS + blockMS))
 		}, [waitTimeout])
 
 		useEffect(() => {
@@ -120,11 +98,11 @@ function withDebounce(InputComponent) {
 			// Value has changed since last debouncedOnInput,
 			// and the waitTimeout has expired, so we need
 			// to rerun:
-			emitDebouncedValue()
+			emitDebouncedValue(currentValue)
 
 		}, [waitTimeout])
 
-		function emitDebouncedValue() {
+		function emitDebouncedValue(value) {
 			setWaitTimeout(window.setTimeout(() => {
 				// This fires either:
 				// 1. every 250 ms when value input is changed
@@ -132,17 +110,33 @@ function withDebounce(InputComponent) {
 				// 2. 250 ms after last debouncedOnInput, and
 				//    some time has passed since last input change
 
+				//! THIS CAUSES A BUG since useState
+				//! is asynchronous. Refactor to useRef
 				setWaitTimeout(null)
 			}, waitMS))
 
-			setPreviousValue(currentValue)
-			debouncedOnInput && debouncedOnInput(currentValue)
+			setPreviousValue(value)
+			debouncedOnInput && debouncedOnInput(value)
+		}
+
+		function handleInput(value) {
+			setCurrentValue(value)
+
+			// onInput is used as pass-through:
+			if (onInput) onInput(currentValue)
+
+			if (waitTimeout) return
+
+			// > waitMS has passed since last time debouncedOnInput
+			// was called, and so we should emit it again since
+			// new value has been received:
+			emitDebouncedValue(value)
 		}
 
 		return (
 			<InputComponent
 				value={currentValue}
-				onInput={setCurrentValue}
+				onInput={handleInput}
 				{...passThroughProps}
 			/>
 		)
