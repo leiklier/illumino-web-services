@@ -1,6 +1,7 @@
 const {
 	getUserByToken,
 	getDeviceByToken,
+	getTokenPayload,
 	getAuthTypeByToken,
 } = require('../lib/token')
 const createDataLoaders = require('../dataloaders')
@@ -14,21 +15,17 @@ const context = async ({ req, res, connection }) => {
 		clientIp: (req && req.ip) || connection.remoteAddress,
 	}
 
-	// Authorization:
+	let accessToken
+
+	// HTTP authentication:
 	try {
 		// Format of header Authorization: <type> <content>
-
 		const authHeader = req.headers.authorization
 		const [authType, authContent] = authHeader.split(' ')
+
 		switch (authType) {
 			case 'Bearer': {
-				const token = authContent
-
-				context.user = await getUserByToken(token)
-				context.device = await getDeviceByToken(token)
-
-				context.authType = getAuthTypeByToken(token)
-
+				accessToken = authContent
 				break
 			}
 
@@ -45,12 +42,23 @@ const context = async ({ req, res, connection }) => {
 		// authHeader is empty
 	}
 
+	// WebSocket authentication:
 	// Is connected via WebSocket
 	if (connection && connection.context) {
-		context = {
-			...context,
-			...connection.context,
+		accessToken = connection.context.accessToken
+	}
+
+	if (accessToken) {
+		const { userByIdLoader, deviceByIdLoader } = context
+		const tokenPayload = getTokenPayload(accessToken)
+		if (tokenPayload.user) {
+			context.user = await userByIdLoader.load(tokenPayload.user.id)
 		}
+		if (tokenPayload.device) {
+			context.device = await deviceByIdLoader.load(tokenPayload.device.id)
+		}
+
+		context.authType = getAuthTypeByToken(accessToken)
 	}
 
 	if (context.user || context.device || context.isDeploying)
@@ -66,10 +74,7 @@ const onConnect = async (connectionParams, webSocket) => {
 	let context = {}
 
 	if (connectionParams.authToken) {
-		const token = connectionParams.authToken
-
-		context.user = await getUserByToken(token)
-		context.device = await getDeviceByToken(token)
+		context.accessToken = connectionParams.authToken
 	}
 
 	return context
