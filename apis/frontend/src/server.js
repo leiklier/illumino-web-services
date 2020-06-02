@@ -45,10 +45,14 @@ mongoose
 		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/illumino?retryWrites=true&w=majority`,
 		{
 			useNewUrlParser: true,
+			// Each `changeStream` requires a new connection,
+			// so we need a really large `poolSize` to cover this demand.
+			// Read more here:
+			// https://stackoverflow.com/questions/48411897/severe-performance-drop-with-mongodb-change-streams
+			poolSize: 1000,
 		},
 	)
 	.then(() => {
-
 		httpServer.listen(PORT, () => {
 			logger.info(
 				`Server started with endpoints http://api.get-illumi.no:${PORT}${
@@ -61,7 +65,7 @@ mongoose
 
 function getCorsOriginsFromEnv() {
 	const { ACCESS_CONTROL_ALLOW_ORIGIN: corsString } = process.env
-	if(!corsString) return false
+	if (!corsString) return false
 
 	const corsOrigins = String(corsString).split(';')
 	return corsOrigins
