@@ -151,7 +151,7 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 	if (device.pin && !pin) {
 		logger.warn(
 			`Device with mac ${
-				device.mac
+			device.mac
 			} tried to login without pin, but pin is required`,
 			{
 				target: 'DEVICE',
@@ -264,41 +264,43 @@ queryResolvers.hasRefreshToken = async (obj, args, context) => {
 }
 
 queryResolvers.accessToken = async (obj, args, context) => {
-	const { userByIdLoader, deviceByIdLoader, clientIp, req } = context
+	const { clientIp, req } = context
 	const refreshToken = req.cookies['refresh-token']
-	const { userId, deviceId, purpose } = getTokenPayload(refreshToken)
+	const { user, device, purpose } = getTokenPayload(refreshToken)
 	const authType = getAuthTypeByToken(refreshToken)
 
 	if (purpose !== 'REFRESH') throw new ApolloError(error.NOT_AUTHENTICATED)
 
-	if (userId) {
-		const user = await userByIdLoader.load(userId)
+	if (user) {
 		const accessToken = getAccessTokenByUser(user, authType)
 
 		logger.info(`User with email ${user.email} refreshed token`, {
 			target: 'USER',
 			event: 'TOKEN_REFRESH_SUCCEEDED',
-			meta: { user: userId, clientIp },
+			meta: { user: user.id, clientIp },
 		})
 
 		return {
-			userId,
+			userId: user.id,
 			accessToken,
 			expiresAt: getTokenExpiration(accessToken),
 		} // returns UserAuthData
 	}
 
-	if (deviceId) {
-		const device = await deviceByIdLoader.load(deviceId)
+	if (device) {
 		const accessToken = getAccessTokenByDevice(device, authType)
 
 		logger.info(`Device with mac ${device.mac} refreshed token`, {
 			target: 'DEVICE',
 			event: 'TOKEN_REFRESH_SUCCEEDED',
-			meta: { device: deviceId, clientIp },
+			meta: { device: device.id, clientIp },
 		})
 
-		return { deviceId, accessToken, expiresAt: getTokenExpiration(accessToken) } // returns DeviceAuthData
+		return {
+			deviceId: device.id,
+			accessToken,
+			expiresAt: getTokenExpiration(accessToken)
+		} // returns DeviceAuthData
 	}
 
 	throw new ApolloError(error.NOT_AUTHENTICATED)

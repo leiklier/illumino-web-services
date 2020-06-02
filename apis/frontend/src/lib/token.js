@@ -10,15 +10,17 @@ const Device = require('../models/device')
  *
  * @param {User} user - The User that should be wrapped in the `token`´s payload.
  * @param {string} authType - What type of credentials was provided, e.g. 'password'
- * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
- * @return {string} The JSON Web Token with `userId` and `authType` as payload
+ * @return {string} The JSON Web Token
  */
 const getRefreshTokenByUser = (user, authType) => {
 	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
 			payload: {
-				userId: user.id,
+				user: {
+					id: user.id,
+					email: user.email,
+				},
 				authType,
 				purpose: 'REFRESH',
 			},
@@ -35,15 +37,17 @@ const getRefreshTokenByUser = (user, authType) => {
  *
  * @param {User} user - The User that should be wrapped in the `token`´s payload.
  * @param {string} authType - What type of credentials was provided, e.g. 'password'
- * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
- * @return {string} The JSON Web Token with `userId` and `authType` as payload
+ * @return {string} The JSON Web Token
  */
 const getAccessTokenByUser = (user, authType) => {
-	const expiresAt = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
+	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 10 // 10 days
 	return jwt.sign(
 		{
 			payload: {
-				userId: user.id,
+				user: {
+					id: user.id,
+					email: user.email,
+				},
 				authType,
 				purpose: 'ACCESS',
 			},
@@ -60,15 +64,17 @@ const getAccessTokenByUser = (user, authType) => {
  *
  * @param {Device} device - The Device that should be wrapped in a token
  * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
- * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
- * @return {string} The JSON Web Token with `deviceId` and `authType` as payload
+ * @return {string} The JSON Web Token
  */
 const getRefreshTokenByDevice = (device, authType) => {
 	const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
 			payload: {
-				deviceId: device.id,
+				device: {
+					id: device.id,
+					mac: device.mac,
+				},
 				authType,
 				purpose: 'REFRESH',
 			},
@@ -85,15 +91,17 @@ const getRefreshTokenByDevice = (device, authType) => {
  *
  * @param {Device} device - The Device that should be wrapped in a token
  * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
- * @param {string} expiresAt - When token should expire, number of milliseconds since Epoch
- * @return {string} The JSON Web Token with `deviceId` and `authType` as payload
+ * @return {string} The JSON Web Token
  */
 const getAccessTokenByDevice = (device, authType) => {
 	const expiresAt = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
 	return jwt.sign(
 		{
 			payload: {
-				deviceId: device.id,
+				device: {
+					id: device.id,
+					mac: device.mac,
+				},
 				authType,
 				purpose: 'ACCESS',
 			},
@@ -108,18 +116,18 @@ const getAccessTokenByDevice = (device, authType) => {
  * in tokenPayload is set and `null` otherwise.
  *
  * @param {string} token - A JSON Web Token.
- * @return {Object} an object with key `payload`, which contains `userId` stored in JWT (`null` if not existing) and `authType`.
+ * @return {Object} User object
  */
 const getUserByToken = async token => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
 		const tokenPayload = decryptedToken.payload || {}
 
-		if (!tokenPayload.userId) {
+		if (!tokenPayload.user.id) {
 			return null
 		}
 
-		const user = await User.findOne({ _id: tokenPayload.userId })
+		const user = await User.findOne({ _id: tokenPayload.user.id })
 			.populate('devicesOwning')
 			.populate('devicesManaging')
 
@@ -138,18 +146,18 @@ const getUserByToken = async token => {
  * in tokenPayload is set and `null` otherwise.
  *
  * @param {string} token - A JSON Web Token
- * @return {Object} an object with key `payload`, which contains `deviceId` stored in JWT (`null` if not existing) and `authType`.
+ * @return {Object} Device object
  */
 const getDeviceByToken = async token => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) || {}
 		const tokenPayload = decryptedToken.payload || {}
 
-		if (!tokenPayload.deviceId) {
+		if (!tokenPayload.device.id) {
 			return null
 		}
 
-		const device = await Device.findOne({ _id: tokenPayload.deviceId })
+		const device = await Device.findOne({ _id: tokenPayload.device.id })
 			.populate('owner')
 			.populate('managers')
 
