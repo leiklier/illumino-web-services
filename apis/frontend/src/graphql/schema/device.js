@@ -1,4 +1,5 @@
 const { gql, ApolloError, withFilter } = require('apollo-server-express')
+const { parseResolveInfo } = require('graphql-parse-resolve-info')
 const { isMACAddress } = require('validator')
 const SHA256 = require('crypto-js/sha256')
 const lodash = require('lodash')
@@ -224,9 +225,14 @@ const queryResolvers = {}
 const mutationResolvers = {}
 
 subscriptionResolvers.device = {
-	subscribe: async (payload, { mac }, context) => {
-		// Happens when a subscription is initiated
+	subscribe: async (payload, { mac }, context, info) => {
+		// Happens when a subscription is initiated:
 		const { deviceByIdLoader, deviceByMacLoader } = context
+		const parsedInfo = parseResolveInfo(info)
+		const requestedFields = Object.keys(parsedInfo.fieldsByTypeName.Device)
+		// 															   			     ,-- either a nested
+		//																		    /    field or the whole field
+		const requestedFieldsRegex = new RegExp(`^(${requestedFields.join('|')})(\.|$)`)
 
 		let device
 		if (mac) {
@@ -237,10 +243,53 @@ subscriptionResolvers.device = {
 			throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 		}
 
-		const changeStream = Device.watch([
-			{ $match: { operationType: 'update' } },
-			{ $match: { 'documentKey._id': device._id } },
-		])
+
+		// This pipeline does the following:
+		// 1. only watch updates of the selected `device`
+		// 2. requestedFieldsAreUpdated is true if at least
+		//    one of the requested fields from the subscription
+		//    has been update
+		// 3. Reject those where requestedFieldsAreUpdated is not
+		//    true
+		const pipeline = [
+			{
+				$match: {
+					$and: [
+						{ operationType: 'update' },
+						{ 'documentKey._id': device._id },
+					],
+				},
+			},
+			{
+				$addFields: {
+					requestedFieldsAreUpdated: {
+						$reduce: {
+							// Returns array of key-value pairs: [{k: key, v: value}]
+							// where k is a key in $updateDescription.updatedFields
+							input: {
+								$objectToArray: "$updateDescription.updatedFields"
+							},
+							initialValue: false,
+							in: {
+								$or: [
+									{
+										$regexMatch: {
+											input: '$$this.k',
+											regex: requestedFieldsRegex,
+										},
+									},
+									'$$value'
+								],
+							},
+						},
+					},
+				},
+			},
+			{ $match: { requestedFieldsAreUpdated: true } }
+		]
+
+
+		const changeStream = Device.watch(pipeline)
 
 		// Returns new `changeEvent` object
 		// each time the `device` has been updated:
@@ -295,6 +344,8 @@ subscriptionResolvers.device = {
 		return updatedDevice
 	}
 }
+
+
 queryResolvers.device = async (obj, { mac, secret }, context) => {
 	const { deviceByIdLoader, deviceByMacLoader } = context
 	let device
