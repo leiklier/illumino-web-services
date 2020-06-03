@@ -341,6 +341,7 @@ subscriptionResolvers.device = {
 		deviceByIdLoader.clear(deviceId).prime(deviceId, updatedDevice)
 		deviceByMacLoader.clear(mac).prime(mac, updatedDevice)
 
+
 		return updatedDevice
 	}
 }
@@ -572,47 +573,7 @@ mutationResolvers.clearSunset = async (obj, { mac }, context) => {
 	return device.sunset
 }
 
-mutationResolvers.toggleSunrise = async (obj, { mac }, context) => {
-	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
-	if (!device) {
-		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
-	}
-
-	device.sunrise.isActive = !device.sunrise.isActive
-	await device.save()
-
-	return device.sunrise
-}
-
-mutationResolvers.activateSunrise = async (obj, { mac }, context) => {
-	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
-	if (!device) {
-		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
-	}
-
-	device.sunrise.isActive = true
-	await device.save()
-
-	return device.sunrise
-}
-
-mutationResolvers.deactivateSunrise = async (obj, { mac }, context) => {
-	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
-	if (!device) {
-		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
-	}
-
-	device.sunrise.isActive = false
-	await device.save()
-
-	return device.sunrise
-}
-
-mutationResolvers.setSunriseTime = async (obj, { mac, startingAt }, context) => {
-
+mutationResolvers.updateSunrise = async (obj, { mac, startingAt, isActive }, context) => {
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
@@ -621,11 +582,11 @@ mutationResolvers.setSunriseTime = async (obj, { mac, startingAt }, context) => 
 
 	device.sunrise = {
 		...device.sunrise,
-		startingAt,
+		isActive,
+		startingAt
 	}
+
 	await device.save()
-
-
 	return device.sunrise
 }
 

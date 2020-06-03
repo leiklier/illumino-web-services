@@ -12,7 +12,7 @@ const measurementSchema = require('./schema/measurement')
 const ledStripSchema = require('./schema/led-strip')
 
 const rootTypeDefs = gql`
-	type RootSubsription {
+	type RootSubscription {
 		user(email: String!): User!
 		device(mac: String): Device!
 		newMeasurements(mac: String!): Measurement!
@@ -74,16 +74,7 @@ const rootTypeDefs = gql`
 		clearSunset(mac: String!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		toggleSunrise(mac: String!): Sunrise!
-			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
-
-		activateSunrise(mac: String!): Sunrise!
-			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
-
-		deactivateSunrise(mac: String!): Sunrise!
-			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
-
-		setSunriseTime(mac: String!, startingAt: TimeInput): Sunrise!
+		updateSunrise(mac: String!, startingAt: TimeInput!, isActive: Boolean!): Sunrise!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
@@ -113,7 +104,7 @@ const rootTypeDefs = gql`
 	}
 
 	schema {
-		subscription: RootSubsription
+		subscription: RootSubscription
 		query: RootQuery
 		mutation: RootMutation
 	}
@@ -132,7 +123,7 @@ const rootSchema = {
 	],
 	resolvers: {
 		...scalarResolvers,
-		RootSubsription: {
+		RootSubscription: {
 			...userSchema.subscriptionResolvers,
 			...deviceSchema.subscriptionResolvers,
 			...firmwareSchema.subscriptionResolvers,
