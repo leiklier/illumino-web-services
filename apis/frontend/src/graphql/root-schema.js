@@ -68,10 +68,10 @@ const rootTypeDefs = gql`
 		clearLedStripsAreSynced(mac: String!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		setSunset(mac: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
+		startSunset(mac: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		clearSunset(mac: String!): Sunset!
+		stopSunset(mac: String!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		updateSunrise(mac: String!, startingAt: TimeInput!, isActive: Boolean!): Sunrise!

@@ -543,7 +543,7 @@ mutationResolvers.txBeacon = async (obj, args, context) => {
 	return device.lastSeenAt.toISOString()
 }
 
-mutationResolvers.setSunset = async (
+mutationResolvers.startSunset = async (
 	obj,
 	{ mac, startedAt, endingAt },
 	context,
@@ -560,7 +560,7 @@ mutationResolvers.setSunset = async (
 	return device.sunset
 }
 
-mutationResolvers.clearSunset = async (obj, { mac }, context) => {
+mutationResolvers.stopSunset = async (obj, { mac }, context) => {
 	const { deviceByMacLoader } = context
 	const device = await deviceByMacLoader.load(mac)
 	if (!device) {
