@@ -21,6 +21,7 @@ import CircularButton from '../components/inputs/pure/CircularButton'
 import CycleButton from '../components/inputs/pure/CycleButton'
 import ColorPicker from '../components/inputs/pure/ColorPicker'
 import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
+import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
 
 import withDebounce from '../HOCs/with-debounce'
 
@@ -54,10 +55,6 @@ const DEVICE_QUERY = gql`
 				}
 			}
 			ledStripsAreSynced
-			sunset {
-				startedAt
-				endingAt
-			}
 		}
 	}
 `
@@ -82,10 +79,6 @@ const DEVICE_SUBSCRIPTION = gql`
 				}
 			}
 			ledStripsAreSynced
-			sunset {
-				startedAt
-				endingAt
-			}
 		}
 	}
 `
@@ -120,28 +113,6 @@ const SET_ANIMATION_SPEED = gql`
 	}
 `
 
-const SET_SUNSET = gql`
-	mutation setSunset(
-		$mac: String!
-		$startedAt: DateTime!
-		$endingAt: DateTime!
-	) {
-		setSunset(mac: $mac, startedAt: $startedAt, endingAt: $endingAt) {
-			startedAt
-			endingAt
-		}
-	}
-`
-
-const CLEAR_SUNSET = gql`
-	mutation clearSunset($mac: String!) {
-		clearSunset(mac: $mac) {
-			startedAt
-			endingAt
-		}
-	}
-`
-
 const SET_LEDSTRIPS_ARE_SYNCED = gql`
 	mutation setLedStripsAreSynced($mac: String!, $masterLedStripId: ID!) {
 		setLedStripsAreSynced(mac: $mac, masterLedStripId: $masterLedStripId) {
@@ -172,9 +143,6 @@ const Device = () => {
 		},
 	)
 	const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
-
-	const [setSunset] = useMutation(SET_SUNSET)
-	const [clearSunset] = useMutation(CLEAR_SUNSET)
 
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
@@ -226,12 +194,6 @@ const Device = () => {
 				animationSpeed: value,
 			},
 		})
-	}
-
-	function handleSunsetClick({ startedAt, endingAt }) {
-		if (!startedAt || !endingAt)
-			clearSunset({ variables: { mac: data.device.mac } })
-		else setSunset({ variables: { mac: data.device.mac, startedAt, endingAt } })
 	}
 
 	function handleSelectAllLedStrips(allAreSelected) {
@@ -304,12 +266,7 @@ const Device = () => {
 					dispatch(setBackgroundColor(red, green, blue))
 				}}
 			/>
-			<SunsetInput
-				duration={5 * 60}
-				startedAt={data.device.sunset.startedAt}
-				endingAt={data.device.sunset.endingAt}
-				onClick={handleSunsetClick}
-			/>
+			<ConnectedSunsetInput mac={data.device.mac} />
 		</>
 	)
 }

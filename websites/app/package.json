@@ -47,6 +47,7 @@
 		"postcss-loader": "^3.0.0",
 		"react-apollo": "^3.0.1",
 		"react-hot-loader": "4.3.11",
+		"react-spring": "^8.0.27",
 		"react-use-gesture": "^6.0.14",
 		"redux": "^4.0.4",
 		"redux-devtools-extension": "^2.13.8",

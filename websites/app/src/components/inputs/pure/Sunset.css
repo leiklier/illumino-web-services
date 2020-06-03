@@ -17,11 +17,11 @@
 }
 
 .iconContainer {
-	width: 100%;
+	width: 0;
 	height: 100%;
 	position: absolute;
 	top: 0;
-	left: 0;
+	left: 50%;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -29,7 +29,6 @@
 }
 
 .iconWrapper {
-	width: 100%;
 	height: calc(100% - 2rem);
 	position: relative;
 	display: flex;
@@ -39,11 +38,9 @@
 }
 
 .icon {
-	padding: 0.5rem;
+	position: relative;
 	border-radius: 50%;
 	color: rgba(255, 255, 255, 0.7);
-	transition-timing-function: ease-in-out;
-	transition-duration: 0.5s;
 }
 
 .progress {
