@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDrag } from 'react-use-gesture'
-import useDimensions from '../../hooks/use-dimensions'
+import useDimensions from '../../../hooks/use-dimensions'
 import styles from './Range.css'
 
 const Range = ({
@@ -21,8 +21,6 @@ const Range = ({
 		const [deltaX, deltaY] = delta
 		if (isDisabled) return
 		if (!onInput) return
-
-
 
 		let deltaValue
 		if (isHorizontal) {

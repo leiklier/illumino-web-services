@@ -11,8 +11,8 @@ import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
 
 import Logo from '../components/Logo'
-import StringInput from '../components/inputs/String'
-import RemovableButton from '../components/inputs/RemovableButton'
+import StringInput from '../components/inputs/pure/String'
+import RemovableButton from '../components/inputs/pure/RemovableButton'
 
 import styles from './SelectDevice.css'
 
@@ -39,7 +39,7 @@ const SelectDeviceView = () => {
 
 	const [checkSecret] = useLazyQuery(SECRET_IS_VALID, {
 		variables: { secret },
-		onCompleted: function(data) {
+		onCompleted: function (data) {
 			if (!data || !data.secretIsValid) return
 
 			dispatch(addRecentSecret(secret))
@@ -63,8 +63,8 @@ const SelectDeviceView = () => {
 			{recentSecrets.length ? (
 				<h2 className={styles.subHeader}>Recently used:</h2>
 			) : (
-				''
-			)}
+					''
+				)}
 			{recentSecrets.map(secret => (
 				<DeviceButton
 					key={secret}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import useInterval from '../../hooks/use-interval'
-import useDimensions from '../../hooks/use-dimensions'
+import useInterval from '../../../hooks/use-interval'
+import useDimensions from '../../../hooks/use-dimensions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSun } from '@fortawesome/free-solid-svg-icons'
 import styles from './Sunset.css'

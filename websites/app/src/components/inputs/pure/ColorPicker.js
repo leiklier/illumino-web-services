@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import styles from './ColorPicker.css'
 import { useDrag } from 'react-use-gesture'
-import useDimensions from '../../hooks/use-dimensions'
+import useDimensions from '../../../hooks/use-dimensions'
 
 const ColorPicker = ({ value, onInput }) => {
 	return (
@@ -53,26 +53,31 @@ function ColorWheel({
 	onInput,
 }) {
 	// Calculate dimensions of the horse shoe:
-	const svg = {
-		width: 100,
-		height: 100,
-	}
-	const angle = Math.PI / 2
-	const innerRadius = (svg.width / 2) * 0.55
+	const { innerRadius, inner, outer, svg } = useMemo(() => {
+		const svg = {
+			width: 100,
+			height: 100,
+		}
+		const angle = Math.PI / 2
+		const innerRadius = (svg.width / 2) * 0.55
 
-	const outer = {
-		startX: (svg.width / 2) * (1 + Math.cos((Math.PI - angle) / 2)),
-		startY: (svg.height / 2) * (1 + Math.sin((Math.PI - angle) / 2)),
-		endX: svg.width - (svg.width / 2) * (1 + Math.cos((Math.PI - angle) / 2)),
-		endY: (svg.height / 2) * (1 + Math.sin((Math.PI - angle) / 2)),
-	}
+		const outer = {
+			startX: (svg.width / 2) * (1 + Math.cos((Math.PI - angle) / 2)),
+			startY: (svg.height / 2) * (1 + Math.sin((Math.PI - angle) / 2)),
+			endX: svg.width - (svg.width / 2) * (1 + Math.cos((Math.PI - angle) / 2)),
+			endY: (svg.height / 2) * (1 + Math.sin((Math.PI - angle) / 2)),
+		}
 
-	const inner = {
-		startX: svg.width / 2 - innerRadius * Math.cos((Math.PI - angle) / 2),
-		startY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
-		endX: svg.width / 2 + innerRadius * Math.cos((Math.PI - angle) / 2),
-		endY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
-	}
+		const inner = {
+			startX: svg.width / 2 - innerRadius * Math.cos((Math.PI - angle) / 2),
+			startY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
+			endX: svg.width / 2 + innerRadius * Math.cos((Math.PI - angle) / 2),
+			endY: svg.height / 2 + innerRadius * Math.sin((Math.PI - angle) / 2),
+		}
+
+		return { innerRadius, inner, outer, svg }
+	}, [])
+
 	const [ref, { y: top, x: left, width, height }] = useDimensions()
 
 	const bindDrag = useDrag(({ previous: [x0, y0], xy: [x, y] }) => {

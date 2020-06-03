@@ -7,7 +7,7 @@ import {
 	faChevronDown,
 } from '@fortawesome/free-solid-svg-icons'
 import { useDrag } from 'react-use-gesture'
-import useDimensions from '../../hooks/use-dimensions'
+import useDimensions from '../../../hooks/use-dimensions'
 import classNames from 'classnames'
 import styles from './Select.css'
 

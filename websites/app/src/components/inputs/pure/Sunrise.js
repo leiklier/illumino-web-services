@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { faSun } from '@fortawesome/free-solid-svg-icons'
 import CircularButton from './CircularButton'
 import SelectInput from './Select'
-import styles from './SunRise.css'
+import styles from './Sunrise.css'
 
 const SunRiseInput = ({ value, onInput }) => {
 	return (

@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronCircleLeft } from '@fortawesome/free-solid-svg-icons'
 
 import Logo from '../components/Logo'
-import PinInput from '../components/inputs/Pin'
+import PinInput from '../components/inputs/pure/Pin'
 import styles from './UnlockDevice.css'
 
 const GET_DEVICE = gql`

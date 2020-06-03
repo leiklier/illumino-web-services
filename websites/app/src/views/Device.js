@@ -14,18 +14,17 @@ import {
 import { faSun, faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
 
 import DeviceTitle from '../components/DeviceTitle'
-import SelectInput from '../components/inputs/Select'
-import RangeInput from '../components/inputs/Range'
-import SunriseInput from '../components/inputs/SunRise'
-import SunsetInput from '../components/inputs/Sunset'
-import CircularButton from '../components/inputs/CircularButton'
-import CycleButton from '../components/inputs/CycleButton'
-import ColorPicker from '../components/inputs/ColorPicker'
+import SelectInput from '../components/inputs/pure/Select'
+import RangeInput from '../components/inputs/pure/Range'
+import SunsetInput from '../components/inputs/pure/Sunset'
+import CircularButton from '../components/inputs/pure/CircularButton'
+import CycleButton from '../components/inputs/pure/CycleButton'
+import ColorPicker from '../components/inputs/pure/ColorPicker'
+import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
 
 import withDebounce from '../HOCs/with-debounce'
 
 // Debounced inputs:
-const DebouncedSunriseInput = withDebounce(SunriseInput)
 const DebouncedRangeInput = withDebounce(RangeInput)
 const DebouncedColorPicker = withDebounce(ColorPicker)
 
@@ -59,13 +58,6 @@ const DEVICE_QUERY = gql`
 				startedAt
 				endingAt
 			}
-			sunrise {
-				isActive
-				startingAt {
-					hour
-					minute
-				}
-			}
 		}
 	}
 `
@@ -93,13 +85,6 @@ const DEVICE_SUBSCRIPTION = gql`
 			sunset {
 				startedAt
 				endingAt
-			}
-			sunrise {
-				isActive
-				startingAt {
-					hour
-					minute
-				}
 			}
 		}
 	}
@@ -157,30 +142,6 @@ const CLEAR_SUNSET = gql`
 	}
 `
 
-const TOGGLE_SUNRISE = gql`
-	mutation toggleSunrise($mac: String!) {
-		toggleSunrise(mac: $mac) {
-			isActive
-			startingAt {
-				hour
-				minute
-			}
-		}
-	}
-`
-
-const SET_SUNRISE_TIME = gql`
-	mutation setSunriseTime($mac: String!, $startingAt: TimeInput!) {
-		setSunriseTime(mac: $mac, startingAt: $startingAt) {
-			isActive
-			startingAt {
-				hour
-				minute
-			}
-		}
-	}
-`
-
 const SET_LEDSTRIPS_ARE_SYNCED = gql`
 	mutation setLedStripsAreSynced($mac: String!, $masterLedStripId: ID!) {
 		setLedStripsAreSynced(mac: $mac, masterLedStripId: $masterLedStripId) {
@@ -204,7 +165,7 @@ const Device = () => {
 
 	const [logout] = useLazyQuery(LOGOUT)
 
-	const [setBrightness, { loading: isSettingBrightness }] = useMutation(
+	const [setBrightness] = useMutation(
 		SET_BRIGHTNESS,
 		{
 			onCompleted: function () { },
@@ -217,9 +178,6 @@ const Device = () => {
 
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
-
-	const [toggleSunrise] = useMutation(TOGGLE_SUNRISE)
-	const [setSunriseTime] = useMutation(SET_SUNRISE_TIME)
 
 	const [selectedLedStrip, setSelectedLedStrip] = useState(1)
 
@@ -276,16 +234,6 @@ const Device = () => {
 		else setSunset({ variables: { mac: data.device.mac, startedAt, endingAt } })
 	}
 
-	function handleSunriseChange({ isActive, startingAt }) {
-		if (isActive !== data.device.sunrise.isActive) {
-			toggleSunrise({ variables: { mac: data.device.mac } })
-		}
-
-		if (startingAt !== data.device.sunrise.startingAt) {
-			setSunriseTime({ variables: { mac: data.device.mac, startingAt } })
-		}
-	}
-
 	function handleSelectAllLedStrips(allAreSelected) {
 		if (allAreSelected) {
 			setLedStripsAreSynced({
@@ -336,16 +284,7 @@ const Device = () => {
 				value={data.device.ledStrips[selectedLedStrip - 1].animation.speed}
 				debouncedOnInput={handleAnimationSpeedChange}
 			/>
-			<DebouncedSunriseInput
-				value={{
-					isActive: data.device.sunrise.isActive,
-					startingAt: {
-						hour: data.device.sunrise.startingAt.hour,
-						minute: data.device.sunrise.startingAt.minute,
-					},
-				}}
-				debouncedOnInput={handleSunriseChange}
-			/>
+			<ConnectedSunriseInput mac={data.device.mac} />
 			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
 			<CycleButton
 				selected={selectedLedStrip}
