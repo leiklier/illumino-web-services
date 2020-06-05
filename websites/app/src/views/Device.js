@@ -8,7 +8,6 @@ import {
 	setStatusModalState,
 	clearSelectedSecret,
 	clearAccessToken,
-	setBackgroundColor,
 } from '../store/actions'
 
 import { faChartBar } from '@fortawesome/free-solid-svg-icons'
@@ -16,17 +15,14 @@ import { faChartBar } from '@fortawesome/free-solid-svg-icons'
 import DeviceTitle from '../components/DeviceTitle'
 import CircularButton from '../components/inputs/pure/CircularButton'
 import CycleButton from '../components/inputs/pure/CycleButton'
-import ColorPicker from '../components/inputs/pure/ColorPicker'
+
 import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
 import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
 
-import withDebounce from '../HOCs/with-debounce'
 import ConnectedBrightnessInput from '../components/inputs/connected/Brightness'
+import ConnectedColorInput from '../components/inputs/connected/Color'
 import ConnectedAnimationSpeedInput from '../components/inputs/connected/AnimationSpeed'
 import ConnectedAnimationTypeInput from '../components/inputs/connected/AnimationType'
-
-// Debounced inputs:
-const DebouncedColorPicker = withDebounce(ColorPicker)
 
 const LOGOUT = gql`
 	query logout {
@@ -41,11 +37,6 @@ const DEVICE_QUERY = gql`
 			name
 			ledStrips {
 				id
-				color {
-					red
-					green
-					blue
-				}
 			}
 			ledStripsAreSynced
 		}
@@ -59,11 +50,6 @@ const DEVICE_SUBSCRIPTION = gql`
 			name
 			ledStrips {
 				id
-				color {
-					red
-					green
-					blue
-				}
 			}
 			ledStripsAreSynced
 		}
@@ -98,10 +84,6 @@ const Device = () => {
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
 
 	const [selectedLedStrip, setSelectedLedStrip] = useState(1)
-
-	// TEMP START ---
-	const [color, setColor] = useState({ saturation: 0, hue: 0 })
-	// TEMP END ---
 
 	// Receive realtime updates for device:
 	useEffect(() => {
@@ -182,53 +164,15 @@ const Device = () => {
 			>
 				Ledstrip
 			</CycleButton>
-			<DebouncedColorPicker
-				value={color}
-				debouncedOnInput={setColor}
-				onInput={value => {
-					if (typeof value !== 'object' || value === null) return
-					const { red, green, blue } = hsvToRgb(value.hue, value.saturation, 0.8)
-					dispatch(setBackgroundColor(red, green, blue))
-				}}
+			<ConnectedColorInput
+				mac={data.device.mac}
+				ledStripIndex={selectedLedStrip - 1}
+				syncWithAppBackground
 			/>
 			<ConnectedSunsetInput mac={data.device.mac} />
 		</>
 	)
 }
 
-function hsvToRgb(hue, saturation, value) {
-	// Using formula as found on
-	// https://www.rapidtables.com/convert/color/hsv-to-rgb.html
-
-	// Expects:
-	// 0 <= hue <= 360
-	// 0 <= saturation <= 1
-	// 0 <= value <= 1
-
-	const C = value * saturation
-	const X = C * (1 - Math.abs((hue / 60) % 2 - 1))
-	const m = value - C
-
-	let R_, G_, B_
-	if (hue < 60) {
-		[R_, G_, B_] = [C, X, 0]
-	} else if (hue < 120) {
-		[R_, G_, B_] = [X, C, 0]
-	} else if (hue < 180) {
-		[R_, G_, B_] = [0, C, X]
-	} else if (hue < 240) {
-		[R_, G_, B_] = [0, X, C]
-	} else if (hue < 300) {
-		[R_, G_, B_] = [X, 0, C]
-	} else {
-		[R_, G_, B_] = [C, 0, X]
-	}
-
-	return {
-		red: (R_ + m) * 255,
-		green: (G_ + m) * 255,
-		blue: (B_ + m) * 255,
-	}
-}
 
 export default Device

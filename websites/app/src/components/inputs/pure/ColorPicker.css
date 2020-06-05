@@ -63,7 +63,6 @@
 	font-weight: bold;
 	color: rgba(255, 255, 255, 0.7);
 	font-size: 1.2rem;
-	animation: smooth-spawn 2s ease;
 }
 
 .valueDisplayHeader {
@@ -71,13 +70,4 @@
 	font-weight: bold;
 	color: #aaa;
 	font-size: 0.75rem;
-	animation: smooth-spawn 2s ease;
-}
-@keyframes smooth-spawn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
 }
