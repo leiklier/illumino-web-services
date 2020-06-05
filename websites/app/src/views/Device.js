@@ -11,11 +11,10 @@ import {
 	setBackgroundColor,
 } from '../store/actions'
 
-import { faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar } from '@fortawesome/free-solid-svg-icons'
 
 import DeviceTitle from '../components/DeviceTitle'
 import SelectInput from '../components/inputs/pure/Select'
-import RangeInput from '../components/inputs/pure/Range'
 import CircularButton from '../components/inputs/pure/CircularButton'
 import CycleButton from '../components/inputs/pure/CycleButton'
 import ColorPicker from '../components/inputs/pure/ColorPicker'
@@ -24,9 +23,9 @@ import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
 import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
 
 import withDebounce from '../HOCs/with-debounce'
+import ConnectedAnimationSpeedInput from '../components/inputs/connected/AnimationSpeed'
 
 // Debounced inputs:
-const DebouncedRangeInput = withDebounce(RangeInput)
 const DebouncedColorPicker = withDebounce(ColorPicker)
 
 const LOGOUT = gql`
@@ -42,7 +41,6 @@ const DEVICE_QUERY = gql`
 			name
 			ledStrips {
 				id
-				name
 				color {
 					red
 					green
@@ -50,7 +48,6 @@ const DEVICE_QUERY = gql`
 				}
 				animation {
 					type
-					speed
 				}
 			}
 			ledStripsAreSynced
@@ -65,7 +62,6 @@ const DEVICE_SUBSCRIPTION = gql`
 			name
 			ledStrips {
 				id
-				name
 				color {
 					red
 					green
@@ -73,7 +69,6 @@ const DEVICE_SUBSCRIPTION = gql`
 				}
 				animation {
 					type
-					speed
 				}
 			}
 			ledStripsAreSynced
@@ -81,23 +76,6 @@ const DEVICE_SUBSCRIPTION = gql`
 	}
 `
 
-const SET_ANIMATION_SPEED = gql`
-	mutation setAnimationSpeed(
-		$mac: String!
-		$ledStripId: ID!
-		$animationSpeed: Float!
-	) {
-		setAnimationSpeedOnLedStrip(
-			mac: $mac
-			ledStripId: $ledStripId
-			animationSpeed: $animationSpeed
-		) {
-			animation {
-				speed
-			}
-		}
-	}
-`
 
 const SET_LEDSTRIPS_ARE_SYNCED = gql`
 	mutation setLedStripsAreSynced($mac: String!, $masterLedStripId: ID!) {
@@ -121,8 +99,6 @@ const Device = () => {
 	const { subscribeToMore, loading: isLoading, data } = useQuery(DEVICE_QUERY)
 
 	const [logout] = useLazyQuery(LOGOUT)
-
-	const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
 
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
@@ -156,16 +132,6 @@ const Device = () => {
 	}, [isLoading])
 
 	// Input handlers
-	function handleAnimationSpeedChange(value) {
-		setAnimationSpeed({
-			variables: {
-				mac: data.device.mac,
-				ledStripId: data.device.ledStrips[selectedLedStrip - 1].id,
-				animationSpeed: value,
-			},
-		})
-	}
-
 	function handleSelectAllLedStrips(allAreSelected) {
 		if (allAreSelected) {
 			setLedStripsAreSynced({
@@ -206,13 +172,11 @@ const Device = () => {
 				mac={data.device.mac}
 				ledStripIndex={selectedLedStrip - 1}
 			/>
-			<DebouncedRangeInput
+			<ConnectedAnimationSpeedInput
 				rows={1}
 				cols={3}
-				icon={faRunning}
-				range={{ min: 0, max: 1 }}
-				value={data.device.ledStrips[selectedLedStrip - 1].animation.speed}
-				debouncedOnInput={handleAnimationSpeedChange}
+				mac={data.device.mac}
+				ledStripIndex={selectedLedStrip - 1}
 			/>
 			<ConnectedSunriseInput mac={data.device.mac} />
 			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
