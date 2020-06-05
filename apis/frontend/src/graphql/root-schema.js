@@ -40,7 +40,7 @@ const rootTypeDefs = gql`
 	type RootMutation {
 		setBrightnessOnLedStrip(
 			mac: String!
-			ledStripId: ID!
+			ledStripIndex: Int!
 			brightness: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
@@ -52,13 +52,13 @@ const rootTypeDefs = gql`
 
 		setAnimationTypeOnLedStrip(
 			mac: String!
-			ledStripId: ID!
+			ledStripIndex: Int!
 			animationType: AnimationType!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		setAnimationSpeedOnLedStrip(
 			mac: String!
-			ledStripId: ID!
+			ledStripIndex: Int!
 			animationSpeed: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
