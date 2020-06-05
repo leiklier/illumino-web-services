@@ -121,7 +121,7 @@ const ConnectedAnimationTypeInput = ({
             key={ledStripIndex}
             value={animationType}
             options={animationTypeOptions}
-            onInput={() => onInput && onInput()}
+            onInput={() => onInput && onInput(animationType)}
             debouncedOnInput={handleInput}
             name={'animation'}
             {...passthroughProps}

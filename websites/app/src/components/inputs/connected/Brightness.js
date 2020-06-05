@@ -90,7 +90,7 @@ const ConnectedBrightnessInput = ({
             key={ledStripIndex}
             value={brightness}
             range={{ min: 0, max: 1 }}
-            onInput={() => onInput && onInput()}
+            onInput={() => onInput && onInput(brightness)}
             debouncedOnInput={handleInput}
             icon={faSun}
             {...passthroughProps}

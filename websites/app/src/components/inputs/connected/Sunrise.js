@@ -93,7 +93,7 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
 	return (
 		<DebouncedSunriseInput
 			value={sunrise}
-			onInput={() => onInput && onInput()}
+			onInput={() => onInput && onInput(sunrise)}
 			debouncedOnInput={handleInput}
 			{...passthroughProps}
 		/>

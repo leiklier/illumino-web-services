@@ -101,7 +101,7 @@ const ConnectedAnimationSpeedInput = ({
             key={ledStripIndex}
             value={animationSpeed}
             range={{ min: 0, max: 1 }}
-            onInput={() => onInput && onInput()}
+            onInput={() => onInput && onInput(animationSpeed)}
             debouncedOnInput={handleInput}
             icon={faRunning}
             {...passthroughProps}
