@@ -22,7 +22,10 @@ app.use(cookieParser())
 app.use(bodyParser.json())
 enableRestEndpoints(app)
 
-const server = new ApolloServer(graphqlSchema)
+const server = new ApolloServer({
+	...graphqlSchema,
+	introspection: true,
+})
 server.applyMiddleware({
 	app,
 	cors: {
