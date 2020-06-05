@@ -11,15 +11,15 @@ import {
 	setBackgroundColor,
 } from '../store/actions'
 
-import { faSun, faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
+import { faRunning, faChartBar } from '@fortawesome/free-solid-svg-icons'
 
 import DeviceTitle from '../components/DeviceTitle'
 import SelectInput from '../components/inputs/pure/Select'
 import RangeInput from '../components/inputs/pure/Range'
-import SunsetInput from '../components/inputs/pure/Sunset'
 import CircularButton from '../components/inputs/pure/CircularButton'
 import CycleButton from '../components/inputs/pure/CycleButton'
 import ColorPicker from '../components/inputs/pure/ColorPicker'
+import ConnectedBrightnessInput from '../components/inputs/connected/Brightness'
 import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
 import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
 
@@ -43,7 +43,6 @@ const DEVICE_QUERY = gql`
 			ledStrips {
 				id
 				name
-				brightness
 				color {
 					red
 					green
@@ -67,7 +66,6 @@ const DEVICE_SUBSCRIPTION = gql`
 			ledStrips {
 				id
 				name
-				brightness
 				color {
 					red
 					green
@@ -79,18 +77,6 @@ const DEVICE_SUBSCRIPTION = gql`
 				}
 			}
 			ledStripsAreSynced
-		}
-	}
-`
-
-const SET_BRIGHTNESS = gql`
-	mutation setBrightness($mac: String!, $ledStripId: ID!, $brightness: Float!) {
-		setBrightnessOnLedStrip(
-			mac: $mac
-			ledStripId: $ledStripId
-			brightness: $brightness
-		) {
-			brightness
 		}
 	}
 `
@@ -136,12 +122,6 @@ const Device = () => {
 
 	const [logout] = useLazyQuery(LOGOUT)
 
-	const [setBrightness] = useMutation(
-		SET_BRIGHTNESS,
-		{
-			onCompleted: function () { },
-		},
-	)
 	const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
 
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
@@ -176,16 +156,6 @@ const Device = () => {
 	}, [isLoading])
 
 	// Input handlers
-	function handleBrightnessChange(value) {
-		setBrightness({
-			variables: {
-				mac: data.device.mac,
-				ledStripId: data.device.ledStrips[selectedLedStrip - 1].id,
-				brightness: value,
-			},
-		})
-	}
-
 	function handleAnimationSpeedChange(value) {
 		setAnimationSpeed({
 			variables: {
@@ -230,13 +200,11 @@ const Device = () => {
 				selected="MANUAL"
 				options={['MANUAL', 'FIREPLACE', 'VIVID', 'SPECTRUM', 'STARS']}
 			/>
-			<DebouncedRangeInput
+			<ConnectedBrightnessInput
 				rows={3}
 				cols={1}
-				icon={faSun}
-				range={{ min: 0, max: 1 }}
-				value={data.device.ledStrips[selectedLedStrip - 1].brightness}
-				debouncedOnInput={handleBrightnessChange}
+				mac={data.device.mac}
+				ledStripIndex={selectedLedStrip - 1}
 			/>
 			<DebouncedRangeInput
 				rows={1}

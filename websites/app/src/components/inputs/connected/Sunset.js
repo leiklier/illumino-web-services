@@ -82,7 +82,6 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
     const [stopSunset] = useMutation(STOP_SUNSET)
 
     function handleInput(newSunsetValue) {
-        console.log({ newSunsetValue })
         if (newSunsetValue.startedAt) {
             startSunset({
                 variables: {
@@ -98,8 +97,8 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
 
     return (
         <DebouncedSunset
-            onInput={() => onInput && onInput()}
             value={sunset}
+            onInput={() => onInput && onInput()}
             debouncedOnInput={handleInput}
             {...passthroughProps}
         />
