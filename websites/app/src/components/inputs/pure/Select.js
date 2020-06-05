@@ -17,9 +17,9 @@ const Select = ({
 	cols,
 	name,
 	font,
-	selected,
+	value,
 	options,
-	onSelect,
+	onInput,
 }) => {
 	const isHorizontal = Boolean(cols)
 	const size = isHorizontal ? cols : rows
@@ -53,23 +53,23 @@ const Select = ({
 	// Finish drag when over halfway and releasing
 	useEffect(() => {
 		if (!isTouching) {
-			if (indexDiff > 0.35) onSelect && onSelect(getPreviousSelected())
-			if (indexDiff < -0.35) onSelect && onSelect(getNextSelected())
+			if (indexDiff > 0.35) onInput && onInput(getPreviousOption())
+			if (indexDiff < -0.35) onInput && onInput(getNextOption())
 			setIndexDiff(0)
 		}
 	}, [isTouching])
 
 
-	function getPreviousSelected() {
-		const indexOfSelected = options.indexOf(selected)
-		if (indexOfSelected === 0) return options[options.length - 1]
-		return options[indexOfSelected - 1]
+	function getPreviousOption() {
+		const indexOfValue = options.indexOf(value)
+		if (indexOfValue === 0) return options[options.length - 1]
+		return options[indexOfValue - 1]
 	}
 
-	function getNextSelected() {
-		const indexOfSelected = options.indexOf(selected)
-		if (indexOfSelected === options.length - 1) return options[0]
-		return options[indexOfSelected + 1]
+	function getNextOption() {
+		const indexOfValue = options.indexOf(value)
+		if (indexOfValue === options.length - 1) return options[0]
+		return options[indexOfValue + 1]
 	}
 
 	return (
@@ -87,7 +87,7 @@ const Select = ({
 			})}
 		>
 			<div
-				onClick={() => onSelect && onSelect(getPreviousSelected())}
+				onClick={() => onInput && onInput(getPreviousOption())}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,
@@ -119,25 +119,25 @@ const Select = ({
 						[styles.selectedContainer__vertical]: !isHorizontal,
 					})}
 				>
-					<Selected
+					<Option
 						font={font}
 						isHorizontal={isHorizontal}
-						selected={getPreviousSelected()}
+						value={getPreviousOption()}
 					/>
-					<Selected
+					<Option
 						font={font}
 						isHorizontal={isHorizontal}
-						selected={selected}
+						value={value}
 					/>
-					<Selected
+					<Option
 						font={font}
 						isHorizontal={isHorizontal}
-						selected={getNextSelected()}
+						value={getNextOption()}
 					/>
 				</div>
 			</div>
 			<div
-				onClick={() => onSelect && onSelect(getNextSelected())}
+				onClick={() => onInput && onInput(getNextOption())}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,
@@ -153,11 +153,11 @@ const Select = ({
 	)
 }
 
-function Selected({ font, isHorizontal, selected }) {
-	function formatSelected(selected) {
+function Option({ font, isHorizontal, value }) {
+	function formatValue(value) {
 		const formatted =
-			selected.charAt(0).toUpperCase() +
-			selected
+			value.charAt(0).toUpperCase() +
+			value
 				.replace('_', ' ')
 				.toLowerCase()
 				.slice(1)
@@ -167,13 +167,13 @@ function Selected({ font, isHorizontal, selected }) {
 	return (
 		<div
 			className={classNames({
-				[styles.selected]: true,
-				[styles.selected__horizontal]: isHorizontal,
-				[styles.selected__vertical]: !isHorizontal,
+				[styles.option]: true,
+				[styles.option__horizontal]: isHorizontal,
+				[styles.option__vertical]: !isHorizontal,
 			})}
 			style={font ? { fontFamily: font } : {}}
 		>
-			<span>{formatSelected(selected)}</span>
+			<span>{formatValue(value)}</span>
 		</div>
 	)
 }

@@ -27,9 +27,9 @@ const SunRiseInput = ({ value, onInput }) => {
 					<SelectInput
 						font="seven-segment"
 						rows={2}
-						selected={String(value.startingAt.hour).padStart(2, '0')}
+						value={String(value.startingAt.hour).padStart(2, '0')}
 						options={[...Array(24).keys()].map(i => String(i + 1).padStart(2, '0')).reverse()}
-						onSelect={hour => {
+						onInput={hour => {
 							onInput({
 								...value,
 								startingAt: {
@@ -45,9 +45,9 @@ const SunRiseInput = ({ value, onInput }) => {
 					<SelectInput
 						font="seven-segment"
 						rows={2}
-						selected={String(value.startingAt.minute).padStart(2, '0')}
+						value={String(value.startingAt.minute).padStart(2, '0')}
 						options={[...Array(60).keys()].map(i => String(i).padStart(2, '0')).reverse()}
-						onSelect={minute => {
+						onInput={minute => {
 							onInput({
 								...value,
 								startingAt: {

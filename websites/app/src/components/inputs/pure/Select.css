@@ -55,18 +55,18 @@
 	flex-direction: column;
 }
 
-.selected {
+.option {
 	overflow: hidden;
 	white-space: nowrap;
 	display: flex;
 	align-items: center;
 	flex-direction: row;
 }
-.selected__horizontal {
+.option__horizontal {
 	margin: 0 0.05rem;
 	width: 33%;
 }
-.selected__vertical {
+.option__vertical {
 	margin: 0.05rem 0;
 	justify-content: center;
 	height: 33%;

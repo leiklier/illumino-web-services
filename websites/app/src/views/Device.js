@@ -14,16 +14,16 @@ import {
 import { faChartBar } from '@fortawesome/free-solid-svg-icons'
 
 import DeviceTitle from '../components/DeviceTitle'
-import SelectInput from '../components/inputs/pure/Select'
 import CircularButton from '../components/inputs/pure/CircularButton'
 import CycleButton from '../components/inputs/pure/CycleButton'
 import ColorPicker from '../components/inputs/pure/ColorPicker'
-import ConnectedBrightnessInput from '../components/inputs/connected/Brightness'
 import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
 import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
 
 import withDebounce from '../HOCs/with-debounce'
+import ConnectedBrightnessInput from '../components/inputs/connected/Brightness'
 import ConnectedAnimationSpeedInput from '../components/inputs/connected/AnimationSpeed'
+import ConnectedAnimationTypeInput from '../components/inputs/connected/AnimationType'
 
 // Debounced inputs:
 const DebouncedColorPicker = withDebounce(ColorPicker)
@@ -46,9 +46,6 @@ const DEVICE_QUERY = gql`
 					green
 					blue
 				}
-				animation {
-					type
-				}
 			}
 			ledStripsAreSynced
 		}
@@ -66,9 +63,6 @@ const DEVICE_SUBSCRIPTION = gql`
 					red
 					green
 					blue
-				}
-				animation {
-					type
 				}
 			}
 			ledStripsAreSynced
@@ -160,11 +154,10 @@ const Device = () => {
 			<DeviceTitle onLogout={handleLogout}>
 				{data.device.name ? data.device.name : data.device.mac}
 			</DeviceTitle>
-			<SelectInput
+			<ConnectedAnimationTypeInput
 				cols={3}
-				name="animation"
-				selected="MANUAL"
-				options={['MANUAL', 'FIREPLACE', 'VIVID', 'SPECTRUM', 'STARS']}
+				mac={data.device.mac}
+				ledStripIndex={selectedLedStrip - 1}
 			/>
 			<ConnectedBrightnessInput
 				rows={3}
