@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { useSpring, animated, config } from 'react-spring'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDrag } from 'react-use-gesture'
@@ -12,6 +13,7 @@ const Range = ({
 	range,
 	disabled: isDisabled,
 	value,
+	valueWithSource,
 	onInput,
 }) => {
 	const isHorizontal = cols > rows
@@ -41,6 +43,33 @@ const Range = ({
 		return `${value / (range.max - range.min) * 100}%`
 	}
 
+	const [fillStyle, setFillStyle] = useSpring(() => (
+		isHorizontal ?
+			{ width: valueToPercentage(value, range) } :
+			{ height: valueToPercentage(value, range) }
+	))
+
+	useEffect(() => {
+		if (valueWithSource) return
+		setFillStyle({
+			to: isHorizontal ?
+				{ width: valueToPercentage(value, range) } :
+				{ height: valueToPercentage(value, range) },
+			config: config.stiff,
+		})
+	}, [value])
+
+	useEffect(() => {
+		const { value, source } = valueWithSource
+		const immediate = source === 'SELF'
+
+		setFillStyle({
+			to: isHorizontal ?
+				{ width: valueToPercentage(value, range) } :
+				{ height: valueToPercentage(value, range) },
+			config: immediate ? config.stiff : config.gentle,
+		})
+	}, [valueWithSource])
 
 	return (
 		<div
@@ -56,18 +85,15 @@ const Range = ({
 				[styles.containerIfVertical]: !isHorizontal,
 			})}
 		>
-			<div
-				style={isHorizontal ?
-					{ width: valueToPercentage(value, range) } :
-					{ height: valueToPercentage(value, range) }
-				}
+			<animated.div
+				style={fillStyle}
 				className={classNames({
 					[styles.fill]: true,
 					[styles.fillIfHorizontal]: isHorizontal,
 					[styles.fillIfVertical]: !isHorizontal,
 					[styles.fillIfDisabled]: isDisabled,
 				})}
-			></div>
+			></animated.div>
 			<FontAwesomeIcon
 				icon={icon}
 				className={classNames({

@@ -52,6 +52,13 @@ function withDebounce(InputComponent) {
 		// and makes the input responsive
 		const [currentValue, setCurrentValue] = useState(initialValue)
 
+		// valueWithSource holds
+		// {value: currentValue, source: 'SELF' | 'PARENT'}
+		// SELF means that the <InputComponent /> set the value
+		// through its `onInput`.
+		// PARENT means that the parent manually set the `value` prop
+		const [valueWithSource, setValueWithSource] = useState({ value: initialValue, source: 'PARENT' })
+
 
 		// The value states must be bound to refs because
 		// setInterval captures a closure on the variables
@@ -78,6 +85,7 @@ function withDebounce(InputComponent) {
 			if (lodash.isEqual(initialValue, currentValue)) return
 
 			setCurrentValue(initialValue)
+			setValueWithSource({ value: initialValue, source: 'PARENT' })
 		}, [initialValue, blockTimeout])
 
 		// Do not perform any remaining timeout
@@ -118,23 +126,25 @@ function withDebounce(InputComponent) {
 			debouncedOnInput && debouncedOnInput(value)
 		}
 
-		const handleInput = useCallback((value) => {
-			setCurrentValue(value)
+		const handleInput = useCallback((newValue) => {
+			setCurrentValue(newValue)
+			setValueWithSource({ value: newValue, source: 'SELF' })
 
 			// onInput is used as pass-through:
-			if (onInput) onInput(value)
+			if (onInput) onInput(newValue)
 
 			if (waitTimeout) return
 
 			// > waitMS has passed since last time debouncedOnInput
 			// was called, and so we should emit it again since
 			// new value has been received:
-			emitDebouncedValue(value)
+			emitDebouncedValue(newValue)
 		}, [waitTimeout])
 
 		return (
 			<InputComponent
 				value={currentValue}
+				valueWithSource={valueWithSource}
 				onInput={handleInput}
 				{...passThroughProps}
 			/>
