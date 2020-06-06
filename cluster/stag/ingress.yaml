@@ -11,7 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://get-illumi.no"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 
-    nginx.org/websocket-services: "frontend-api-service"
+    nginx.org/websocket-services: "frontend-api-service,embedded-api-service"
 spec:
   tls:
     - hosts:
@@ -33,4 +33,8 @@ spec:
           - path: /graphql
             backend:
               serviceName: frontend-api-service
+              servicePort: 80
+          - path: /embedded
+            backend:
+              serviceName: embedded-api-service
               servicePort: 80

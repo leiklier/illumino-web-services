@@ -13,6 +13,16 @@
             "remoteRoot": "/app/",
             "protocol": "inspector",
             "restart": true
+        },
+        {
+            "name": "Attach to embedded-api/dev",
+            "type": "node",
+            "request": "attach",
+            "port": 30501,
+            "localRoot": "${workspaceFolder}/apis/embedded/",
+            "remoteRoot": "/app/",
+            "protocol": "inspector",
+            "restart": true
         }
     ]
 }

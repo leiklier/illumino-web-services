@@ -24,8 +24,8 @@ spec:
               value: wss://api.get-illumi.no/graphql
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 300m
+              memory: 300Mi
           ports:
             - containerPort: 31000
 ---

@@ -34,8 +34,8 @@ spec:
             - containerPort: 31000
           resources:
             limits:
-              cpu: 750m
-              memory: 800Mi
+              cpu: 500m
+              memory: 500Mi
       volumes:
         - name: src-volume
           hostPath:

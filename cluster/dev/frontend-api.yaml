@@ -32,8 +32,8 @@ spec:
               name: node-debugger
           resources:
             limits:
-              cpu: 750m
-              memory: 800Mi
+              cpu: 500m
+              memory: 600Mi
       volumes:
         - name: src-volume
           hostPath:
@@ -67,4 +67,3 @@ spec:
   selector:
     app: frontend-api
 ---
-

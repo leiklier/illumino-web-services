@@ -2,42 +2,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-api
+  name: embedded-api
 spec:
   selector:
     matchLabels:
-      app: frontend-api
+      app: embedded-api
       tier: backend
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
-        app: frontend-api
+        app: embedded-api
         tier: backend
     spec:
       containers:
-        - name: frontend-api
-          image: localhost:32000/illumino-frontend-api:latest
+        - name: embedded-api
+          image: localhost:32000/illumino-embedded-api:latest
           resources:
             limits:
               cpu: 300m
               memory: 300Mi
           ports:
-            - containerPort: 30000
+            - containerPort: 30001
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: frontend-api
-  name: frontend-api-service
+    app: embedded-api
+  name: embedded-api-service
 spec:
   ports:
     - name: web
       port: 80
-      targetPort: 30000
+      targetPort: 30001
       protocol: TCP
   selector:
-    app: frontend-api
+    app: embedded-api
 ---
 

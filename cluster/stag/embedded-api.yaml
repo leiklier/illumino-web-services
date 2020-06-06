@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-api
+  name: embedded-api
 spec:
   selector:
     matchLabels:
-      app: frontend-api
+      app: embedded-api
       tier: backend
   replicas: 1
   template:
     metadata:
       labels:
-        app: frontend-api
+        app: embedded-api
         tier: backend
     spec:
       containers:
-        - name: frontend-api
-          image: localhost:32000/illumino-frontend-api--stag:latest
+        - name: embedded-api
+          image: localhost:32000/illumino-embedded-api--dev:latest
           volumeMounts:
             - mountPath: /app/src
               name: src-volume
@@ -26,7 +26,10 @@ spec:
             - mountPath: /app/yarn.lock
               name: lockfile-volume
           ports:
-            - containerPort: 30000
+            - containerPort: 30001
+              name: web
+            - containerPort: 9229
+              name: node-debugger
           resources:
             limits:
               cpu: 500m
@@ -34,30 +37,29 @@ spec:
       volumes:
         - name: src-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/apis/frontend/src
+            path: /home/leiklier/illumino-web-services/apis/embedded/src
             type: Directory
         - name: dependencies-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/apis/frontend/package.json
+            path: /home/leiklier/illumino-web-services/apis/embedded/package.json
             type: File
         - name: lockfile-volume
           hostPath:
-            path: /home/leiklier/illumino-web-services/apis/frontend/yarn.lock
+            path: /home/leiklier/illumino-web-services/apis/embedded/yarn.lock
             type: File
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-api-service
+  name: embedded-api-service
   labels:
-    app: frontend-api
+    app: embedded-api
 spec:
   ports:
     - name: web
       port: 80
-      targetPort: 30000
+      targetPort: 30001
       protocol: TCP
   selector:
-    app: frontend-api
+    app: embedded-api
 ---
-
