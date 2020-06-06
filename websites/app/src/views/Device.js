@@ -78,7 +78,15 @@ const Device = () => {
 
 	const { subscribeToMore, loading: isLoading, data } = useQuery(DEVICE_QUERY)
 
-	const [logout] = useLazyQuery(LOGOUT)
+	const [handleLogout] = useLazyQuery(LOGOUT, {
+		onCompleted: () => {
+			// Remove accessToken after
+			// removing refreshToken in order
+			// to avoid race around condition:
+			dispatch(clearSelectedSecret())
+			dispatch(clearAccessToken())
+		}
+	})
 
 	const [setLedStripsAreSynced] = useMutation(SET_LEDSTRIPS_ARE_SYNCED)
 	const [clearLedStripsAreSynced] = useMutation(CLEAR_LEDSTRIPS_ARE_SYNCED)
@@ -119,12 +127,6 @@ const Device = () => {
 		} else {
 			clearLedStripsAreSynced({ variables: { mac: data.device.mac } })
 		}
-	}
-
-	function handleLogout() {
-		dispatch(clearSelectedSecret())
-		dispatch(clearAccessToken())
-		logout()
 	}
 
 	if (isLoading) {
