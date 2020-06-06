@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	faChevronLeft,
@@ -10,6 +10,7 @@ import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../../hooks/use-dimensions'
 import classNames from 'classnames'
 import styles from './Select.css'
+import lodash from 'lodash'
 
 
 const Select = ({
@@ -17,60 +18,78 @@ const Select = ({
 	cols,
 	name,
 	font,
-	value,
-	options,
+	value, // Corresponds to the value property of an option
+	options, // [{ value: any, name: String }]
 	onInput,
 }) => {
+	if (!onInput) onInput = () => { }
+
 	const isHorizontal = Boolean(cols)
 	const size = isHorizontal ? cols : rows
 
+	const valueIndex = useMemo(() => {
+		return options.findIndex(option => lodash.isEqual(option.value, value))
+	}, [value, options])
+
 	const [indexDiff, setIndexDiff] = useState(0)
-	const [ref, { width, height }] = useDimensions()
-	const [isTouching, setIsTouching] = useState(false)
-	const [drag, setDrag] = useState(0)
+	const [contentRef, { width: contentWidth, height: contentHeight }] = useDimensions()
 
-	const bindDrag = useDrag(({ down, movement: [mx, my] }) => {
-		if (isHorizontal) {
-			setDrag(mx)
-		} else {
-			setDrag(my)
+	const bindDrag = useDrag(({ down: isTouching, movement: [mx, my] }) => {
+		if (!isTouching) {
+			if (!indexDiff) return
+
+			const nearestOption = options[Math.round(displayIndex) % options.length]
+			onInput(nearestOption.value)
+
+			setIndexDiff(0)
+			return
 		}
-
-		setIsTouching(down)
+		if (isHorizontal) {
+			setIndexDiff(- 1 * mx / contentWidth)
+		} else {
+			setIndexDiff(-1 * my / contentHeight)
+		}
 	})
 
-	// Enable drag through carousel
-	useEffect(() => {
-		if (!isTouching) return
+	const displayIndex = useMemo(() => {
+		let index = valueIndex + indexDiff
 
-		if (isHorizontal) {
-			setIndexDiff(drag / width)
-		} else {
-			setIndexDiff(drag / height)
+		if (index < -0.5) index += options.length
+		index = index % options.length
+
+		return index
+	}, [valueIndex, indexDiff, options])
+
+	function handleSelectPrevious() {
+		if (valueIndex === 0) {
+			onInput(options[options.length - 1].value)
+			return
 		}
-	}, [drag])
-
-	// Finish drag when over halfway and releasing
-	useEffect(() => {
-		if (!isTouching) {
-			if (indexDiff > 0.35) onInput && onInput(getPreviousOption())
-			if (indexDiff < -0.35) onInput && onInput(getNextOption())
-			setIndexDiff(0)
-		}
-	}, [isTouching])
-
-
-	function getPreviousOption() {
-		const indexOfValue = options.indexOf(value)
-		if (indexOfValue === 0) return options[options.length - 1]
-		return options[indexOfValue - 1]
+		onInput(options[valueIndex - 1].value)
 	}
 
-	function getNextOption() {
-		const indexOfValue = options.indexOf(value)
-		if (indexOfValue === options.length - 1) return options[0]
-		return options[indexOfValue + 1]
+	function handleSelectNext() {
+		if (valueIndex === options.length - 1) {
+			onInput(options[0].value)
+			return
+		}
+		onInput(options[valueIndex + 1].value)
 	}
+
+	const optionsContainerStyle = useMemo(() => {
+		return isHorizontal ?
+			{
+				//                       	 since we fill with
+				//                       ,-- options at start and end
+				width: (options.length + 2) * 100 + '%',
+				//               				to account for option
+				//                         ,--  fill at start
+				left: -1 * (displayIndex + 1) * 100 + '%',
+			} : {
+				height: (options.length + 2) * 100 + '%',
+				top: -1 * (displayIndex + 1) * 100 + '%',
+			}
+	}, [isHorizontal, options, displayIndex])
 
 	return (
 		<div
@@ -87,7 +106,7 @@ const Select = ({
 			})}
 		>
 			<div
-				onClick={() => onInput && onInput(getPreviousOption())}
+				onClick={handleSelectPrevious}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,
@@ -100,7 +119,7 @@ const Select = ({
 				/>
 			</div>
 			<div
-				ref={ref}
+				ref={contentRef}
 				className={classNames({
 					[styles.content]: true,
 					[styles.content__horizontal]: isHorizontal,
@@ -109,35 +128,38 @@ const Select = ({
 			>
 				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
 				<div
-					style={{
-						left: isHorizontal ? (indexDiff - 1) * 100 + '%' : '',
-						top: !isHorizontal ? + (indexDiff - 1) * 100 + '%' : '',
-					}}
+					style={optionsContainerStyle}
 					className={classNames({
-						[styles.selectedContainer]: true,
-						[styles.selectedContainer__horizontal]: isHorizontal,
-						[styles.selectedContainer__vertical]: !isHorizontal,
+						[styles.optionsContainer]: true,
+						[styles.optionsContainer__horizontal]: isHorizontal,
+						[styles.optionsContainer__vertical]: !isHorizontal,
 					})}
 				>
 					<Option
+						key={options[options.length - 1].value + 'S'}
 						font={font}
 						isHorizontal={isHorizontal}
-						value={getPreviousOption()}
+						option={options[options.length - 1]}
 					/>
+					{options.map(option =>
+						<Option
+							key={option.value}
+							font={font}
+							isHorizontal={isHorizontal}
+							option={option}
+						/>
+					)}
 					<Option
+						key={options[0].value + 'E'}
 						font={font}
 						isHorizontal={isHorizontal}
-						value={value}
+						option={options[0]}
 					/>
-					<Option
-						font={font}
-						isHorizontal={isHorizontal}
-						value={getNextOption()}
-					/>
+
 				</div>
 			</div>
 			<div
-				onClick={() => onInput && onInput(getNextOption())}
+				onClick={handleSelectNext}
 				className={classNames({
 					[styles.arrow]: true,
 					[styles.arrow__medium]: size > 2,
@@ -153,17 +175,7 @@ const Select = ({
 	)
 }
 
-function Option({ font, isHorizontal, value }) {
-	function formatValue(value) {
-		const formatted =
-			value.charAt(0).toUpperCase() +
-			value
-				.replace('_', ' ')
-				.toLowerCase()
-				.slice(1)
-		return formatted
-	}
-
+function Option({ font, isHorizontal, option }) {
 	return (
 		<div
 			className={classNames({
@@ -173,7 +185,7 @@ function Option({ font, isHorizontal, value }) {
 			})}
 			style={font ? { fontFamily: font } : {}}
 		>
-			<span>{formatValue(value)}</span>
+			<span>{option.name}</span>
 		</div>
 	)
 }

@@ -5,6 +5,16 @@ import SelectInput from './Select'
 import styles from './Sunrise.css'
 
 const SunRiseInput = ({ value, onInput }) => {
+	const hourOptions = [...Array(24).keys()].map(value => ({
+		value: value + 1,
+		name: String(value + 1).padStart(2, '0')
+	})).reverse()
+
+	const minuteOptions = [...Array(60).keys()].map(value => ({
+		value,
+		name: String(value).padStart(2, '0')
+	})).reverse()
+
 	return (
 		<div className={styles.container}>
 			<div className={styles.wrapper}>
@@ -27,14 +37,14 @@ const SunRiseInput = ({ value, onInput }) => {
 					<SelectInput
 						font="seven-segment"
 						rows={2}
-						value={String(value.startingAt.hour).padStart(2, '0')}
-						options={[...Array(24).keys()].map(i => String(i + 1).padStart(2, '0')).reverse()}
+						value={value.startingAt.hour}
+						options={hourOptions}
 						onInput={hour => {
 							onInput({
 								...value,
 								startingAt: {
 									...value.startingAt,
-									hour: parseInt(hour),
+									hour,
 								},
 							})
 						}}
@@ -45,14 +55,14 @@ const SunRiseInput = ({ value, onInput }) => {
 					<SelectInput
 						font="seven-segment"
 						rows={2}
-						value={String(value.startingAt.minute).padStart(2, '0')}
-						options={[...Array(60).keys()].map(i => String(i).padStart(2, '0')).reverse()}
+						value={value.startingAt.minute}
+						options={minuteOptions}
 						onInput={minute => {
 							onInput({
 								...value,
 								startingAt: {
 									...value.startingAt,
-									minute: parseInt(minute),
+									minute,
 								},
 							})
 						}}

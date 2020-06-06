@@ -99,9 +99,17 @@ const ConnectedAnimationTypeInput = ({
     const animationTypeOptions = useMemo(() => {
         const data = animationTypeOptionsData
         const dataIsFetched = data && data.__type && data.__type.enumValues
-        if (!dataIsFetched) return ['MANUAL']
+        if (!dataIsFetched) return [{ name: 'Manual', value: 'MANUAL' }]
 
-        return data.__type.enumValues.map(value => value.name)
+        const allowedValues = data.__type.enumValues.map(value => value.name)
+        return allowedValues.map(value => ({
+            value,
+            name: value.charAt(0).toUpperCase() +
+                value
+                    .replace('_', ' ')
+                    .toLowerCase()
+                    .slice(1)
+        }))
     }, [animationTypeOptionsData])
 
     const [setAnimationType] = useMutation(SET_ANIMATION_TYPE)
