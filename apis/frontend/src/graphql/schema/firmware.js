@@ -4,8 +4,6 @@ const logger = require('../../logger')
 
 const Firmware = require('../../models/firmware')
 
-const pubsub = require('../pubsub')
-
 const typeDefs = gql`
 	input FirmwareInput {
 		target: DeviceModel!
@@ -91,20 +89,6 @@ const FirmwareResolver = {
 
 const subscriptionResolvers = {}
 const mutationResolvers = {}
-
-subscriptionResolvers.newFirmwares = {
-	subscribe: withFilter(
-		() => pubsub.asyncIterator('newFirmwares'),
-		async (payload, args, context) => {
-			const { firmwareByIdLoader } = context
-			const firmware = await firmwareByIdLoader.load(payload.newFirmwares.id)
-
-			// TODO: Add some logic here to check that target is matching
-
-			return true
-		},
-	),
-}
 
 mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
 	const { clientIp } = context

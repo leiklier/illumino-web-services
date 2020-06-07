@@ -13,10 +13,7 @@ const ledStripSchema = require('./schema/led-strip')
 
 const rootTypeDefs = gql`
 	type RootSubscription {
-		user(email: String!): User!
-		device(mac: String): Device!
-		newMeasurements(mac: String!): Measurement!
-		newFirmwares(mac: String): Firmware!
+		device(mac: String!): Device!
 	}
 
 	type RootQuery {
@@ -87,13 +84,6 @@ const rootTypeDefs = gql`
 
 		grantAdmin(email: String!): User! @requiresAuth(acceptsOnly: ROOT)
 
-		txBeacon: String! @requiresAuth(acceptsOnly: DEVICE, cannotBeHuman: true)
-
-		txMeasurement(
-			type: MeasurementType!
-			environment: MeasurementEnvironment
-			value: Float!
-		): Measurement! @requiresAuth(acceptsOnly: DEVICE)
 
 		publishFirmware(firmwareInput: FirmwareInput!): Boolean!
 

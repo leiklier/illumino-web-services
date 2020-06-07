@@ -23,6 +23,9 @@ const typeDefs = gql`
 		owner: User
 		managers: [User!]!
 
+		isConnected: Boolean!
+		lastSeenAt: DateTime!
+
 		hasPin: Boolean!
 
 		type: DeviceType!
@@ -134,6 +137,24 @@ const DeviceResolver = {
 			return []
 		}
 		return deviceFound.managers
+	},
+	isConnected: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return false
+		}
+		return deviceFound.isConnected
+	},
+	lastSeenAt: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return null
+		}
+		return deviceFound.lastSeenAt
 	},
 	hasPin: async (device, args, context) => {
 		const { deviceByIdLoader } = context
@@ -531,16 +552,6 @@ mutationResolvers.setDeviceName = async (obj, { mac, name }, context) => {
 	await device.save()
 
 	return { id: device.id }
-}
-
-mutationResolvers.txBeacon = async (obj, args, context) => {
-	const { deviceByIdLoader } = context
-	const device = await deviceByIdLoader.load(context.device.id)
-
-	device.lastSeenAt = new Date()
-	await device.save()
-
-	return device.lastSeenAt.toISOString()
 }
 
 mutationResolvers.startSunset = async (

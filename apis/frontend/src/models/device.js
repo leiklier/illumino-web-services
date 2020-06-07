@@ -108,6 +108,11 @@ const deviceSchema = new Schema(
 		},
 		name: String,
 		ledStrips: [ledStripSchema],
+		isConnected: {
+			type: Boolean,
+			required: true,
+			default: false,
+		},
 		lastSeenAt: {
 			type: Date,
 			required: true,

@@ -3,8 +3,6 @@ const { isEmail } = require('validator')
 
 const User = require('../../models/user')
 
-const pubsub = require('../pubsub')
-
 const error = require('../errors')
 
 const typeDefs = gql`
@@ -87,17 +85,6 @@ const UserResolver = {
 const subscriptionResolvers = {}
 const queryResolvers = {}
 const mutationResolvers = {}
-
-subscriptionResolvers.user = {
-	subscribe: withFilter(
-		() => pubsub.asyncIterator('user'),
-		async (payload, args, context) => {
-			const { userByIdLoader } = context
-			const user = await userByIdLoader.load(payload.user.id)
-			return user.email === args.email
-		},
-	),
-}
 
 queryResolvers.user = async (_, { email }, context) => {
 	const { userByIdLoader, userByEmailLoader } = context
