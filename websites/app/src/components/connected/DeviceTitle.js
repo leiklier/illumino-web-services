@@ -9,6 +9,7 @@ import {
 } from '../../store/actions'
 
 import TitleWithActions from '../pure/TitleWithActions'
+import IsDisconnectedIndicator from './IsDisconnectedIndicator'
 
 const DEVICE_QUERY = gql`
 	query getDevice($mac: String!) {
@@ -91,7 +92,8 @@ const ConnectedDeviceTitle = ({ mac, ...passthroughProps }) => {
 
     return (
         <TitleWithActions actions={actions} {...passthroughProps}>
-            {titleText}
+            <IsDisconnectedIndicator mac={mac} />
+            <div>{titleText}</div>
         </TitleWithActions>
     )
 }

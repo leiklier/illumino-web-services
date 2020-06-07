@@ -9,12 +9,14 @@
 }
 
 .text {
-	position: relative;
-	font-size: 1.8rem;
+	font-size: 1.5rem;
 	white-space: nowrap;
 	overflow: hidden;
 	flex-shrink: 1;
 	min-width: 0;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 }
 
 .actionsContainer {
