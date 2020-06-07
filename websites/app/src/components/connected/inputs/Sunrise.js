@@ -3,7 +3,7 @@ import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
 import withDebounce from '../../../HOCs/with-debounce'
-import SunriseInput from '../pure/Sunrise'
+import SunriseInput from '../../pure/inputs/Sunrise'
 const DebouncedSunriseInput = withDebounce(SunriseInput)
 
 const DEVICE_QUERY = gql`

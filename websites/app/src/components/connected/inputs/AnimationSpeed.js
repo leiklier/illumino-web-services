@@ -1,24 +1,19 @@
 import React, { useEffect, useMemo } from 'react'
-
+import { faRunning } from '@fortawesome/free-solid-svg-icons'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import { useDispatch } from 'react-redux'
-import { setBackgroundColor } from '../../../store/actions'
-import { hsvToRgb } from '../../../lib/color'
-
 import withDebounce from '../../../HOCs/with-debounce'
-import ColorPicker from '../pure/ColorPicker'
-const DebouncedColorPicker = withDebounce(ColorPicker)
+import RangeInput from '../../pure/inputs/Range'
+const DebouncedRangeInput = withDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				color {
-                    hue
-                    saturation
-                }
+				animation {
+					speed
+				}
 			}
         }
     }
@@ -28,42 +23,39 @@ const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				color {
-                    hue
-                    saturation
-                }
+				animation {
+					speed
+				}
 			}
         }
     }
 `
 
-const SET_COLOR = gql`
-	mutation setColorOnLedStrip($mac: String!, $ledStripIndex: Int!, $hue: Float!, $saturation: Float!) {
-		setColorOnLedStrip(
+const SET_ANIMATION_SPEED = gql`
+	mutation setAnimationSpeed(
+		$mac: String!
+		$ledStripIndex: Int!
+		$animationSpeed: Float!
+	) {
+		setAnimationSpeedOnLedStrip(
 			mac: $mac
 			ledStripIndex: $ledStripIndex
-			color: {
-                hue: $hue
-                saturation: $saturation
-            }
+			animationSpeed: $animationSpeed
 		) {
-			color {
-                hue
-                saturation
-            }
+			animation {
+				speed
+			}
 		}
 	}
 `
 
-const ConnectedColorInput = ({
+
+const ConnectedAnimationSpeedInput = ({
     mac,
     ledStripIndex,
     onInput,
-    syncWithAppBackground,
     ...passthroughProps
 }) => {
-    const dispatch = useDispatch()
-
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
         variables: { mac }
     })
@@ -82,46 +74,39 @@ const ConnectedColorInput = ({
         return () => unsubscribe()
     }, [])
 
-    const color = useMemo(() => {
+    const animationSpeed = useMemo(() => {
         const dataIsFetched = data && data.device && data.device.ledStrips
-        if (!dataIsFetched) return { hue: 0, saturation: 0 }
+        if (!dataIsFetched) return 0
 
         const ledStrip = data.device.ledStrips[ledStripIndex]
+        if (!ledStrip) return 0
 
-        return {
-            hue: ledStrip.color.hue,
-            saturation: ledStrip.color.saturation
-        }
+        return ledStrip.animation.speed
     }, [data, ledStripIndex])
 
-    useEffect(() => {
-        if (!syncWithAppBackground) return
-        const { red, green, blue } = hsvToRgb(color.hue, color.saturation, 0.8)
-        dispatch(setBackgroundColor(red, green, blue))
-    }, [color])
+    const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
 
-    const [setColor] = useMutation(SET_COLOR)
-
-    function handleInput({ hue, saturation }) {
-        setColor({
+    function handleInput(newAnimationSpeed) {
+        setAnimationSpeed({
             variables: {
                 mac,
                 ledStripIndex,
-                hue,
-                saturation,
+                animationSpeed: newAnimationSpeed,
             }
         })
     }
 
     return (
-        <DebouncedColorPicker
+        <DebouncedRangeInput
             key={ledStripIndex}
-            value={color}
-            onInput={() => onInput && onInput(color)}
+            value={animationSpeed}
+            range={{ min: 0, max: 1 }}
+            onInput={() => onInput && onInput(animationSpeed)}
             debouncedOnInput={handleInput}
+            icon={faRunning}
             {...passthroughProps}
         />
     )
 }
 
-export default ConnectedColorInput
+export default ConnectedAnimationSpeedInput

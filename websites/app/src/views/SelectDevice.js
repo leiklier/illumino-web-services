@@ -10,9 +10,9 @@ import {
 import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
 
-import Logo from '../components/Logo'
-import StringInput from '../components/inputs/pure/String'
-import RemovableButton from '../components/inputs/pure/RemovableButton'
+import Logo from '../components/pure/Logo'
+import StringInput from '../components/pure/inputs/String'
+import RemovableButton from '../components/pure/inputs/RemovableButton'
 
 import styles from './SelectDevice.css'
 

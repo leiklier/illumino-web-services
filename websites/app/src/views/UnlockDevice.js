@@ -13,8 +13,7 @@ import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronCircleLeft } from '@fortawesome/free-solid-svg-icons'
 
-import Logo from '../components/Logo'
-import PinInput from '../components/inputs/pure/Pin'
+import PinInput from '../components/pure/inputs/Pin'
 import styles from './UnlockDevice.css'
 
 const GET_DEVICE = gql`

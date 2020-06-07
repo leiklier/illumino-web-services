@@ -17,7 +17,7 @@ import SelectDeviceView from './views/SelectDevice'
 import UnlockDeviceView from './views/UnlockDevice'
 import DeviceView from './views/Device'
 
-import StatusModal from './components/modals/Status'
+import StatusModal from './components/connected/modals/Status'
 
 import styles from './App.css'
 

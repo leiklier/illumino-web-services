@@ -6,7 +6,7 @@ import {
 	setContentBlur,
 	clearContentBlur,
 	setStatusModalState,
-} from '../../store/actions'
+} from '../../../store/actions'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {

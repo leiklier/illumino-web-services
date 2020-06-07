@@ -1,19 +1,17 @@
 import React, { useEffect, useMemo } from 'react'
-import { faRunning } from '@fortawesome/free-solid-svg-icons'
+import { faSun } from '@fortawesome/free-solid-svg-icons'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
 import withDebounce from '../../../HOCs/with-debounce'
-import RangeInput from '../pure/Range'
+import RangeInput from '../../pure/inputs/Range'
 const DebouncedRangeInput = withDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				animation {
-					speed
-				}
+				brightness
 			}
         }
     }
@@ -23,34 +21,25 @@ const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				animation {
-					speed
-				}
+				brightness
 			}
         }
     }
 `
 
-const SET_ANIMATION_SPEED = gql`
-	mutation setAnimationSpeed(
-		$mac: String!
-		$ledStripIndex: Int!
-		$animationSpeed: Float!
-	) {
-		setAnimationSpeedOnLedStrip(
+const SET_BRIGHTNESS = gql`
+	mutation setBrightness($mac: String!, $ledStripIndex: Int!, $brightness: Float!) {
+		setBrightnessOnLedStrip(
 			mac: $mac
 			ledStripIndex: $ledStripIndex
-			animationSpeed: $animationSpeed
+			brightness: $brightness
 		) {
-			animation {
-				speed
-			}
+			brightness
 		}
 	}
 `
 
-
-const ConnectedAnimationSpeedInput = ({
+const ConnectedBrightnessInput = ({
     mac,
     ledStripIndex,
     onInput,
@@ -74,24 +63,24 @@ const ConnectedAnimationSpeedInput = ({
         return () => unsubscribe()
     }, [])
 
-    const animationSpeed = useMemo(() => {
+    const brightness = useMemo(() => {
         const dataIsFetched = data && data.device && data.device.ledStrips
         if (!dataIsFetched) return 0
 
         const ledStrip = data.device.ledStrips[ledStripIndex]
         if (!ledStrip) return 0
 
-        return ledStrip.animation.speed
+        return ledStrip.brightness
     }, [data, ledStripIndex])
 
-    const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
+    const [setBrightness] = useMutation(SET_BRIGHTNESS)
 
-    function handleInput(newAnimationSpeed) {
-        setAnimationSpeed({
+    function handleInput(newBrightnessValue) {
+        setBrightness({
             variables: {
                 mac,
                 ledStripIndex,
-                animationSpeed: newAnimationSpeed,
+                brightness: newBrightnessValue,
             }
         })
     }
@@ -99,14 +88,14 @@ const ConnectedAnimationSpeedInput = ({
     return (
         <DebouncedRangeInput
             key={ledStripIndex}
-            value={animationSpeed}
+            value={brightness}
             range={{ min: 0, max: 1 }}
-            onInput={() => onInput && onInput(animationSpeed)}
+            onInput={() => onInput && onInput(brightness)}
             debouncedOnInput={handleInput}
-            icon={faRunning}
+            icon={faSun}
             {...passthroughProps}
         />
     )
 }
 
-export default ConnectedAnimationSpeedInput
+export default ConnectedBrightnessInput

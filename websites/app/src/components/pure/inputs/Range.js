@@ -51,6 +51,7 @@ const Range = ({
 
 	useEffect(() => {
 		if (valueWithSource) return
+
 		setFillStyle({
 			to: isHorizontal ?
 				{ width: valueToPercentage(value, range) } :
@@ -60,6 +61,8 @@ const Range = ({
 	}, [value])
 
 	useEffect(() => {
+		if (!valueWithSource) return
+
 		const { value, source } = valueWithSource
 		const immediate = source === 'SELF'
 

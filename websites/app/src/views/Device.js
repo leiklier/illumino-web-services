@@ -12,17 +12,17 @@ import {
 
 import { faChartBar } from '@fortawesome/free-solid-svg-icons'
 
-import DeviceTitle from '../components/DeviceTitle'
-import CircularButton from '../components/inputs/pure/CircularButton'
-import CycleButton from '../components/inputs/pure/CycleButton'
+import DeviceTitle from '../components/pure/DeviceTitle'
+import CircularButton from '../components/pure/inputs/CircularButton'
+import CycleButton from '../components/pure/inputs/CycleButton'
 
-import ConnectedSunriseInput from '../components/inputs/connected/Sunrise'
-import ConnectedSunsetInput from '../components/inputs/connected/Sunset'
+import ConnectedSunriseInput from '../components/connected/inputs/Sunrise'
+import ConnectedSunsetInput from '../components/connected/inputs/Sunset'
 
-import ConnectedBrightnessInput from '../components/inputs/connected/Brightness'
-import ConnectedColorInput from '../components/inputs/connected/Color'
-import ConnectedAnimationSpeedInput from '../components/inputs/connected/AnimationSpeed'
-import ConnectedAnimationTypeInput from '../components/inputs/connected/AnimationType'
+import ConnectedBrightnessInput from '../components/connected/inputs/Brightness'
+import ConnectedColorInput from '../components/connected/inputs/Color'
+import ConnectedAnimationSpeedInput from '../components/connected/inputs/AnimationSpeed'
+import ConnectedAnimationTypeInput from '../components/connected/inputs/AnimationType'
 
 const LOGOUT = gql`
 	query logout {

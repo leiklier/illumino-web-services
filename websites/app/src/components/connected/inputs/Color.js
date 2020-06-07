@@ -1,17 +1,24 @@
 import React, { useEffect, useMemo } from 'react'
-import { faSun } from '@fortawesome/free-solid-svg-icons'
+
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
+import { useDispatch } from 'react-redux'
+import { setBackgroundColor } from '../../../store/actions'
+import { hsvToRgb } from '../../../lib/color'
+
 import withDebounce from '../../../HOCs/with-debounce'
-import RangeInput from '../pure/Range'
-const DebouncedRangeInput = withDebounce(RangeInput)
+import ColorPicker from '../../pure/inputs/ColorPicker'
+const DebouncedColorPicker = withDebounce(ColorPicker)
 
 const DEVICE_QUERY = gql`
     query getDevice($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				brightness
+				color {
+                    hue
+                    saturation
+                }
 			}
         }
     }
@@ -21,30 +28,42 @@ const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($mac: String!) {
         device(mac: $mac) {
             ledStrips {
-				brightness
+				color {
+                    hue
+                    saturation
+                }
 			}
         }
     }
 `
 
-const SET_BRIGHTNESS = gql`
-	mutation setBrightness($mac: String!, $ledStripIndex: Int!, $brightness: Float!) {
-		setBrightnessOnLedStrip(
+const SET_COLOR = gql`
+	mutation setColorOnLedStrip($mac: String!, $ledStripIndex: Int!, $hue: Float!, $saturation: Float!) {
+		setColorOnLedStrip(
 			mac: $mac
 			ledStripIndex: $ledStripIndex
-			brightness: $brightness
+			color: {
+                hue: $hue
+                saturation: $saturation
+            }
 		) {
-			brightness
+			color {
+                hue
+                saturation
+            }
 		}
 	}
 `
 
-const ConnectedBrightnessInput = ({
+const ConnectedColorInput = ({
     mac,
     ledStripIndex,
     onInput,
+    syncWithAppBackground,
     ...passthroughProps
 }) => {
+    const dispatch = useDispatch()
+
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
         variables: { mac }
     })
@@ -63,39 +82,47 @@ const ConnectedBrightnessInput = ({
         return () => unsubscribe()
     }, [])
 
-    const brightness = useMemo(() => {
+    const color = useMemo(() => {
         const dataIsFetched = data && data.device && data.device.ledStrips
-        if (!dataIsFetched) return 0
+        if (!dataIsFetched) return { hue: 0, saturation: 0 }
 
         const ledStrip = data.device.ledStrips[ledStripIndex]
-        if (!ledStrip) return 0
 
-        return ledStrip.brightness
+        return {
+            hue: ledStrip.color.hue,
+            saturation: ledStrip.color.saturation
+        }
     }, [data, ledStripIndex])
 
-    const [setBrightness] = useMutation(SET_BRIGHTNESS)
+    useEffect(() => {
+        if (!syncWithAppBackground) return
 
-    function handleInput(newBrightnessValue) {
-        setBrightness({
+        const { red, green, blue } = hsvToRgb(color.hue, color.saturation, 0.8)
+        dispatch(setBackgroundColor(red, green, blue))
+    }, [color])
+
+    const [setColor] = useMutation(SET_COLOR)
+
+    function handleInput({ hue, saturation }) {
+        setColor({
             variables: {
                 mac,
                 ledStripIndex,
-                brightness: newBrightnessValue,
+                hue,
+                saturation,
             }
         })
     }
 
     return (
-        <DebouncedRangeInput
+        <DebouncedColorPicker
             key={ledStripIndex}
-            value={brightness}
-            range={{ min: 0, max: 1 }}
-            onInput={() => onInput && onInput(brightness)}
+            value={color}
+            onInput={() => onInput && onInput(color)}
             debouncedOnInput={handleInput}
-            icon={faSun}
             {...passthroughProps}
         />
     )
 }
 
-export default ConnectedBrightnessInput
+export default ConnectedColorInput

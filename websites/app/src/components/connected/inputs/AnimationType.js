@@ -3,7 +3,7 @@ import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
 import withDebounce from '../../../HOCs/with-debounce'
-import SelectInput from '../pure/Select'
+import SelectInput from '../../pure/inputs/Select'
 const DebouncedSelectInput = withDebounce(SelectInput)
 
 const DEVICE_QUERY = gql`

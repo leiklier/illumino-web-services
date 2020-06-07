@@ -130,7 +130,7 @@ function ColorWheel({
 							xlinkHref="/images/color-wheel.png"
 							x="0"
 							y="0"
-							transform={`rotate(${-1 * degreesToRadians(value) / (2 * Math.PI) * 365} 50 50)`}
+							transform={`rotate(${-1 * value} 50 50)`}
 							width="100"
 							height="100"
 						/>
