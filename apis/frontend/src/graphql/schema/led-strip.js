@@ -4,15 +4,13 @@ const error = require('../errors')
 
 const typeDefs = gql`
 	type Color {
-		red: Int!
-		green: Int!
-		blue: Int!
+		hue: Float!
+		saturation: Float!
 	}
 
 	input ColorInput {
-		red: Int!
-		green: Int!
-		blue: Int!
+		hue: Float!
+		saturation: Float!
 	}
 
 	enum AnimationType {
@@ -108,7 +106,7 @@ mutationResolvers.setBrightnessOnLedStrip = async (
 
 mutationResolvers.setColorOnLedStrip = async (
 	obj,
-	{ mac, ledStripId, color },
+	{ mac, ledStripIndex, color },
 	context,
 ) => {
 	const { deviceByMacLoader } = context
@@ -118,7 +116,7 @@ mutationResolvers.setColorOnLedStrip = async (
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
 
-	const ledStrip = device.ledStrips.find(ledStrip => ledStrip.id === ledStripId)
+	const ledStrip = device.ledStrips[ledStripIndex]
 	if (!ledStrip) {
 		throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
 	}

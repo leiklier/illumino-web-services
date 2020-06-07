@@ -46,7 +46,7 @@ const rootTypeDefs = gql`
 
 		setColorOnLedStrip(
 			mac: String!
-			ledStripId: ID!
+			ledStripIndex: Int!
 			color: ColorInput!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 

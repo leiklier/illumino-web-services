@@ -22,31 +22,18 @@ const ledStripSchema = new Schema(
 			default: 1,
 		},
 		color: {
-			red: {
+			hue: {
 				type: Number,
-				validator: Number.isInteger,
-				message: '{VALUE} is not an integer value',
 				required: true,
 				min: 0,
-				max: 255,
+				max: 360,
 				default: 0,
 			},
-			green: {
+			saturation: {
 				type: Number,
-				validator: Number.isInteger,
-				message: '{VALUE} is not an integer value',
 				required: true,
 				min: 0,
-				max: 255,
-				default: 0,
-			},
-			blue: {
-				type: Number,
-				validator: Number.isInteger,
-				message: '{VALUE} is not an integer value',
-				required: true,
-				min: 0,
-				max: 255,
+				max: 1,
 				default: 0,
 			},
 		},
