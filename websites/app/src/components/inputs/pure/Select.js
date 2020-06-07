@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useSpring, animated, config } from 'react-spring'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	faChevronLeft,
@@ -19,6 +20,7 @@ const Select = ({
 	name,
 	font,
 	value, // Corresponds to the value property of an option
+	valueWithSource,
 	options, // [{ value: any, name: String }]
 	onInput,
 }) => {
@@ -38,7 +40,11 @@ const Select = ({
 		if (!isTouching) {
 			if (!indexDiff) return
 
-			const nearestOption = options[Math.round(displayIndex) % options.length]
+			let index = Math.round(displayIndex)
+			if (index < 0) index = 0
+			if (index > options.length - 1) index = options.length - 1
+
+			const nearestOption = options[index]
 			onInput(nearestOption.value)
 
 			setIndexDiff(0)
@@ -52,44 +58,58 @@ const Select = ({
 	})
 
 	const displayIndex = useMemo(() => {
-		let index = valueIndex + indexDiff
-
-		if (index < -0.5) index += options.length
-		index = index % options.length
-
-		return index
+		return valueIndex + indexDiff
 	}, [valueIndex, indexDiff, options])
 
 	function handleSelectPrevious() {
-		if (valueIndex === 0) {
-			onInput(options[options.length - 1].value)
-			return
-		}
+		if (valueIndex === 0) return
 		onInput(options[valueIndex - 1].value)
 	}
 
 	function handleSelectNext() {
-		if (valueIndex === options.length - 1) {
-			onInput(options[0].value)
-			return
-		}
+		if (valueIndex === options.length - 1) return
 		onInput(options[valueIndex + 1].value)
 	}
 
-	const optionsContainerStyle = useMemo(() => {
-		return isHorizontal ?
+	const arrowBackwardStyle = useSpring({
+		color: `rgba(255, 255, 255, ${valueIndex !== 0 ? 0.7 : 0.25}`,
+	})
+
+	const arrowForwardStyle = useSpring({
+		color: `rgba(255, 255, 255, ${valueIndex !== options.length - 1 ? 0.7 : 0.25}`,
+	})
+
+	const [optionsContainerStyle, setOptionsContainerStyle] = useSpring(() => ({
+		to: isHorizontal ?
 			{
-				//                       	 since we fill with
-				//                       ,-- options at start and end
-				width: (options.length + 2) * 100 + '%',
-				//               				to account for option
-				//                         ,--  fill at start
-				left: -1 * (displayIndex + 1) * 100 + '%',
+				width: options.length * 100 + '%',
+				left: -1 * displayIndex * 100 + '%',
 			} : {
-				height: (options.length + 2) * 100 + '%',
-				top: -1 * (displayIndex + 1) * 100 + '%',
-			}
-	}, [isHorizontal, options, displayIndex])
+				height: options.length * 100 + '%',
+				top: -1 * displayIndex * 100 + '%',
+			},
+		immediate: true,
+	}))
+
+	useEffect(() => {
+		const immediate = valueIndex !== displayIndex
+		setOptionsContainerStyle({
+			to: isHorizontal ?
+				{ left: -1 * displayIndex * 100 + '%' } :
+				{ top: -1 * displayIndex * 100 + '%' },
+			config: immediate ? config.stiff : config.gentle,
+			immediate: false,
+		})
+	}, [displayIndex])
+
+	useEffect(() => {
+		setOptionsContainerStyle({
+			to: isHorizontal ?
+				{ width: options.length * 100 + '%' } :
+				{ height: options.length * 100 + '%' },
+			immediate: true,
+		})
+	}, [options])
 
 	return (
 		<div
@@ -105,7 +125,8 @@ const Select = ({
 				[styles.container__vertical]: !isHorizontal,
 			})}
 		>
-			<div
+			<animated.div
+				style={arrowBackwardStyle}
 				onClick={handleSelectPrevious}
 				className={classNames({
 					[styles.arrow]: true,
@@ -117,7 +138,7 @@ const Select = ({
 					icon={isHorizontal ? faChevronLeft : faChevronUp}
 					size="2x"
 				/>
-			</div>
+			</animated.div>
 			<div
 				ref={contentRef}
 				className={classNames({
@@ -127,7 +148,7 @@ const Select = ({
 				})}
 			>
 				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
-				<div
+				<animated.div
 					style={optionsContainerStyle}
 					className={classNames({
 						[styles.optionsContainer]: true,
@@ -135,12 +156,6 @@ const Select = ({
 						[styles.optionsContainer__vertical]: !isHorizontal,
 					})}
 				>
-					<Option
-						key={options[options.length - 1].value + 'S'}
-						font={font}
-						isHorizontal={isHorizontal}
-						option={options[options.length - 1]}
-					/>
 					{options.map(option =>
 						<Option
 							key={option.value}
@@ -149,16 +164,10 @@ const Select = ({
 							option={option}
 						/>
 					)}
-					<Option
-						key={options[0].value + 'E'}
-						font={font}
-						isHorizontal={isHorizontal}
-						option={options[0]}
-					/>
-
-				</div>
+				</animated.div>
 			</div>
-			<div
+			<animated.div
+				style={arrowForwardStyle}
 				onClick={handleSelectNext}
 				className={classNames({
 					[styles.arrow]: true,
@@ -170,7 +179,7 @@ const Select = ({
 					icon={isHorizontal ? faChevronRight : faChevronDown}
 					size="2x"
 				/>
-			</div>
+			</animated.div>
 		</div >
 	)
 }
