@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSpring, animated, config } from 'react-spring'
 import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../../hooks/use-dimensions'
 import styles from './Range.css'
@@ -9,7 +8,7 @@ import styles from './Range.css'
 const Range = ({
 	rows,
 	cols,
-	icon,
+	Icon,
 	range,
 	disabled: isDisabled,
 	value,
@@ -84,28 +83,28 @@ const Range = ({
 			}}
 			className={classNames({
 				[styles.container]: true,
-				[styles.containerIfHorizontal]: isHorizontal,
-				[styles.containerIfVertical]: !isHorizontal,
+				[styles.container__horizontal]: isHorizontal,
+				[styles.container__vertical]: !isHorizontal,
 			})}
 		>
 			<animated.div
 				style={fillStyle}
 				className={classNames({
 					[styles.fill]: true,
-					[styles.fillIfHorizontal]: isHorizontal,
-					[styles.fillIfVertical]: !isHorizontal,
-					[styles.fillIfDisabled]: isDisabled,
+					[styles.fill__disabled]: isDisabled,
+					[styles.fill__horizontal]: isHorizontal,
+					[styles.fill__vertical]: !isHorizontal,
 				})}
 			></animated.div>
-			<FontAwesomeIcon
-				icon={icon}
+			<div
 				className={classNames({
 					[styles.icon]: true,
-					[styles.iconIfHorizontal]: isHorizontal,
-					[styles.iconIfVertical]: !isHorizontal,
+					[styles.icon__horizontal]: isHorizontal,
+					[styles.icon__vertical]: !isHorizontal,
 				})}
-				size="2x"
-			/>
+			>
+				<Icon size={32} />
+			</div>
 		</div>
 	)
 }

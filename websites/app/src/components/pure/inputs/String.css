@@ -24,4 +24,7 @@
 .icon {
 	padding: 1rem;
 	color: rgba(255, 255, 255, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }

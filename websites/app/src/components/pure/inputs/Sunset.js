@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useSpring, animated } from 'react-spring'
 import useInterval from '../../../hooks/use-interval'
 import useDimensions from '../../../hooks/use-dimensions'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSun } from '@fortawesome/free-solid-svg-icons'
+import { WiSunset } from 'react-icons/wi'
 import styles from './Sunset.css'
 
 const SunsetInput = ({
@@ -120,7 +119,7 @@ const SunsetInput = ({
 						style={iconStyle}
 						className={styles.icon}
 					>
-						<FontAwesomeIcon icon={faSun} size="2x" />
+						<WiSunset size={48} />
 					</animated.div>
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { faSun } from '@fortawesome/free-solid-svg-icons'
+import { FiSun } from 'react-icons/fi'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
@@ -92,7 +92,7 @@ const ConnectedBrightnessInput = ({
             range={{ min: 0, max: 1 }}
             onInput={() => onInput && onInput(brightness)}
             debouncedOnInput={handleInput}
-            icon={faSun}
+            Icon={FiSun}
             {...passthroughProps}
         />
     )

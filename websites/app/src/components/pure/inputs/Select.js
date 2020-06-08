@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSpring, animated, config } from 'react-spring'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-	faChevronLeft,
-	faChevronRight,
-	faChevronUp,
-	faChevronDown,
-} from '@fortawesome/free-solid-svg-icons'
+	FaChevronLeft,
+	FaChevronRight,
+	FaChevronUp,
+	FaChevronDown
+} from 'react-icons/fa'
 import { useDrag } from 'react-use-gesture'
 import useDimensions from '../../../hooks/use-dimensions'
 import classNames from 'classnames'
@@ -134,10 +133,10 @@ const Select = ({
 					[styles.arrow__small]: size <= 2,
 				})}
 			>
-				<FontAwesomeIcon
-					icon={isHorizontal ? faChevronLeft : faChevronUp}
-					size="2x"
-				/>
+				{
+					isHorizontal ?
+						<FaChevronLeft size={32} /> : <FaChevronUp size={32} />
+				}
 			</animated.div>
 			<div
 				ref={contentRef}
@@ -175,10 +174,10 @@ const Select = ({
 					[styles.arrow__small]: size <= 2,
 				})}
 			>
-				<FontAwesomeIcon
-					icon={isHorizontal ? faChevronRight : faChevronDown}
-					size="2x"
-				/>
+				{
+					isHorizontal ?
+						<FaChevronRight size={32} /> : <FaChevronDown size={32} />
+				}
 			</animated.div>
 		</div >
 	)

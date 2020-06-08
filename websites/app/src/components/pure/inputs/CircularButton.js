@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styles from './CircularButton.css'
 
-const CircularButton = ({ icon, iconColor, value, onClick, type }) => {
+const CircularButton = ({ Icon, iconColor, value, onClick, type }) => {
 	return (
 		<div className={styles.container}>
 			<div
@@ -24,7 +23,7 @@ const CircularButton = ({ icon, iconColor, value, onClick, type }) => {
 						<line x1="0" y1="100" x2="100" y2="0" style={{ stroke: 'rgb(255,255,255, 0.6)', strokeWidth: 4 }} />
 					</svg> : ''
 				}
-				<FontAwesomeIcon icon={icon} size="2x" />
+				<Icon size={48} />
 			</div>
 		</div>
 	)

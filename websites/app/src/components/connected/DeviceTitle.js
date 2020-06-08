@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { faCog, faSync, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { FaCog, FaSync, FaSignOutAlt } from 'react-icons/fa'
 import gql from 'graphql-tag'
 import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import { useDispatch } from 'react-redux'
@@ -75,17 +75,17 @@ const ConnectedDeviceTitle = ({ mac, ...passthroughProps }) => {
     const actions = [
         {
             name: 'settings',
-            icon: faCog,
+            Icon: FaCog,
             execute: () => console.log('Opening settings...'),
         },
         {
             name: 'update',
-            icon: faSync,
+            Icon: FaSync,
             execute: () => console.log('Updating firmware...'),
         },
         {
             name: 'logout',
-            icon: faSignOutAlt,
+            Icon: FaSignOutAlt,
             execute: handleLogout,
         },
     ]

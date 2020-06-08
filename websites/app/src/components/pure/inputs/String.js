@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { FaTimesCircle } from 'react-icons/fa'
 
 import styles from './String.css'
 
@@ -22,7 +21,7 @@ const StringInput = ({ placeholder, value: initialValue, onChange }) => {
 				placeholder={placeholder}
 			/>
 			<div className={styles.icon} onClick={() => setValue('')}>
-				<FontAwesomeIcon icon={faTimesCircle} size="lg" />
+				<FaTimesCircle size={24} />
 			</div>
 		</div>
 	)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { faSun } from '@fortawesome/free-solid-svg-icons'
+import { WiSunrise } from 'react-icons/wi'
 import CircularButton from './CircularButton'
 import SelectInput from './Select'
 import styles from './Sunrise.css'
@@ -21,7 +21,7 @@ const SunRiseInput = ({ value, onInput }) => {
 				<div className={styles.name}>Sunrise Morning</div>
 				<div className={styles.buttonToggle}>
 					<CircularButton
-						icon={faSun}
+						Icon={WiSunrise}
 						value={value.isActive}
 						onClick={isActive => {
 							onInput({

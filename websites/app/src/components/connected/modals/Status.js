@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import classNames from 'classnames'
 
 import { useDispatch, useSelector } from 'react-redux'
@@ -8,12 +8,11 @@ import {
 	setStatusModalState,
 } from '../../../store/actions'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-	faSpinner,
-	faLockOpen,
-	faTimesCircle,
-} from '@fortawesome/free-solid-svg-icons'
+	FaSpinner,
+	FaLockOpen,
+	FaTimesCircle,
+} from 'react-icons/fa'
 
 import styles from './Status.css'
 
@@ -27,9 +26,6 @@ const StatusModal = () => {
 
 	const state = useSelector(state => state.ui.statusModal.state)
 
-	const [icon, setIcon] = useState(faSpinner)
-	const [text, setText] = useState(LOGIN_IN_PROGRESS_TEXT)
-
 	// Blur when not idle
 	useEffect(() => {
 		if (state !== 'IDLE') {
@@ -40,27 +36,37 @@ const StatusModal = () => {
 	}, [state])
 
 	// Set icon & text based on state
-	useEffect(() => {
+	const { text, Icon } = useMemo(() => {
 		switch (state) {
 			case 'LOGIN_IN_PROGRESS': {
-				setIcon(faSpinner)
-				setText(LOGIN_IN_PROGRESS_TEXT)
-				break
+				return {
+					text: LOGIN_IN_PROGRESS_TEXT,
+					Icon: FaSpinner,
+				}
 			}
 			case 'LOGIN_WRONG_PIN': {
-				setIcon(faTimesCircle)
-				setText(LOGIN_WRONG_PIN_TEXT)
-				break
+				return {
+					text: LOGIN_WRONG_PIN_TEXT,
+					Icon: FaTimesCircle
+				}
 			}
 			case 'LOGIN_SUCCEEDED': {
-				setIcon(faLockOpen)
-				setText(LOGIN_SUCCEEDED_TEXT)
-				break
+				return {
+					text: LOGIN_SUCCEEDED_TEXT,
+					Icon: FaLockOpen,
+				}
 			}
 			case 'LOADING': {
-				setIcon(faSpinner)
-				setText(LOADING_TEXT)
-				break
+				return {
+					text: LOADING_TEXT,
+					Icon: FaSpinner
+				}
+			}
+			default: {
+				return {
+					text: LOGIN_IN_PROGRESS_TEXT,
+					Icon: FaSpinner
+				}
 			}
 		}
 	}, [state])
@@ -68,10 +74,12 @@ const StatusModal = () => {
 	// LOGIN_WRONG_PIN & LOGIN_SUCCEEDED should be shown for 1.5s:
 	useEffect(() => {
 		if (state === 'LOGIN_WRONG_PIN' || state === 'LOGIN_SUCCEEDED') {
-			setTimeout(() => {
+			const timeout = window.setTimeout(() => {
 				if (state === 'LOGIN_WRONG_PIN' || state === 'LOGIN_SUCCEEDED')
 					dispatch(setStatusModalState('IDLE'))
 			}, 1500)
+
+			return () => window.clearTimeout(timeout)
 		}
 	}, [state])
 
@@ -82,7 +90,12 @@ const StatusModal = () => {
 				[styles.containerIfIdle]: state === 'IDLE',
 			})}
 		>
-			<FontAwesomeIcon icon={icon} size="6x" spin={icon === faSpinner} />
+			<Icon
+				size={96}
+				className={classNames({
+					[styles.icon__spin]: Icon === FaSpinner,
+				})}
+			/>
 			<div className={styles.text}>{text}</div>
 		</div>
 	)

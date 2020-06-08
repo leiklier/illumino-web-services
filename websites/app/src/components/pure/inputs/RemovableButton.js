@@ -1,6 +1,5 @@
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { FaTimesCircle } from 'react-icons/fa'
 import styles from './RemovableButton.css'
 
 const RemovableButton = ({ onClick, onDelete, children }) => {
@@ -10,7 +9,7 @@ const RemovableButton = ({ onClick, onDelete, children }) => {
 				{children}
 			</div>
 			<div className={styles.icon} onClick={onDelete}>
-				<FontAwesomeIcon icon={faTimesCircle} size="lg" />
+				<FaTimesCircle size={24} />
 			</div>
 		</div>
 	)

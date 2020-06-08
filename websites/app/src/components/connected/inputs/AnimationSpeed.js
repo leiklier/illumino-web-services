@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { faRunning } from '@fortawesome/free-solid-svg-icons'
+import { RiSpeedLine } from 'react-icons/ri'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
@@ -103,7 +103,7 @@ const ConnectedAnimationSpeedInput = ({
             range={{ min: 0, max: 1 }}
             onInput={() => onInput && onInput(animationSpeed)}
             debouncedOnInput={handleInput}
-            icon={faRunning}
+            Icon={RiSpeedLine}
             {...passthroughProps}
         />
     )

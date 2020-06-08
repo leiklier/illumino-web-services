@@ -3,10 +3,7 @@ import React, { useState, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import jwt from 'jsonwebtoken'
 
-import { faChartBar } from '@fortawesome/free-solid-svg-icons'
-
 import ConnectedDeviceTitle from '../components/connected/DeviceTitle'
-import CircularButton from '../components/pure/inputs/CircularButton'
 
 import ConnectedSunriseInput from '../components/connected/inputs/Sunrise'
 import ConnectedSunsetInput from '../components/connected/inputs/Sunset'
@@ -50,13 +47,12 @@ const Device = () => {
 				ledStripIndex={selectedLedStripIndex}
 			/>
 			<ConnectedSunriseInput mac={mac} />
-			<CircularButton icon={faChartBar} iconColor="rgb(50, 92, 168)" />
+			<ConnectedSunsetInput mac={mac} />
 			<ConnectedColorInput
 				mac={mac}
 				ledStripIndex={selectedLedStripIndex}
 				syncWithAppBackground
 			/>
-			<ConnectedSunsetInput mac={mac} />
 		</>
 	)
 }

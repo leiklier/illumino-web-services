@@ -3,8 +3,7 @@ import useInterval from '../../hooks/use-interval'
 import { useSpring, animated } from 'react-spring'
 import gql from 'graphql-tag'
 import { useQuery } from '@apollo/react-hooks'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faWifi } from '@fortawesome/free-solid-svg-icons'
+import { RiWifiOffLine } from 'react-icons/ri'
 import styles from './IsDisconnectedIndicator.css'
 
 const DEVICE_QUERY = gql`
@@ -99,7 +98,7 @@ const IsDisconnectedIndicator = ({ mac }) => {
 
     return (
         <animated.div className={styles.container} style={containerStyle}>
-            <FontAwesomeIcon icon={faWifi} size="sm" />
+            <RiWifiOffLine size={16} />
             <div>{timeElapsedText}</div>
         </animated.div>
     )

@@ -21,3 +21,17 @@
 	margin: 2rem 0;
 	font-size: 1.8rem;
 }
+
+
+.icon__spin {
+	animation: icon__spin 2s infinite linear;
+}
+
+@keyframes icon__spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(359deg);
+	}
+}

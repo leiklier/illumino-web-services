@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useSpring, animated, config } from 'react-spring'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+
 import useDimensions from '../../hooks/use-dimensions'
 import styles from './TitleWithActions.css'
 
@@ -33,19 +33,22 @@ const TitleWithActions = ({ actions, children }) => {
 				className={styles.actionsContainer}
 			>
 				<div ref={iconRef} className={styles.action} key="actionsToggle">
-					<FontAwesomeIcon
-						onClick={() => setActionsAreShown(!actionsAreShown)}
-						icon={actionsAreShown ? faChevronRight : faChevronLeft}
-						size="2x"
-					/>
+					{
+						actionsAreShown ?
+							<FaChevronRight
+								onClick={() => setActionsAreShown(!actionsAreShown)}
+								size={32}
+							/> :
+							<FaChevronLeft
+								onClick={() => setActionsAreShown(!actionsAreShown)}
+								size={32}
+							/>
+					}
+
 				</div>
-				{actions.map(action => (
-					<div className={styles.action} key={action.name}>
-						<FontAwesomeIcon
-							icon={action.icon}
-							onClick={action.execute}
-							size="2x"
-						/>
+				{actions.map(({ Icon, execute, name }) => (
+					<div className={styles.action} key={name}>
+						<Icon onClick={execute} size={32} />
 					</div>
 				))}
 			</animated.div>

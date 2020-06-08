@@ -10,8 +10,7 @@ import {
 import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronCircleLeft } from '@fortawesome/free-solid-svg-icons'
+import { FaChevronCircleLeft } from 'react-icons/fa'
 
 import PinInput from '../components/pure/inputs/Pin'
 import styles from './UnlockDevice.css'
@@ -108,7 +107,7 @@ const UnlockDeviceView = props => {
 function ClearSecretButton({ onClick }) {
 	return (
 		<div className={styles.clearSecretButton} onClick={onClick}>
-			<FontAwesomeIcon icon={faChevronCircleLeft} size="2x" />
+			<FaChevronCircleLeft size={32} />
 			<div className={styles.clearSecretButtonText}>Choose another device</div>
 		</div>
 	)
