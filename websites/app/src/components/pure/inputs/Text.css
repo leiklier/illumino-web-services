@@ -1,0 +1,25 @@
+.container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	color: rgba(255, 255, 255, 0.7);
+	padding: 0 1rem;
+	min-height: 3.5rem;
+}
+
+.input {
+	flex-grow: 1;
+	height: 60%;
+	background: none;
+	border: none;
+	font-size: 1.2rem;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.input:focus {
+	outline: none;
+}

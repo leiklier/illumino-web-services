@@ -28,7 +28,7 @@ function Logo({ className, color }) {
 					></path>
 				</g>
 			</svg>
-			<span className={styles.text}>Illumino</span>
+			<span className={styles.text}>Illumino™</span>
 		</div>
 	)
 }

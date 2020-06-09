@@ -76,10 +76,10 @@ const ConnectedAnimationSpeedInput = ({
 
     const animationSpeed = useMemo(() => {
         const dataIsFetched = data && data.device && data.device.ledStrips
-        if (!dataIsFetched) return 0
+        if (!dataIsFetched) return 1
 
         const ledStrip = data.device.ledStrips[ledStripIndex]
-        if (!ledStrip) return 0
+        if (!ledStrip) return 1
 
         return ledStrip.animation.speed
     }, [data, ledStripIndex])

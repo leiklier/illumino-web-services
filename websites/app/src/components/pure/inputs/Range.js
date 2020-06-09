@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useSpring, animated, config } from 'react-spring'
 import classNames from 'classnames'
 import { useDrag } from 'react-use-gesture'
@@ -6,8 +6,6 @@ import useDimensions from '../../../hooks/use-dimensions'
 import styles from './Range.css'
 
 const Range = ({
-	rows,
-	cols,
 	Icon,
 	range,
 	disabled: isDisabled,
@@ -15,8 +13,11 @@ const Range = ({
 	valueWithSource,
 	onInput,
 }) => {
-	const isHorizontal = cols > rows
 	const [ref, { width, height }] = useDimensions()
+	const isHorizontal = useMemo(() => {
+		if(!width || !height) return true
+		return width > height
+	}, [width, height])
 
 	const bindDrag = useDrag(({ delta }) => {
 		const [deltaX, deltaY] = delta
@@ -47,6 +48,14 @@ const Range = ({
 			{ width: valueToPercentage(value, range) } :
 			{ height: valueToPercentage(value, range) }
 	))
+	useEffect(() => {
+		setFillStyle({
+			to: isHorizontal ?
+				{ height: '100%' } :
+				{ width: '100%' },
+			immediate: true,
+		})
+	}, [isHorizontal])
 
 	useEffect(() => {
 		if (valueWithSource) return
@@ -56,6 +65,7 @@ const Range = ({
 				{ width: valueToPercentage(value, range) } :
 				{ height: valueToPercentage(value, range) },
 			config: config.stiff,
+			immediate: false,
 		})
 	}, [value])
 
@@ -70,6 +80,7 @@ const Range = ({
 				{ width: valueToPercentage(value, range) } :
 				{ height: valueToPercentage(value, range) },
 			config: immediate ? config.stiff : config.gentle,
+			immediate: false,
 		})
 	}, [valueWithSource])
 
@@ -77,10 +88,6 @@ const Range = ({
 		<div
 			{...bindDrag()}
 			ref={ref}
-			style={{
-				gridColumnEnd: `span ${cols}`,
-				gridRowEnd: `span ${rows}`,
-			}}
 			className={classNames({
 				[styles.container]: true,
 				[styles.container__horizontal]: isHorizontal,

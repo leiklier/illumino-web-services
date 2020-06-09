@@ -1,33 +1,34 @@
-h1.header {
-	width: 100%;
-	height: 100%;
-	grid-column-end: span 4;
-	font-weight: 300;
-	font-size: 2.3rem;
-	color: #fff;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-end;
-	box-shadow: none;
-	background: transparent;
+.block {
+	background: rgba(0, 0, 0, 0.45);
+	border-radius: 1rem;
+	box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.45);
 }
 
-h2.subHeader {
-	width: 100%;
-	height: 100%;
-	grid-column-end: span 4;
+.inputExplanation {
+	margin-top: 0.5rem;
+	font-size: 1rem;
+	color: rgba(255, 255, 255, 0.7);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.inputProgress {
+	font-weight: bold;
+}
+
+.inputError {
+	font-weight: bold;
+	color: rgba(255, 125, 125);
+}
+
+/* TODO: refactor out */
+.deviceButton {
 	font-size: 1.4rem;
+	color: rgba(255, 255, 255, 0.8);
+	min-height: 3.5rem;
 	display: flex;
-	flex-direction: column;
-	align-content: center;
-	justify-content: flex-end;
-	background: transparent;
-	box-shadow: none;
-}
-
-div.logo {
-	grid-column-start: 2;
-	grid-row-start: 8;
-	box-shadow: none;
-	background: transparent;
+	align-items: center;
+	padding: 0 1rem;
 }

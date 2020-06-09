@@ -1,15 +1,17 @@
-div.clearSecretButton {
-	width: 100%;
-	height: 100%;
-	grid-row-end: span 1;
-	grid-column-end: span 4;
-	border-radius: 0.5rem;
+.h1 {
+	margin: 0;
+}
+
+.h2 {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.clearSecretButton {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
-	box-shadow: none;
-	background: transparent;
 }
 
 .clearSecretButtonText {
@@ -17,36 +19,4 @@ div.clearSecretButton {
 	height: 1.2rem;
 	line-height: 1.2rem;
 	margin-left: 0.5rem;
-}
-
-div.headerContainer {
-	width: 100%;
-	height: 100%;
-	grid-column-end: span 4;
-	box-shadow: none;
-	background: transparent;
-}
-
-.header {
-	margin: 0;
-	font-weight: 300;
-	font-size: 2.3rem;
-	color: #fff;
-	display: flex;
-	flex-direction: column;
-	align-content: space-between;
-}
-
-.subHeader {
-	margin: 0;
-	font-weight: 300;
-	font-size: 2rem;
-	color: #aaa;
-}
-
-div.logo {
-	grid-column-start: 2;
-	grid-row-start: 8;
-	box-shadow: none;
-	background: transparent;
 }

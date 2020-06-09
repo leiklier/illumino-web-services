@@ -1,5 +1,6 @@
 body {
 	background: transparent;
+	color: #fff;
 	position: relative;
 	width: 100vw;
 	height: 100vh;
@@ -12,6 +13,16 @@ body {
 	   is required for iNoBounce to work: */
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
+}
+
+h1 {
+	font-weight: 300;
+	font-size: 2.3rem;
+}
+
+h2 {
+	font-weight: 150;
+	font-size: 1.4rem;
 }
 
 .content {

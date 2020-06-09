@@ -14,9 +14,7 @@ import lodash from 'lodash'
 
 
 const Select = ({
-	rows,
-	cols,
-	name,
+	label,
 	font,
 	value, // Corresponds to the value property of an option
 	valueWithSource,
@@ -25,8 +23,23 @@ const Select = ({
 }) => {
 	if (!onInput) onInput = () => { }
 
-	const isHorizontal = Boolean(cols)
-	const size = isHorizontal ? cols : rows
+	const [ref, { width, height }] = useDimensions()
+	const isHorizontal = useMemo(() => {
+		if(!width || !height) return true
+		return width > height
+	}, [width, height])
+
+	const size = useMemo(() => {
+		if(!width || !height) 'lg'
+		const length = width > height ? width : height
+		
+		if(length < 70)
+			return 'sm'
+		else if(length < 140)
+			return 'md'
+		else
+			return 'lg'
+	}, [width, height])
 
 	const valueIndex = useMemo(() => {
 		return options.findIndex(option => lodash.isEqual(option.value, value))
@@ -91,6 +104,21 @@ const Select = ({
 	}))
 
 	useEffect(() => {
+		setOptionsContainerStyle({
+			to: isHorizontal ?
+			{
+				height: '100%',
+				top: '0%',
+			} :
+			{
+				width: '100%',
+				left: '0%',
+			},
+			immediate: true,
+		})
+	}, [isHorizontal])
+
+	useEffect(() => {
 		const immediate = valueIndex !== displayIndex
 		setOptionsContainerStyle({
 			to: isHorizontal ?
@@ -112,12 +140,8 @@ const Select = ({
 
 	return (
 		<div
+			ref={ref}
 			{...bindDrag()}
-			style={
-				isHorizontal ?
-					{ gridColumnEnd: `span ${cols}` } :
-					{ gridRowEnd: `span ${rows}` }
-			}
 			className={classNames({
 				[styles.container]: true,
 				[styles.container__horizontal]: isHorizontal,
@@ -129,8 +153,8 @@ const Select = ({
 				onClick={handleSelectPrevious}
 				className={classNames({
 					[styles.arrow]: true,
-					[styles.arrow__medium]: size > 2,
-					[styles.arrow__small]: size <= 2,
+					[styles.arrow__medium]: size === 'lg',
+					[styles.arrow__small]: size !==  'lg',
 				})}
 			>
 				{
@@ -146,7 +170,7 @@ const Select = ({
 					[styles.content__vertical]: !isHorizontal,
 				})}
 			>
-				{name ? <h2 className={styles.subHeader}>{name}</h2> : ''}
+				{label ? <div className={styles.label}>{label}</div> : ''}
 				<animated.div
 					style={optionsContainerStyle}
 					className={classNames({
@@ -170,8 +194,8 @@ const Select = ({
 				onClick={handleSelectNext}
 				className={classNames({
 					[styles.arrow]: true,
-					[styles.arrow__medium]: size > 2,
-					[styles.arrow__small]: size <= 2,
+					[styles.arrow__medium]: size === 'lg',
+					[styles.arrow__small]: size !==  'lg',
 				})}
 			>
 				{

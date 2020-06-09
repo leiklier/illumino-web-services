@@ -131,7 +131,7 @@ const ConnectedAnimationTypeInput = ({
             options={animationTypeOptions}
             onInput={() => onInput && onInput(animationType)}
             debouncedOnInput={handleInput}
-            name={'animation'}
+            label={'animation'}
             {...passthroughProps}
         />
     )

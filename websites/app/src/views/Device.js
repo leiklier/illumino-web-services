@@ -3,6 +3,8 @@ import React, { useState, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import jwt from 'jsonwebtoken'
 
+import * as Grid from '../components/pure/layouts/Grid'
+
 import ConnectedDeviceTitle from '../components/connected/DeviceTitle'
 
 import ConnectedSunriseInput from '../components/connected/inputs/Sunrise'
@@ -27,33 +29,53 @@ const Device = () => {
 	if (!mac) return <></>
 
 	return (
-		<>
-			<ConnectedDeviceTitle mac={mac} />
-			<ConnectedAnimationTypeInput
-				cols={3}
-				mac={mac}
-				ledStripIndex={selectedLedStripIndex}
-			/>
-			<ConnectedBrightnessInput
-				rows={3}
-				cols={1}
-				mac={mac}
-				ledStripIndex={selectedLedStripIndex}
-			/>
-			<ConnectedAnimationSpeedInput
-				rows={1}
-				cols={3}
-				mac={mac}
-				ledStripIndex={selectedLedStripIndex}
-			/>
-			<ConnectedSunriseInput mac={mac} />
-			<ConnectedSunsetInput mac={mac} />
-			<ConnectedColorInput
-				mac={mac}
-				ledStripIndex={selectedLedStripIndex}
-				syncWithAppBackground
-			/>
-		</>
+		<Grid.Layout 
+			style={{ width: '100%', height: '100%' }}
+			rows={8} cols={4}
+		>
+			<Grid.Item cols={4}>
+				<ConnectedDeviceTitle mac={mac} />
+			</Grid.Item>
+			
+			<Grid.Item cols={3}>
+				<ConnectedAnimationTypeInput
+					mac={mac}
+					ledStripIndex={selectedLedStripIndex}
+				/>
+			</Grid.Item>
+			
+			<Grid.Item rows={3}>
+				<ConnectedBrightnessInput
+					mac={mac}
+					ledStripIndex={selectedLedStripIndex}
+				/>
+			</Grid.Item>
+
+			<Grid.Item cols={3}>
+				<ConnectedAnimationSpeedInput
+					mac={mac}
+					ledStripIndex={selectedLedStripIndex}
+				/>
+			</Grid.Item>
+
+			<Grid.Item cols={3} rows={2}>
+				<ConnectedSunriseInput mac={mac} />
+			</Grid.Item>
+
+
+			<Grid.Item rows={2}>
+				<ConnectedSunsetInput mac={mac} />
+			</Grid.Item>
+
+			<Grid.Item rows={3} cols={3}>
+				<ConnectedColorInput
+					mac={mac}
+					ledStripIndex={selectedLedStripIndex}
+					syncWithAppBackground
+				/>
+			</Grid.Item>
+			
+		</Grid.Layout>
 	)
 }
 

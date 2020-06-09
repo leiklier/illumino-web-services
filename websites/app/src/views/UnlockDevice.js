@@ -13,6 +13,7 @@ import gql from 'graphql-tag'
 import { FaChevronCircleLeft } from 'react-icons/fa'
 
 import PinInput from '../components/pure/inputs/Pin'
+import * as Semantic from '../components/pure/layouts/Semantic'
 import styles from './UnlockDevice.css'
 
 const GET_DEVICE = gql`
@@ -88,23 +89,29 @@ const UnlockDeviceView = props => {
 	}, [pin])
 
 	return (
-		<>
-			<div className={styles.headerContainer}>
-				<h2 className={styles.subHeader}>Unlock</h2>
-				<h1 className={styles.header}>{deviceName}</h1>
-			</div>
-			<PinInput pinLength={6} onInput={setPin} />
-			<ClearSecretButton
-				onClick={() => {
-					setPin('')
-					dispatch(clearSelectedSecret())
-				}}
-			/>
-		</>
+		<Semantic.Layout style={{ width: '100%', height: '100%' }}>
+			<Semantic.Header>
+				<h2 className={styles.h2}>Unlock</h2>
+				<h1 className={styles.h1}>{deviceName}</h1>
+			</Semantic.Header>
+
+			<Semantic.Main>
+				<PinInput pinLength={6} onInput={setPin} />
+			</Semantic.Main>
+
+			<Semantic.Footer>
+				<GoBackButton
+					onClick={() => {
+						setPin('')
+						dispatch(clearSelectedSecret())
+					}}
+				/>
+			</Semantic.Footer>
+		</Semantic.Layout>
 	)
 }
 
-function ClearSecretButton({ onClick }) {
+function GoBackButton({ onClick }) {
 	return (
 		<div className={styles.clearSecretButton} onClick={onClick}>
 			<FaChevronCircleLeft size={32} />
