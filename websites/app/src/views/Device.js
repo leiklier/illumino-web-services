@@ -49,6 +49,7 @@ const Device = () => {
 				<ConnectedBrightnessInput
 					mac={mac}
 					ledStripIndex={selectedLedStripIndex}
+					vertical
 				/>
 			</Grid.Item>
 
@@ -56,6 +57,7 @@ const Device = () => {
 				<ConnectedAnimationSpeedInput
 					mac={mac}
 					ledStripIndex={selectedLedStripIndex}
+					horizontal
 				/>
 			</Grid.Item>
 

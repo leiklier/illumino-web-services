@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useSpring, animated, config } from 'react-spring'
 import classNames from 'classnames'
 import { useDrag } from 'react-use-gesture'
@@ -12,12 +12,9 @@ const Range = ({
 	value,
 	valueWithSource,
 	onInput,
+	vertical
 }) => {
 	const [ref, { width, height }] = useDimensions()
-	const isHorizontal = useMemo(() => {
-		if(!width || !height) return true
-		return width > height
-	}, [width, height])
 
 	const bindDrag = useDrag(({ delta }) => {
 		const [deltaX, deltaY] = delta
@@ -25,11 +22,11 @@ const Range = ({
 		if (!onInput) return
 
 		let deltaValue
-		if (isHorizontal) {
-			deltaValue = (deltaX / width) * (range.max - range.min)
-		} else { // is vertical
+		if (vertical) {
 			deltaValue = -1 * (deltaY / height) * (range.max - range.min)
 			//            ^- because y-axis is flipped in html
+		} else {
+			deltaValue = (deltaX / width) * (range.max - range.min)
 		}
 
 		let newValue = value + deltaValue
@@ -44,28 +41,19 @@ const Range = ({
 	}
 
 	const [fillStyle, setFillStyle] = useSpring(() => (
-		isHorizontal ?
-			{ width: valueToPercentage(value, range) } :
-			{ height: valueToPercentage(value, range) }
+		vertical ?
+			{ height: valueToPercentage(value, range) } :
+			{ width: valueToPercentage(value, range) }
 	))
-	useEffect(() => {
-		setFillStyle({
-			to: isHorizontal ?
-				{ height: '100%' } :
-				{ width: '100%' },
-			immediate: true,
-		})
-	}, [isHorizontal])
 
 	useEffect(() => {
 		if (valueWithSource) return
 
 		setFillStyle({
-			to: isHorizontal ?
-				{ width: valueToPercentage(value, range) } :
-				{ height: valueToPercentage(value, range) },
+			to: vertical ?
+				{ height: valueToPercentage(value, range) } :
+				{ width: valueToPercentage(value, range) },
 			config: config.stiff,
-			immediate: false,
 		})
 	}, [value])
 
@@ -76,11 +64,10 @@ const Range = ({
 		const immediate = source === 'SELF'
 
 		setFillStyle({
-			to: isHorizontal ?
-				{ width: valueToPercentage(value, range) } :
-				{ height: valueToPercentage(value, range) },
+			to: vertical ?
+				{ height: valueToPercentage(value, range) } :
+				{ width: valueToPercentage(value, range) },
 			config: immediate ? config.stiff : config.gentle,
-			immediate: false,
 		})
 	}, [valueWithSource])
 
@@ -90,8 +77,8 @@ const Range = ({
 			ref={ref}
 			className={classNames({
 				[styles.container]: true,
-				[styles.container__horizontal]: isHorizontal,
-				[styles.container__vertical]: !isHorizontal,
+				[styles.container__horizontal]: !vertical,
+				[styles.container__vertical]: vertical,
 			})}
 		>
 			<animated.div
@@ -99,15 +86,15 @@ const Range = ({
 				className={classNames({
 					[styles.fill]: true,
 					[styles.fill__disabled]: isDisabled,
-					[styles.fill__horizontal]: isHorizontal,
-					[styles.fill__vertical]: !isHorizontal,
+					[styles.fill__horizontal]: !vertical,
+					[styles.fill__vertical]: vertical,
 				})}
 			></animated.div>
 			<div
 				className={classNames({
 					[styles.icon]: true,
-					[styles.icon__horizontal]: isHorizontal,
-					[styles.icon__vertical]: !isHorizontal,
+					[styles.icon__horizontal]: !vertical,
+					[styles.icon__vertical]: vertical,
 				})}
 			>
 				<Icon size={32} />
