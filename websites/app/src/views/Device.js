@@ -41,6 +41,7 @@ const Device = () => {
 				<ConnectedAnimationTypeInput
 					mac={mac}
 					ledStripIndex={selectedLedStripIndex}
+					horizontal
 				/>
 			</Grid.Item>
 			

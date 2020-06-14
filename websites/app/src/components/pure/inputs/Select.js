@@ -20,14 +20,11 @@ const Select = ({
 	valueWithSource,
 	options, // [{ value: any, name: String }]
 	onInput,
+	vertical,
 }) => {
 	if (!onInput) onInput = () => { }
 
 	const [ref, { width, height }] = useDimensions()
-	const isHorizontal = useMemo(() => {
-		if(!width || !height) return true
-		return width > height
-	}, [width, height])
 
 	const size = useMemo(() => {
 		if(!width || !height) 'lg'
@@ -62,10 +59,11 @@ const Select = ({
 			setIndexDiff(0)
 			return
 		}
-		if (isHorizontal) {
-			setIndexDiff(- 1 * mx / contentWidth)
-		} else {
+		if (vertical) {
 			setIndexDiff(-1 * my / contentHeight)
+			
+		} else {
+			setIndexDiff(- 1 * mx / contentWidth)
 		}
 	})
 
@@ -92,38 +90,23 @@ const Select = ({
 	})
 
 	const [optionsContainerStyle, setOptionsContainerStyle] = useSpring(() => ({
-		to: isHorizontal ?
-			{
-				width: options.length * 100 + '%',
-				left: -1 * displayIndex * 100 + '%',
-			} : {
-				height: options.length * 100 + '%',
-				top: -1 * displayIndex * 100 + '%',
-			},
+		to: vertical ?
+		{
+			height: options.length * 100 + '%',
+			top: -1 * displayIndex * 100 + '%',
+		} : {
+			width: options.length * 100 + '%',
+			left: -1 * displayIndex * 100 + '%',
+		},
 		immediate: true,
 	}))
 
 	useEffect(() => {
-		setOptionsContainerStyle({
-			to: isHorizontal ?
-			{
-				height: '100%',
-				top: '0%',
-			} :
-			{
-				width: '100%',
-				left: '0%',
-			},
-			immediate: true,
-		})
-	}, [isHorizontal])
-
-	useEffect(() => {
 		const immediate = valueIndex !== displayIndex
 		setOptionsContainerStyle({
-			to: isHorizontal ?
-				{ left: -1 * displayIndex * 100 + '%' } :
-				{ top: -1 * displayIndex * 100 + '%' },
+			to: vertical ?
+				{ top: -1 * displayIndex * 100 + '%' } :
+				{ left: -1 * displayIndex * 100 + '%' },
 			config: immediate ? config.stiff : config.gentle,
 			immediate: false,
 		})
@@ -131,9 +114,9 @@ const Select = ({
 
 	useEffect(() => {
 		setOptionsContainerStyle({
-			to: isHorizontal ?
-				{ width: options.length * 100 + '%' } :
-				{ height: options.length * 100 + '%' },
+			to: vertical ?
+				{ height: options.length * 100 + '%' } :
+				{ width: options.length * 100 + '%' },
 			immediate: true,
 		})
 	}, [options])
@@ -144,8 +127,8 @@ const Select = ({
 			{...bindDrag()}
 			className={classNames({
 				[styles.container]: true,
-				[styles.container__horizontal]: isHorizontal,
-				[styles.container__vertical]: !isHorizontal,
+				[styles.container__horizontal]: !vertical,
+				[styles.container__vertical]: vertical,
 			})}
 		>
 			<animated.div
@@ -158,16 +141,16 @@ const Select = ({
 				})}
 			>
 				{
-					isHorizontal ?
-						<FaChevronLeft size={32} /> : <FaChevronUp size={32} />
+					vertical ?
+					<FaChevronUp size={32} /> : <FaChevronLeft size={32} />
 				}
 			</animated.div>
 			<div
 				ref={contentRef}
 				className={classNames({
 					[styles.content]: true,
-					[styles.content__horizontal]: isHorizontal,
-					[styles.content__vertical]: !isHorizontal,
+					[styles.content__horizontal]: !vertical,
+					[styles.content__vertical]: vertical,
 				})}
 			>
 				{label ? <div className={styles.label}>{label}</div> : ''}
@@ -175,15 +158,15 @@ const Select = ({
 					style={optionsContainerStyle}
 					className={classNames({
 						[styles.optionsContainer]: true,
-						[styles.optionsContainer__horizontal]: isHorizontal,
-						[styles.optionsContainer__vertical]: !isHorizontal,
+						[styles.optionsContainer__horizontal]: !vertical,
+						[styles.optionsContainer__vertical]: vertical,
 					})}
 				>
 					{options.map(option =>
 						<Option
 							key={option.value}
 							font={font}
-							isHorizontal={isHorizontal}
+							vertical={vertical}
 							option={option}
 						/>
 					)}
@@ -199,21 +182,21 @@ const Select = ({
 				})}
 			>
 				{
-					isHorizontal ?
-						<FaChevronRight size={32} /> : <FaChevronDown size={32} />
+					vertical ?
+						<FaChevronDown size={32} /> : <FaChevronRight size={32} /> 
 				}
 			</animated.div>
 		</div >
 	)
 }
 
-function Option({ font, isHorizontal, option }) {
+function Option({ font, vertical, option }) {
 	return (
 		<div
 			className={classNames({
 				[styles.option]: true,
-				[styles.option__horizontal]: isHorizontal,
-				[styles.option__vertical]: !isHorizontal,
+				[styles.option__horizontal]: !vertical,
+				[styles.option__vertical]: vertical,
 			})}
 			style={font ? { fontFamily: font } : {}}
 		>

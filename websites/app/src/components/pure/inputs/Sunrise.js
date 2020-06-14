@@ -34,7 +34,6 @@ const SunRiseInput = ({ value, onInput }) => {
 				<div className={styles.clockInput}>
 					<SelectInput
 						font="seven-segment"
-						rows={2}
 						value={value.startingAt.hour}
 						options={hourOptions}
 						onInput={hour => {
@@ -46,6 +45,7 @@ const SunRiseInput = ({ value, onInput }) => {
 								},
 							})
 						}}
+						vertical
 					/>
 				</div>
 				<div className={styles.clockInputSeparator}>
@@ -54,7 +54,6 @@ const SunRiseInput = ({ value, onInput }) => {
 				<div className={styles.clockInput}>
 					<SelectInput
 						font="seven-segment"
-						rows={2}
 						value={value.startingAt.minute}
 						options={minuteOptions}
 						onInput={minute => {
@@ -66,6 +65,7 @@ const SunRiseInput = ({ value, onInput }) => {
 								},
 							})
 						}}
+						vertical
 					/>
 				</div>
 			</div>
