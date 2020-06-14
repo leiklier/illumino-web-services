@@ -14,13 +14,11 @@ const mongoose = require('mongoose')
 const { PORT } = process.env
 
 const logger = require('./logger')
-const enableRestEndpoints = require('./rest')
 const graphqlSchema = require('./graphql/root-schema')
 
 const app = express()
 app.use(cookieParser())
 app.use(bodyParser.json())
-enableRestEndpoints(app)
 
 const server = new ApolloServer({
 	...graphqlSchema,
