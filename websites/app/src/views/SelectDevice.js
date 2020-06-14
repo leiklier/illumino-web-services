@@ -36,7 +36,12 @@ const SECRET_IS_VALID = gql`
 const SelectDeviceView = () => {
 	const recentSecrets = useSelector(state => state.auth.recentSecrets)
 	const dispatch = useDispatch()
-	const [secret, setSecret] = useState('')
+
+	const [formattedSecret, setFormattedSecret] = useState('')
+	const secret = useMemo(() => {
+		return formattedSecret.split("-").join("").toLowerCase()
+	}, [formattedSecret])
+
 	const [secretIsInvalid, setSecretIsInvalid] = useState(false)
 
 	const [checkSecret, {data}] = useLazyQuery(SECRET_IS_VALID, {
@@ -65,6 +70,24 @@ const SelectDeviceView = () => {
 		}
 	}, [secret, data])
 
+	function handleSecretInput(newSecret) {
+		const strippedSecret = newSecret
+			.split("-").join("")
+			.toUpperCase()
+			.replace(/[^0-9a-z]/gi, '')
+		
+		if(strippedSecret.length === 0) {
+			setFormattedSecret('')
+			return
+		}
+
+		setFormattedSecret(
+			strippedSecret
+				.match(/.{1,4}/g)
+				.join("-")
+		)
+	}
+
 	return (
 		<Semantic.Layout style={{ width: '100%', height: '100%'}}>
 			<Semantic.Header>
@@ -76,10 +99,10 @@ const SelectDeviceView = () => {
 				<h2>Add new:</h2>
 				<div className={styles.block}>
 					<TextInput
-						placeholder="Device-ID..."
-						maxLength={12}
-						value={secret}
-						onChange={setSecret}
+						label="Device-ID"
+						maxLength={12 + 2} // To account for the dashes
+						value={formattedSecret}
+						onInput={handleSecretInput}
 					/>
 				</div>
 				<div className={styles.inputExplanation}>
