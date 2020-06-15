@@ -7,6 +7,7 @@ import * as Grid from '../components/pure/layouts/Grid'
 
 import ConnectedDeviceTitle from '../components/connected/DeviceTitle'
 
+import ConnectedLedStripSelector from '../components/connected/inputs/LedStripSelector'
 import ConnectedSensorButton from '../components/connected/inputs/SensorButton'
 
 import ConnectedSunriseInput from '../components/connected/inputs/Sunrise'
@@ -26,7 +27,7 @@ const Device = () => {
 		return payload.device.mac
 	}, [accessToken])
 
-	const [selectedLedStripIndex, setSelectedLedStrip] = useState(0)
+	const [selectedLedStripIndex, setSelectedLedStripIndex] = useState(0)
 
 	if (!mac) return <></>
 
@@ -67,9 +68,16 @@ const Device = () => {
 				<ConnectedSunriseInput mac={mac} />
 			</Grid.Item>
 
+			<Grid.Item>
+				<ConnectedSensorButton mac={mac} />
+			</Grid.Item>
 
-			<Grid.Item rows={2}>
-				<ConnectedSunsetInput mac={mac} />
+			<Grid.Item>
+				<ConnectedLedStripSelector
+					mac={mac}
+					value={selectedLedStripIndex}
+					onInput={setSelectedLedStripIndex}
+				/>
 			</Grid.Item>
 
 			<Grid.Item rows={3} cols={3}>
@@ -80,8 +88,8 @@ const Device = () => {
 				/>
 			</Grid.Item>
 
-			<Grid.Item>
-				<ConnectedSensorButton mac={mac} />
+			<Grid.Item rows={2}>
+				<ConnectedSunsetInput mac={mac} />
 			</Grid.Item>
 			
 		</Grid.Layout>
