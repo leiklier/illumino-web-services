@@ -7,6 +7,8 @@ import * as Grid from '../components/pure/layouts/Grid'
 
 import ConnectedDeviceTitle from '../components/connected/DeviceTitle'
 
+import ConnectedSensorButton from '../components/connected/inputs/SensorButton'
+
 import ConnectedSunriseInput from '../components/connected/inputs/Sunrise'
 import ConnectedSunsetInput from '../components/connected/inputs/Sunset'
 
@@ -76,6 +78,10 @@ const Device = () => {
 					ledStripIndex={selectedLedStripIndex}
 					syncWithAppBackground
 				/>
+			</Grid.Item>
+
+			<Grid.Item>
+				<ConnectedSensorButton mac={mac} />
 			</Grid.Item>
 			
 		</Grid.Layout>
