@@ -5,8 +5,8 @@ import styles from './Sunrise.css'
 
 const SunRiseInput = ({ value, onInput }) => {
 	const hourOptions = [...Array(24).keys()].map(value => ({
-		value: value + 1,
-		name: String(value + 1).padStart(2, '0')
+		value: value,
+		name: String(value).padStart(2, '0')
 	})).reverse()
 
 	const minuteOptions = [...Array(60).keys()].map(value => ({
@@ -20,10 +20,10 @@ const SunRiseInput = ({ value, onInput }) => {
 				<div className={styles.label}>Sunrise Morning</div>
 				<div
 					className={styles.buttonToggle}
-					onClick={isActive => {
+					onClick={() => {
 						onInput({
 							...value,
-							isActive,
+							isActive: !value.isActive,
 						})
 					}}
 				>

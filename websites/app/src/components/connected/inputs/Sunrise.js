@@ -71,8 +71,8 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
 		const sunrise = {
 			isActive: dataIsFetched ? data.device.sunrise.isActive : false,
 			startingAt: {
-				hour: dataIsFetched ? data.device.sunrise.startingAt.hour : 12,
-				minute: dataIsFetched ? data.device.sunrise.startingAt.minute : 34,
+				hour: dataIsFetched ? data.device.sunrise.startingAt.hour : 0,
+				minute: dataIsFetched ? data.device.sunrise.startingAt.minute : 0,
 			},
 		}
 		return sunrise
