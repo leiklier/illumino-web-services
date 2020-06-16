@@ -15,10 +15,10 @@ const typeDefs = gql`
 
 	enum AnimationType {
 		MANUAL
-		LAVA
-		RAINBOW
-		SUNRISE
-		SUNSET
+		VIVID
+		GLOW
+		SPARKS
+		FIREPLACE
 	}
 
 	type Animation {

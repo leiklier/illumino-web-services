@@ -437,9 +437,9 @@ mutationResolvers.createDevice = async (obj, { deviceInput }, context) => {
 	})
 
 	if (device.type.model === 'ILLUMINODE') {
-		device.ledStrips = [{ name: 'Primary' }]
+		device.ledStrips = [{ name: '#1' }]
 	} else if (device.type.model === 'ILLUMINODE_PLUS') {
-		device.ledStrips = [{ name: 'Primary' }, { name: 'Secondary' }]
+		device.ledStrips = [{ name: 'BTM' }, { name: 'TOP' }]
 	}
 
 	if (deviceInput.pin) {

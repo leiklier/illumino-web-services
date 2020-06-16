@@ -41,7 +41,6 @@ const ledStripSchema = new Schema(
 			type: {
 				type: String,
 				required: true,
-				enum: ['MANUAL', 'LAVA', 'RAINBOW', 'SUNRISE', 'SUNSET'],
 				default: 'MANUAL',
 			},
 			speed: {
@@ -144,8 +143,8 @@ const deviceSchema = new Schema(
 				hour: {
 					type: Number,
 					required: true,
-					min: 1,
-					max: 24,
+					min: 0,
+					max: 23,
 					default: 7,
 					validate: {
 						validator: Number.isInteger,
