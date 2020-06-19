@@ -8,8 +8,8 @@ import RangeInput from '../../pure/inputs/Range'
 const DebouncedRangeInput = withDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				animation {
 					speed
@@ -20,8 +20,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				animation {
 					speed
@@ -33,12 +33,12 @@ const DEVICE_SUBSCRIPTION = gql`
 
 const SET_ANIMATION_SPEED = gql`
 	mutation setAnimationSpeed(
-		$mac: String!
+		$secret: String!
 		$ledStripIndex: Int!
 		$animationSpeed: Float!
 	) {
 		setAnimationSpeedOnLedStrip(
-			mac: $mac
+			secret: $secret
 			ledStripIndex: $ledStripIndex
 			animationSpeed: $animationSpeed
 		) {
@@ -51,19 +51,19 @@ const SET_ANIMATION_SPEED = gql`
 
 
 const ConnectedAnimationSpeedInput = ({
-    mac,
+    secret,
     ledStripIndex,
     onInput,
     ...passthroughProps
 }) => {
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -89,7 +89,7 @@ const ConnectedAnimationSpeedInput = ({
     function handleInput(newAnimationSpeed) {
         setAnimationSpeed({
             variables: {
-                mac,
+                secret,
                 ledStripIndex,
                 animationSpeed: newAnimationSpeed,
             }

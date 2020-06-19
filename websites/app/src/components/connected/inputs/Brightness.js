@@ -8,8 +8,8 @@ import RangeInput from '../../pure/inputs/Range'
 const DebouncedRangeInput = withDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				brightness
 			}
@@ -18,8 +18,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				brightness
 			}
@@ -28,9 +28,9 @@ const DEVICE_SUBSCRIPTION = gql`
 `
 
 const SET_BRIGHTNESS = gql`
-	mutation setBrightness($mac: String!, $ledStripIndex: Int!, $brightness: Float!) {
+	mutation setBrightness($secret: String!, $ledStripIndex: Int!, $brightness: Float!) {
 		setBrightnessOnLedStrip(
-			mac: $mac
+			secret: $secret
 			ledStripIndex: $ledStripIndex
 			brightness: $brightness
 		) {
@@ -40,19 +40,19 @@ const SET_BRIGHTNESS = gql`
 `
 
 const ConnectedBrightnessInput = ({
-    mac,
+    secret,
     ledStripIndex,
     onInput,
     ...passthroughProps
 }) => {
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -78,7 +78,7 @@ const ConnectedBrightnessInput = ({
     function handleInput(newBrightnessValue) {
         setBrightness({
             variables: {
-                mac,
+                secret,
                 ledStripIndex,
                 brightness: newBrightnessValue,
             }

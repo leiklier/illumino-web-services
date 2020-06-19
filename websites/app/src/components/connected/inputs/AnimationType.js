@@ -7,8 +7,8 @@ import SelectInput from '../../pure/inputs/Select'
 const DebouncedSelectInput = withDebounce(SelectInput)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				animation {
 					type
@@ -19,8 +19,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				animation {
 					type
@@ -32,12 +32,12 @@ const DEVICE_SUBSCRIPTION = gql`
 
 const SET_ANIMATION_TYPE = gql`
 	mutation setAnimationSpeed(
-		$mac: String!
+		$secret: String!
 		$ledStripIndex: Int!
 		$animationType: AnimationType!
 	) {
 		setAnimationTypeOnLedStrip(
-			mac: $mac
+			secret: $secret
 			ledStripIndex: $ledStripIndex
 			animationType: $animationType
 		) {
@@ -61,19 +61,19 @@ const ANIMATION_TYPE_OPTIONS_QUERY = gql`
 
 
 const ConnectedAnimationTypeInput = ({
-    mac,
+    secret,
     ledStripIndex,
     onInput,
     ...passthroughProps
 }) => {
     const { subscribeToMore, data: deviceData } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -117,7 +117,7 @@ const ConnectedAnimationTypeInput = ({
     function handleInput(newAnimationType) {
         setAnimationType({
             variables: {
-                mac,
+                secret,
                 ledStripIndex,
                 animationType: newAnimationType,
             }

@@ -7,8 +7,8 @@ import { WiHumidity } from 'react-icons/wi'
 import styles from './SensorButton.css'
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             latestMeasurements(types: [TEMPERATURE, HUMIDITY]) {
 				type
 				value
@@ -17,9 +17,9 @@ const DEVICE_QUERY = gql`
     }
 `
 
-const ConnectedSensorButton = ({ mac }) => {
+const ConnectedSensorButton = ({ secret }) => {
 	const { data } = useQuery(DEVICE_QUERY, {
-		variables: { mac }
+		variables: { secret }
 	})
 
 	const { humidity, temperature } = useMemo(() => {

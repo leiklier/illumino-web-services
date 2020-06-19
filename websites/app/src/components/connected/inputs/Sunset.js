@@ -7,8 +7,8 @@ import SunsetInput from '../../pure/inputs/Sunset'
 const DebouncedSunset = withDebounce(SunsetInput)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
 			sunset {
 				startedAt
 				endingAt
@@ -18,8 +18,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
 			sunset {
 				startedAt
 				endingAt
@@ -30,11 +30,11 @@ const DEVICE_SUBSCRIPTION = gql`
 
 const START_SUNSET = gql`
 	mutation startSunset(
-		$mac: String!
+		$secret: String!
         $startedAt: DateTime!
         $endingAt: DateTime!
 	) {
-		startSunset(mac: $mac, startedAt: $startedAt, endingAt: $endingAt) {
+		startSunset(secret: $secret, startedAt: $startedAt, endingAt: $endingAt) {
 			startedAt
 			endingAt
 		}
@@ -42,23 +42,23 @@ const START_SUNSET = gql`
 `
 
 const STOP_SUNSET = gql`
-	mutation stopSunset($mac: String!) {
-		stopSunset(mac: $mac) {
+	mutation stopSunset($secret: String!) {
+		stopSunset(secret: $secret) {
 			startedAt
 			endingAt
 		}
 	}
 `
 
-const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
+const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -85,13 +85,13 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
         if (newSunsetValue.startedAt) {
             startSunset({
                 variables: {
-                    mac,
+                    secret,
                     startedAt: newSunsetValue.startedAt,
                     endingAt: newSunsetValue.endingAt,
                 },
             })
         } else {
-            stopSunset({ variables: { mac } })
+            stopSunset({ variables: { secret } })
         }
     }
 

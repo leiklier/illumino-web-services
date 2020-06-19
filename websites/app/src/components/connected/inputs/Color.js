@@ -12,8 +12,8 @@ import ColorPicker from '../../pure/inputs/ColorPicker'
 const DebouncedColorPicker = withDebounce(ColorPicker)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				color {
                     hue
@@ -25,8 +25,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             ledStrips {
 				color {
                     hue
@@ -38,9 +38,9 @@ const DEVICE_SUBSCRIPTION = gql`
 `
 
 const SET_COLOR = gql`
-	mutation setColorOnLedStrip($mac: String!, $ledStripIndex: Int!, $hue: Float!, $saturation: Float!) {
+	mutation setColorOnLedStrip($secret: String!, $ledStripIndex: Int!, $hue: Float!, $saturation: Float!) {
 		setColorOnLedStrip(
-			mac: $mac
+			secret: $secret
 			ledStripIndex: $ledStripIndex
 			color: {
                 hue: $hue
@@ -56,7 +56,7 @@ const SET_COLOR = gql`
 `
 
 const ConnectedColorInput = ({
-    mac,
+    secret,
     ledStripIndex,
     onInput,
     syncWithAppBackground,
@@ -65,13 +65,13 @@ const ConnectedColorInput = ({
     const dispatch = useDispatch()
 
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -106,7 +106,7 @@ const ConnectedColorInput = ({
     function handleInput({ hue, saturation }) {
         setColor({
             variables: {
-                mac,
+                secret,
                 ledStripIndex,
                 hue,
                 saturation,

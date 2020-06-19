@@ -21,7 +21,7 @@ const GET_DEVICE = gql`
 	query getDevice($secret: String!) {
 		device(secret: $secret) {
 			id
-			mac
+			secret
 			name
 		}
 	}

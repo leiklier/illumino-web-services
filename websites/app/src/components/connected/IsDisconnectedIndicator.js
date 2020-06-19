@@ -7,8 +7,8 @@ import { RiWifiOffLine } from 'react-icons/ri'
 import styles from './IsDisconnectedIndicator.css'
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             isConnected
             lastSeenAt
         }
@@ -16,23 +16,23 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             isConnected
             lastSeenAt
         }
     }
 `
 
-const IsDisconnectedIndicator = ({ mac }) => {
+const IsDisconnectedIndicator = ({ secret }) => {
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device

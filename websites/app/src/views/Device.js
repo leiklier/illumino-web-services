@@ -20,16 +20,16 @@ import ConnectedAnimationTypeInput from '../components/connected/inputs/Animatio
 
 const Device = () => {
 	const accessToken = useSelector(state => state.auth.accessToken)
-	const mac = useMemo(() => {
+	const secret = useMemo(() => {
 		if (!accessToken) return null
 		const { payload } = jwt.decode(accessToken)
 
-		return payload.device.mac
+		return payload.device.secret
 	}, [accessToken])
 
 	const [selectedLedStripIndex, setSelectedLedStripIndex] = useState(0)
 
-	if (!mac) return <></>
+	if (!secret) return <></>
 
 	return (
 		<Grid.Layout 
@@ -37,12 +37,12 @@ const Device = () => {
 			rows={8} cols={4}
 		>
 			<Grid.Item cols={4}>
-				<ConnectedDeviceTitle mac={mac} />
+				<ConnectedDeviceTitle secret={secret} />
 			</Grid.Item>
 			
 			<Grid.Item cols={3}>
 				<ConnectedAnimationTypeInput
-					mac={mac}
+					secret={secret}
 					ledStripIndex={selectedLedStripIndex}
 					horizontal
 				/>
@@ -50,7 +50,7 @@ const Device = () => {
 			
 			<Grid.Item rows={3}>
 				<ConnectedBrightnessInput
-					mac={mac}
+					secret={secret}
 					ledStripIndex={selectedLedStripIndex}
 					vertical
 				/>
@@ -58,23 +58,23 @@ const Device = () => {
 
 			<Grid.Item cols={3}>
 				<ConnectedAnimationSpeedInput
-					mac={mac}
+					secret={secret}
 					ledStripIndex={selectedLedStripIndex}
 					horizontal
 				/>
 			</Grid.Item>
 
 			<Grid.Item cols={3} rows={2}>
-				<ConnectedSunriseInput mac={mac} />
+				<ConnectedSunriseInput secret={secret} />
 			</Grid.Item>
 
 			<Grid.Item>
-				<ConnectedSensorButton mac={mac} />
+				<ConnectedSensorButton secret={secret} />
 			</Grid.Item>
 
 			<Grid.Item>
 				<ConnectedLedStripSelector
-					mac={mac}
+					secret={secret}
 					value={selectedLedStripIndex}
 					onInput={setSelectedLedStripIndex}
 				/>
@@ -82,14 +82,14 @@ const Device = () => {
 
 			<Grid.Item rows={3} cols={3}>
 				<ConnectedColorInput
-					mac={mac}
+					secret={secret}
 					ledStripIndex={selectedLedStripIndex}
 					syncWithAppBackground
 				/>
 			</Grid.Item>
 
 			<Grid.Item rows={2}>
-				<ConnectedSunsetInput mac={mac} />
+				<ConnectedSunsetInput secret={secret} />
 			</Grid.Item>
 			
 		</Grid.Layout>

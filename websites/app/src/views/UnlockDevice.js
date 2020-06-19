@@ -20,7 +20,6 @@ const GET_DEVICE = gql`
 	query getDevice($secret: String!) {
 		device(secret: $secret) {
 			id
-			mac
 			name
 			hasPin
 		}
@@ -78,7 +77,7 @@ const UnlockDeviceView = props => {
 	useEffect(() => {
 		if (deviceData && deviceData.device) {
 			setDeviceName(
-				deviceData.device.name ? deviceData.device.name : deviceData.device.mac,
+				deviceData.device.name ? deviceData.device.name : 'IllumiNode',
 			)
 		}
 	}, [deviceData])

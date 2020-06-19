@@ -7,8 +7,8 @@ import SunriseInput from '../../pure/inputs/Sunrise'
 const DebouncedSunriseInput = withDebounce(SunriseInput)
 
 const DEVICE_QUERY = gql`
-    query getDevice($mac: String!) {
-        device(mac: $mac) {
+    query getDevice($secret: String!) {
+        device(secret: $secret) {
             sunrise {
 				isActive
 				startingAt {
@@ -21,8 +21,8 @@ const DEVICE_QUERY = gql`
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-    subscription onDeviceUpdated($mac: String!) {
-        device(mac: $mac) {
+    subscription onDeviceUpdated($secret: String!) {
+        device(secret: $secret) {
             sunrise {
 				isActive
 				startingAt {
@@ -35,8 +35,8 @@ const DEVICE_SUBSCRIPTION = gql`
 `
 
 const UPDATE_SUNRISE = gql`
-	mutation updateSunrise($mac: String!, $startingAt: TimeInput!, $isActive: Boolean!) {
-		updateSunrise(mac: $mac, startingAt: $startingAt, isActive: $isActive) {
+	mutation updateSunrise($secret: String!, $startingAt: TimeInput!, $isActive: Boolean!) {
+		updateSunrise(secret: $secret, startingAt: $startingAt, isActive: $isActive) {
 			isActive
 			startingAt {
 				hour
@@ -47,15 +47,15 @@ const UPDATE_SUNRISE = gql`
 `
 
 
-const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
+const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
 	const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-		variables: { mac }
+		variables: { secret }
 	})
 
 	useEffect(() => {
 		const unsubscribe = subscribeToMore({
 			document: DEVICE_SUBSCRIPTION,
-			variables: { mac },
+			variables: { secret },
 			updateQuery: (prev, { subscriptionData }) => {
 				if (!subscriptionData.data) return prev
 				const updatedDevice = subscriptionData.data.device
@@ -83,7 +83,7 @@ const ConnectedSunriseInput = ({ mac, onInput, ...passthroughProps }) => {
 	function handleInput(newSunriseValue) {
 		updateSunrise({
 			variables: {
-				mac,
+				secret,
 				...newSunriseValue,
 			}
 		})

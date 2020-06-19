@@ -12,18 +12,18 @@ import TitleWithActions from '../pure/TitleWithActions'
 import IsDisconnectedIndicator from './IsDisconnectedIndicator'
 
 const DEVICE_QUERY = gql`
-	query getDevice($mac: String!) {
-		device(mac: $mac) {
-			mac
+	query getDevice($secret: String!) {
+		device(secret: $secret) {
+			secret
 			name
 		}
 	}
 `
 
 const DEVICE_SUBSCRIPTION = gql`
-	subscription onDeviceUpdated($mac: String!) {
-		device(mac: $mac) {
-			mac
+	subscription onDeviceUpdated($secret: String!) {
+		device(secret: $secret) {
+			secret
 			name
 		}
 	}
@@ -35,16 +35,16 @@ const LOGOUT = gql`
 	}
 `
 
-const ConnectedDeviceTitle = ({ mac, ...passthroughProps }) => {
+const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
     const dispatch = useDispatch()
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
-        variables: { mac }
+        variables: { secret }
     })
 
     useEffect(() => {
         const unsubscribe = subscribeToMore({
             document: DEVICE_SUBSCRIPTION,
-            variables: { mac },
+            variables: { secret },
             updateQuery: (prev, { subscriptionData }) => {
                 if (!subscriptionData.data) return prev
                 const updatedDevice = subscriptionData.data.device
@@ -69,7 +69,7 @@ const ConnectedDeviceTitle = ({ mac, ...passthroughProps }) => {
         const dataIsFetched = data && data.device
         if (!dataIsFetched) return 'IllumiNode'
 
-        return data.device.name ? data.device.name : data.device.mac
+        return data.device.name ? data.device.name : data.device.secret
     }, [data])
 
     const actions = [
@@ -92,7 +92,7 @@ const ConnectedDeviceTitle = ({ mac, ...passthroughProps }) => {
 
     return (
         <TitleWithActions actions={actions} {...passthroughProps}>
-            <IsDisconnectedIndicator mac={mac} />
+            <IsDisconnectedIndicator secret={secret} />
             <div>{titleText}</div>
         </TitleWithActions>
     )
