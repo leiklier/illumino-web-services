@@ -13,22 +13,21 @@ const ledStripSchema = require('./schema/led-strip')
 
 const rootTypeDefs = gql`
 	type RootSubscription {
-		device(mac: String!): Device!
+		device(secret: String!): Device!
 	}
 
 	type RootQuery {
 		user(email: String): User
-		device(mac: String, secret: String): Device
+		device(secret: String!): Device
 		devices(secrets: [String!]!): [Device!]!
 		secretIsValid(secret: String!): Boolean!
-		ledStrip(mac: String!, ledStripId: String!): LedStrip!
+		ledStrip(secret: String!, ledStripId: String!): LedStrip!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
-		ledStrips(mac: String!): [LedStrip!]!
+		ledStrips(secret: String!): [LedStrip!]!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		logout: Boolean!
 		loginUser(email: String!, password: String!): UserAuthData!
 		loginDevice(secret: String!, pin: PIN): DeviceAuthData!
-		authDevice(mac: String!, authKey: String!): DeviceAuthData!
 		accessToken: AuthData!
 		isAuth: Boolean!
 		hasRefreshToken: Boolean!
@@ -36,59 +35,56 @@ const rootTypeDefs = gql`
 
 	type RootMutation {
 		setBrightnessOnLedStrip(
-			mac: String!
+			secret: String!
 			ledStripIndex: Int!
 			brightness: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		setColorOnLedStrip(
-			mac: String!
+			secret: String!
 			ledStripIndex: Int!
 			color: ColorInput!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		setAnimationTypeOnLedStrip(
-			mac: String!
+			secret: String!
 			ledStripIndex: Int!
 			animationType: AnimationType!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		setAnimationSpeedOnLedStrip(
-			mac: String!
+			secret: String!
 			ledStripIndex: Int!
 			animationSpeed: Float!
 		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		setLedStripsAreSynced(mac: String!, masterLedStripId: ID!): Device!
+		setLedStripsAreSynced(secret: String!, masterLedStripId: ID!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		clearLedStripsAreSynced(mac: String!): Device!
+		clearLedStripsAreSynced(secret: String!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		startSunset(mac: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
+		startSunset(secret: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		stopSunset(mac: String!): Sunset!
+		stopSunset(secret: String!): Sunset!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		updateSunrise(mac: String!, startingAt: TimeInput!, isActive: Boolean!): Sunrise!
+		updateSunrise(secret: String!, startingAt: TimeInput!, isActive: Boolean!): Sunrise!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		claimDevice(mac: String!): Device! @requiresAuth(acceptsOnly: USER)
+		claimDevice(secret: String!): Device! @requiresAuth(acceptsOnly: USER)
 
-		setDevicePin(mac: String!, pin: PIN!): Device!
+		setDevicePin(secret: String!, pin: PIN!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
-		setDeviceName(mac: String!, name: String!): Device!
+		setDeviceName(secret: String!, name: String!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
 		grantAdmin(email: String!): User! @requiresAuth(acceptsOnly: ROOT)
 
 
 		publishFirmware(firmwareInput: FirmwareInput!): Boolean!
-
-		createDevice(deviceInput: DeviceInput!): Device!
-			@requiresAuth(acceptsOnly: [DEPLOYER, ADMIN])
 
 		createUser(userInput: UserInput): User!
 	}

@@ -38,9 +38,9 @@ const typeDefs = gql`
 const queryResolvers = {}
 const mutationResolvers = {}
 
-queryResolvers.ledStrip = async (obj, { mac, ledStripId }, context) => {
-	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
+queryResolvers.ledStrip = async (obj, { secret, ledStripId }, context) => {
+	const { deviceBySecretLoader } = context
+	const device = await deviceBySecretLoader.load(secret)
 
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
@@ -55,9 +55,9 @@ queryResolvers.ledStrip = async (obj, { mac, ledStripId }, context) => {
 	return ledStrip
 }
 
-queryResolvers.ledStrips = async (obj, { mac }, context) => {
-	const { deviceByMacLoader } = context
-	const device = await deviceByMacLoader.load(mac)
+queryResolvers.ledStrips = async (obj, { secret }, context) => {
+	const { deviceBySecretLoader } = context
+	const device = await deviceBySecretLoader.load(secret)
 
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
@@ -74,12 +74,12 @@ queryResolvers.ledStrips = async (obj, { mac }, context) => {
 
 mutationResolvers.setBrightnessOnLedStrip = async (
 	obj,
-	{ mac, ledStripIndex, brightness },
+	{ secret, ledStripIndex, brightness },
 	context,
 ) => {
-	const { deviceByMacLoader } = context
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
@@ -106,12 +106,12 @@ mutationResolvers.setBrightnessOnLedStrip = async (
 
 mutationResolvers.setColorOnLedStrip = async (
 	obj,
-	{ mac, ledStripIndex, color },
+	{ secret, ledStripIndex, color },
 	context,
 ) => {
-	const { deviceByMacLoader } = context
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
@@ -138,12 +138,12 @@ mutationResolvers.setColorOnLedStrip = async (
 
 mutationResolvers.setAnimationTypeOnLedStrip = async (
 	obj,
-	{ mac, ledStripIndex, animationType },
+	{ secret, ledStripIndex, animationType },
 	context,
 ) => {
-	const { deviceByMacLoader } = context
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
@@ -173,12 +173,12 @@ mutationResolvers.setAnimationTypeOnLedStrip = async (
 
 mutationResolvers.setAnimationSpeedOnLedStrip = async (
 	obj,
-	{ mac, ledStripIndex, animationSpeed },
+	{ secret, ledStripIndex, animationSpeed },
 	context,
 ) => {
-	const { deviceByMacLoader } = context
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
@@ -208,12 +208,12 @@ mutationResolvers.setAnimationSpeedOnLedStrip = async (
 
 mutationResolvers.setLedStripsAreSynced = async (
 	obj,
-	{ mac, masterLedStripId },
+	{ secret, masterLedStripId },
 	context,
 ) => {
-	const { deviceByMacLoader } = context
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}
@@ -237,10 +237,10 @@ mutationResolvers.setLedStripsAreSynced = async (
 	return device
 }
 
-mutationResolvers.clearLedStripsAreSynced = async (obj, { mac }, context) => {
-	const { deviceByMacLoader } = context
+mutationResolvers.clearLedStripsAreSynced = async (obj, { secret }, context) => {
+	const { deviceBySecretLoader } = context
 
-	const device = await deviceByMacLoader.load(mac)
+	const device = await deviceBySecretLoader.load(secret)
 	if (!device) {
 		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 	}

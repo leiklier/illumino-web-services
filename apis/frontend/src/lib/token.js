@@ -74,6 +74,7 @@ const getRefreshTokenByDevice = (device, authType) => {
 				device: {
 					id: device.id,
 					mac: device.mac,
+					secret: device.secret,
 				},
 				authType,
 				purpose: 'REFRESH',
@@ -101,6 +102,7 @@ const getAccessTokenByDevice = (device, authType) => {
 				device: {
 					id: device.id,
 					mac: device.mac,
+					secret: device.secret,
 				},
 				authType,
 				purpose: 'ACCESS',

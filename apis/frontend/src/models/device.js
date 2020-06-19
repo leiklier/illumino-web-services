@@ -79,12 +79,6 @@ const deviceSchema = new Schema(
 			required: true,
 			unique: true,
 		},
-		authKey: {
-			// Used by Device to authenticate itself
-			type: String,
-			required: true,
-			bcrypt: true,
-		},
 		pin: {
 			// 6 digit number, used to unlock Device
 			// optional sec-feature for `loginDevice`
@@ -167,12 +161,6 @@ const deviceSchema = new Schema(
 	},
 	{ toObject: { virtuals: true } },
 )
-
-deviceSchema.pre('validate', function () {
-	this.secret = SHA256(this.mac + DEPLOY_KEY)
-		.toString()
-		.substr(0, 12)
-})
 
 deviceSchema.virtual('hasOwner').get(function () {
 	return Boolean(this.owner)

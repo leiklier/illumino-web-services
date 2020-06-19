@@ -150,8 +150,8 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 
 	if (device.pin && !pin) {
 		logger.warn(
-			`Device with mac ${
-			device.mac
+			`Device with secret ${
+			device.secret
 			} tried to login without pin, but pin is required`,
 			{
 				target: 'DEVICE',
@@ -166,7 +166,7 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 		const pinIsCorrect = await device.verifyPin(pin.toString())
 		if (!pinIsCorrect) {
 			logger.warn(
-				`Device with mac ${device.mac} tried to login with wrong pin`,
+				`Device with secret ${device.secret} tried to login with wrong pin`,
 				{
 					target: 'DEVICE',
 					event: 'LOGIN_FAILED',
@@ -189,59 +189,9 @@ queryResolvers.loginDevice = async (obj, { secret, pin }, context) => {
 		httpOnly: true,
 	})
 
-	logger.info(`Device with mac ${device.mac} logged in`, {
+	logger.info(`Device with secret ${device.secret} logged in`, {
 		target: 'DEVICE',
 		event: 'LOGIN_SUCCEEDED',
-		meta: { device: device.id, clientIp },
-	})
-
-	return {
-		deviceId: device.id,
-		accessToken,
-		expiresAt: getTokenExpiration(accessToken),
-	}
-}
-
-queryResolvers.authDevice = async (obj, { mac, authKey }, context) => {
-	const { deviceByMacLoader, clientIp } = context
-	const device = await deviceByMacLoader.load(mac)
-
-	if (!device) {
-		logger.warn(
-			`Non-existing device with mac ${device.mac} tried to authorize`,
-			{
-				target: 'DEVICE',
-				event: 'AUTH_FAILED',
-				meta: { errorCode: error.DEVICE_DOES_NOT_EXIST, clientIp },
-			},
-		)
-		throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
-	}
-
-	const authKeyIsCorrect = await device.verifyAuthKey(authKey)
-	if (!authKeyIsCorrect) {
-		logger.warn(
-			`Device with mac ${device.mac} tried to authorize with wrong authKey`,
-			{
-				target: 'DEVICE',
-				event: 'AUTH_FAILED',
-				meta: { errorCode: error.AUTHKEY_IS_INCORRECT, clientIp },
-			},
-		)
-		throw new ApolloError(error.AUTHKEY_IS_INCORRECT)
-	}
-
-	const accessToken = getAccessTokenByDevice(device, 'authKey')
-	const refreshToken = getRefreshTokenByDevice(device, 'authKey')
-
-	res.cookie('refresh-token', refreshToken, {
-		maxAge: getTokenExpiration(refreshToken) - Date.now(),
-		httpOnly: true,
-	})
-
-	logger.info(`Device with mac ${device.mac} authorized`, {
-		target: 'DEVICE',
-		event: 'AUTH_SUCCEEDED',
 		meta: { device: device.id, clientIp },
 	})
 
@@ -290,7 +240,7 @@ queryResolvers.accessToken = async (obj, args, context) => {
 	if (device) {
 		const accessToken = getAccessTokenByDevice(device, authType)
 
-		logger.info(`Device with mac ${device.mac} refreshed token`, {
+		logger.info(`Device with secret ${device.secret} refreshed token`, {
 			target: 'DEVICE',
 			event: 'TOKEN_REFRESH_SUCCEEDED',
 			meta: { device: device.id, clientIp },
@@ -314,7 +264,7 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 		const rolesAccepted = this.args.acceptsOnly || []
 
 		field.resolve = async (...args) => {
-			const [obj, { email, mac }, context, info] = args
+			const [obj, { email, secret }, context, info] = args
 
 			const id = obj === Object(obj) && obj.id
 
@@ -357,10 +307,10 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				}
 			}
 
-			if (context.device && mac) {
+			if (context.device && secret) {
 				// We are resolving something that takes
-				// mac as input, and authorized as `Device`
-				if (mac === context.device.mac) {
+				// secret as input, and authorized as `Device`
+				if (secret === context.device.secret) {
 					relationHaving = relation.SELF
 				}
 			}
@@ -418,11 +368,11 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				}
 			}
 
-			if (context.user && mac) {
+			if (context.user && secret) {
 				// We are resolving something that takes
-				// mac as input, and authorized as `User`
-				const { deviceByMacLoader } = context
-				const device = await deviceByMacLoader.load(mac)
+				// secret as input, and authorized as `User`
+				const { deviceBySecretLoader } = context
+				const device = await deviceBySecretLoader.load(secret)
 
 				if (device && device.owner && device.owner.id === context.user.id) {
 					relationHaving = relation.OWNER
@@ -473,11 +423,11 @@ class RequiresAuthDirective extends SchemaDirectiveVisitor {
 				}
 			}
 
-			if (context.user && mac) {
+			if (context.user && secret) {
 				// We are resolving something which takes
-				// mac as input, and authorized as `User`
-				const { deviceByMacLoader } = context
-				const device = (await deviceByMacLoader.load(mac)) || {}
+				// secret as input, and authorized as `User`
+				const { deviceBySecretLoader } = context
+				const device = (await deviceBySecretLoader.load(secret)) || {}
 
 				const managers = device.managers || []
 				const isManager = managers.filter(

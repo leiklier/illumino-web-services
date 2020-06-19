@@ -47,7 +47,7 @@ const createDataLoaders = () => {
 				let devicesById = {}
 				for (const device of devices) {
 					devicesById[device._id] = device
-					deviceByMacLoader.prime(device.mac, device)
+					deviceBySecretLoader.prime(device.secret, device)
 				}
 
 				// Need to return undefined for queries with empty response:
@@ -55,20 +55,20 @@ const createDataLoaders = () => {
 			}),
 	)
 
-	const deviceByMacLoader = new DataLoader(macs =>
-		Device.find({ mac: { $in: macs } })
+	const deviceBySecretLoader = new DataLoader(secrets =>
+		Device.find({ secret: { $in: secrets } })
 			.populate('owner')
 			.populate('managers')
 			.populate('installedFirmware')
 			.then(devices => {
-				let devicesByMac = {}
+				let devicesBySecret = {}
 				for (const device of devices) {
-					devicesByMac[device.mac] = device
+					devicesBySecret[device.secret] = device
 					deviceByIdLoader.prime(device.id, device)
 				}
 
 				// Need to return undefined for queries with empty response:
-				return macs.map(mac => devicesByMac[mac])
+				return secrets.map(secret => devicesBySecret[secret])
 			}),
 	)
 
@@ -146,7 +146,7 @@ const createDataLoaders = () => {
 		userByIdLoader,
 		userByEmailLoader,
 		deviceByIdLoader,
-		deviceByMacLoader,
+		deviceBySecretLoader,
 		firmwareByIdLoader,
 		firmwareByUniqueVersionLoader,
 		measurementByIdLoader,
