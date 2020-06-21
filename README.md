@@ -2,7 +2,7 @@
 
 This repository contains all web services required by Illumino. This includes APIs as well as websites. The softwares is organized around a stateless microservices architecture. Each microservice is deployed inside a Docker container, and the containers are orchestrated by Kubernetes.
 
-**Author / Maintainer**: Leik Lima-Eriksen
+**Author & Maintainer**: Leik Lima-Eriksen
 
 ## Endpoints
 
@@ -11,6 +11,8 @@ This repository contains all web services required by Illumino. This includes AP
 
 * API services use ports 30 000 - 30 499 for exposing services and 30 500 - 30 999 for debuggers.
 * Website services use ports 31 000 - 31 499 for exposing services and 31 500 - 31 999 for debuggers.
+
+**NB**: Remember to configure port forwarding in `//.vscode/settings.json` after adding new endpoints. Only service ports should be forwarded, as the debugging is done on the host itself.
 
 
 ### [DEV]

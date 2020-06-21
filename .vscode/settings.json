@@ -3,5 +3,22 @@
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/node_modules/*/**": true
-    }
+    },
+    "remote.SSH.defaultForwardedPorts": [
+        {
+            "localPort": 30000,
+            "name": "frontend-api",
+            "remotePort": 30000
+        },
+        {
+            "localPort": 30001,
+            "name": "embedded-api",
+            "remotePort": 30001
+        },
+        {
+            "localPort": 31000,
+            "name": "web-api",
+            "remotePort": 31000
+        }
+    ],
 }
