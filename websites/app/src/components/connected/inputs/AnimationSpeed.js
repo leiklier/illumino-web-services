@@ -3,14 +3,16 @@ import { RiSpeedLine } from 'react-icons/ri'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import RangeInput from '../../pure/inputs/Range'
-const DebouncedRangeInput = withDebounce(RangeInput)
+const DebouncedRangeInput = withApiDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				animation {
 					speed
 				}
@@ -22,7 +24,9 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				animation {
 					speed
 				}
@@ -42,6 +46,7 @@ const SET_ANIMATION_SPEED = gql`
 			ledStripIndex: $ledStripIndex
 			animationSpeed: $animationSpeed
 		) {
+            id
 			animation {
 				speed
 			}
@@ -84,7 +89,7 @@ const ConnectedAnimationSpeedInput = ({
         return ledStrip.animation.speed
     }, [data, ledStripIndex])
 
-    const [setAnimationSpeed] = useMutation(SET_ANIMATION_SPEED)
+    const [setAnimationSpeed, { loading: mutationIsLoading }] = useMutation(SET_ANIMATION_SPEED)
 
     function handleInput(newAnimationSpeed) {
         setAnimationSpeed({
@@ -103,6 +108,7 @@ const ConnectedAnimationSpeedInput = ({
             range={{ min: 0, max: 1 }}
             onInput={() => onInput && onInput(animationSpeed)}
             debouncedOnInput={handleInput}
+            isCommiting={mutationIsLoading}
             Icon={RiSpeedLine}
             {...passthroughProps}
         />

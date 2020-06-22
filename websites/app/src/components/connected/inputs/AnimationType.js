@@ -2,14 +2,16 @@ import React, { useEffect, useMemo } from 'react'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import SelectInput from '../../pure/inputs/Select'
-const DebouncedSelectInput = withDebounce(SelectInput)
+const DebouncedSelectInput = withApiDebounce(SelectInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				animation {
 					type
 				}
@@ -21,7 +23,9 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				animation {
 					type
 				}
@@ -31,7 +35,7 @@ const DEVICE_SUBSCRIPTION = gql`
 `
 
 const SET_ANIMATION_TYPE = gql`
-	mutation setAnimationSpeed(
+	mutation setAnimationType(
 		$secret: String!
 		$ledStripIndex: Int!
 		$animationType: AnimationType!
@@ -41,6 +45,7 @@ const SET_ANIMATION_TYPE = gql`
 			ledStripIndex: $ledStripIndex
 			animationType: $animationType
 		) {
+            id
 			animation {
 				type
 			}
@@ -112,7 +117,7 @@ const ConnectedAnimationTypeInput = ({
         }))
     }, [animationTypeOptionsData])
 
-    const [setAnimationType] = useMutation(SET_ANIMATION_TYPE)
+    const [setAnimationType, { loading: mutationIsLoading }] = useMutation(SET_ANIMATION_TYPE)
 
     function handleInput(newAnimationType) {
         setAnimationType({
@@ -131,6 +136,7 @@ const ConnectedAnimationTypeInput = ({
             options={animationTypeOptions}
             onInput={() => onInput && onInput(animationType)}
             debouncedOnInput={handleInput}
+            isCommiting={mutationIsLoading}
             label={'animation'}
             {...passthroughProps}
         />

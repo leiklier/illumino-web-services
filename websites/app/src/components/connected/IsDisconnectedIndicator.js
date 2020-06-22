@@ -9,6 +9,7 @@ import styles from './IsDisconnectedIndicator.css'
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
             isConnected
             lastSeenAt
         }
@@ -18,6 +19,7 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
             isConnected
             lastSeenAt
         }

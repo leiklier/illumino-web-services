@@ -2,13 +2,14 @@ import React, { useEffect, useMemo } from 'react'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import SunriseInput from '../../pure/inputs/Sunrise'
-const DebouncedSunriseInput = withDebounce(SunriseInput)
+const DebouncedSunriseInput = withApiDebounce(SunriseInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+			id
             sunrise {
 				isActive
 				startingAt {
@@ -23,6 +24,7 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+			id
             sunrise {
 				isActive
 				startingAt {
@@ -37,10 +39,13 @@ const DEVICE_SUBSCRIPTION = gql`
 const UPDATE_SUNRISE = gql`
 	mutation updateSunrise($secret: String!, $startingAt: TimeInput!, $isActive: Boolean!) {
 		updateSunrise(secret: $secret, startingAt: $startingAt, isActive: $isActive) {
-			isActive
-			startingAt {
-				hour
-				minute
+			id
+			sunrise {
+				isActive
+				startingAt {
+					hour
+					minute
+				}
 			}
 		}
 	}
@@ -78,7 +83,7 @@ const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
 		return sunrise
 	}, [data])
 
-	const [updateSunrise] = useMutation(UPDATE_SUNRISE)
+	const [updateSunrise, { loading: mutationIsLoading }] = useMutation(UPDATE_SUNRISE)
 
 	function handleInput(newSunriseValue) {
 		updateSunrise({
@@ -95,6 +100,7 @@ const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
 			value={sunrise}
 			onInput={() => onInput && onInput(sunrise)}
 			debouncedOnInput={handleInput}
+			isCommiting={mutationIsLoading}
 			{...passthroughProps}
 		/>
 	)

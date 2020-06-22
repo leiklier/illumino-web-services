@@ -7,14 +7,16 @@ import { useDispatch } from 'react-redux'
 import { setBackgroundColor } from '../../../store/actions'
 import { hsvToRgb } from '../../../lib/color'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import ColorPicker from '../../pure/inputs/ColorPicker'
-const DebouncedColorPicker = withDebounce(ColorPicker)
+const DebouncedColorPicker = withApiDebounce(ColorPicker)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				color {
                     hue
                     saturation
@@ -27,7 +29,9 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				color {
                     hue
                     saturation
@@ -47,6 +51,7 @@ const SET_COLOR = gql`
                 saturation: $saturation
             }
 		) {
+            id
 			color {
                 hue
                 saturation
@@ -101,7 +106,7 @@ const ConnectedColorInput = ({
         dispatch(setBackgroundColor(red, green, blue))
     }, [color])
 
-    const [setColor] = useMutation(SET_COLOR)
+    const [setColor, { loading: mutationIsLoading }] = useMutation(SET_COLOR)
 
     function handleInput({ hue, saturation }) {
         setColor({
@@ -120,6 +125,7 @@ const ConnectedColorInput = ({
             value={color}
             onInput={() => onInput && onInput(color)}
             debouncedOnInput={handleInput}
+            isCommiting={mutationIsLoading}
             {...passthroughProps}
         />
     )

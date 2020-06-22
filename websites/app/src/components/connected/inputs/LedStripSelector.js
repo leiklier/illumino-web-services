@@ -7,6 +7,7 @@ import styles from './LedStripSelector.css'
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+			id
             ledStrips {
 				id
 				name
@@ -18,6 +19,7 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+			id
             ledStrips {
 				id
 				name

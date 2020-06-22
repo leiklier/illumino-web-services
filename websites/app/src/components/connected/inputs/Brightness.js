@@ -3,14 +3,16 @@ import { FiSun } from 'react-icons/fi'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import RangeInput from '../../pure/inputs/Range'
-const DebouncedRangeInput = withDebounce(RangeInput)
+const DebouncedRangeInput = withApiDebounce(RangeInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				brightness
 			}
         }
@@ -20,7 +22,9 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
             ledStrips {
+                id
 				brightness
 			}
         }
@@ -34,6 +38,7 @@ const SET_BRIGHTNESS = gql`
 			ledStripIndex: $ledStripIndex
 			brightness: $brightness
 		) {
+            id
 			brightness
 		}
 	}
@@ -73,7 +78,7 @@ const ConnectedBrightnessInput = ({
         return ledStrip.brightness
     }, [data, ledStripIndex])
 
-    const [setBrightness] = useMutation(SET_BRIGHTNESS)
+    const [setBrightness, { loading: mutationIsLoading }] = useMutation(SET_BRIGHTNESS)
 
     function handleInput(newBrightnessValue) {
         setBrightness({
@@ -92,6 +97,7 @@ const ConnectedBrightnessInput = ({
             range={{ min: 0, max: 1 }}
             onInput={() => onInput && onInput(brightness)}
             debouncedOnInput={handleInput}
+            isCommiting={mutationIsLoading}
             Icon={FiSun}
             {...passthroughProps}
         />

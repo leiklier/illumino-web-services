@@ -9,7 +9,9 @@ import styles from './SensorButton.css'
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+			id
             latestMeasurements(types: [TEMPERATURE, HUMIDITY]) {
+				id
 				type
 				value
 			}

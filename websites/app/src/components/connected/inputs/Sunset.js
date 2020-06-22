@@ -2,13 +2,14 @@ import React, { useEffect, useMemo } from 'react'
 import gql from 'graphql-tag'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 
-import withDebounce from '../../../HOCs/with-debounce'
+import withApiDebounce from '../../../HOCs/with-api-debounce'
 import SunsetInput from '../../pure/inputs/Sunset'
-const DebouncedSunset = withDebounce(SunsetInput)
+const DebouncedSunset = withApiDebounce(SunsetInput)
 
 const DEVICE_QUERY = gql`
     query getDevice($secret: String!) {
         device(secret: $secret) {
+            id
 			sunset {
 				startedAt
 				endingAt
@@ -20,6 +21,7 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
     subscription onDeviceUpdated($secret: String!) {
         device(secret: $secret) {
+            id
 			sunset {
 				startedAt
 				endingAt
@@ -35,8 +37,11 @@ const START_SUNSET = gql`
         $endingAt: DateTime!
 	) {
 		startSunset(secret: $secret, startedAt: $startedAt, endingAt: $endingAt) {
-			startedAt
-			endingAt
+            id
+            sunset {
+			    startedAt
+			    endingAt
+            }
 		}
 	}
 `
@@ -44,8 +49,11 @@ const START_SUNSET = gql`
 const STOP_SUNSET = gql`
 	mutation stopSunset($secret: String!) {
 		stopSunset(secret: $secret) {
-			startedAt
-			endingAt
+            id
+            sunset {
+			    startedAt
+		    	endingAt
+            }
 		}
 	}
 `
@@ -78,8 +86,8 @@ const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
         return sunset
     }, [data])
 
-    const [startSunset] = useMutation(START_SUNSET)
-    const [stopSunset] = useMutation(STOP_SUNSET)
+    const [startSunset, { loading: startMutationIsLoading }] = useMutation(START_SUNSET)
+    const [stopSunset, { loading: stopMutationIsLoading }] = useMutation(STOP_SUNSET)
 
     function handleInput(newSunsetValue) {
         if (newSunsetValue.startedAt) {
@@ -100,6 +108,7 @@ const ConnectedSunriseInput = ({ secret, onInput, ...passthroughProps }) => {
             value={sunset}
             onInput={() => onInput && onInput(sunset)}
             debouncedOnInput={handleInput}
+            isCommiting={ startMutationIsLoading || stopMutationIsLoading }
             {...passthroughProps}
         />
     )
