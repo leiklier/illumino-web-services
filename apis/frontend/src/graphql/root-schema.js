@@ -64,13 +64,13 @@ const rootTypeDefs = gql`
 		clearLedStripsAreSynced(secret: String!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		startSunset(secret: String!, startedAt: DateTime!, endingAt: DateTime!): Sunset!
+		startSunset(secret: String!, startedAt: DateTime!, endingAt: DateTime!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		stopSunset(secret: String!): Sunset!
+		stopSunset(secret: String!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
-		updateSunrise(secret: String!, startingAt: TimeInput!, isActive: Boolean!): Sunrise!
+		updateSunrise(secret: String!, startingAt: TimeInput!, isActive: Boolean!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
 		claimDevice(secret: String!): Device! @requiresAuth(acceptsOnly: USER)

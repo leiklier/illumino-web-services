@@ -437,7 +437,7 @@ mutationResolvers.startSunset = async (
 	device.sunset = { startedAt, endingAt }
 	await device.save()
 
-	return device.sunset
+	return device
 }
 
 mutationResolvers.stopSunset = async (obj, { secret }, context) => {
@@ -450,7 +450,7 @@ mutationResolvers.stopSunset = async (obj, { secret }, context) => {
 	device.sunset = { startedAt: null, endingAt: null }
 	await device.save()
 
-	return device.sunset
+	return device
 }
 
 mutationResolvers.updateSunrise = async (obj, { secret, startingAt, isActive }, context) => {
@@ -467,7 +467,7 @@ mutationResolvers.updateSunrise = async (obj, { secret, startingAt, isActive }, 
 	}
 
 	await device.save()
-	return device.sunrise
+	return device
 }
 
 module.exports = {
