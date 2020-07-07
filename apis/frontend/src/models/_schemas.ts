@@ -1,11 +1,20 @@
 // This file implements all schemas that will never be compiled
 // and are only needed for subdocuments
 
-const mongoose = require('mongoose')
-const { Schema } = mongoose
+import mongoose, { Document, Schema } from 'mongoose'
 
 //* --------------- SEMANTIC_VERSION ---------------
-const semanticVersionSchema = new Schema(
+export interface ISemanticVersion extends Document {
+	// Properties:
+	major: number
+	minor: number
+	patch: number
+	string: string
+}
+
+
+
+export const semanticVersionSchema: Schema<ISemanticVersion> = new Schema(
 	{
 		major: {
 			type: Number,
@@ -33,9 +42,3 @@ semanticVersionSchema
 			.substring(1)
 			.split('.')
 	})
-
-//* ------------------------------------------------
-
-module.exports = {
-	semanticVersionSchema,
-}

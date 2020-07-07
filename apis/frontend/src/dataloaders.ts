@@ -1,17 +1,31 @@
-const DataLoader = require('dataloader')
+import DataLoader from 'dataloader'
 
-const User = require('./models/user')
-const Device = require('./models/device')
-const Firmware = require('./models/firmware')
-const Measurement = require('./models/measurement')
+import User, { IUser } from './models/user'
+import Device, { IDevice } from './models/device'
+import Firmware, { IFirmware } from './models/firmware'
+import Measurement, { IMeasurement } from './models/measurement'
+import mongoose from 'mongoose'
 
-const createDataLoaders = () => {
-	const userByIdLoader = new DataLoader(userIds =>
-		User.find({ _id: { $in: userIds } })
+export interface IDataLoaders {
+	userByIdLoader: DataLoader<string, IUser>
+	userByEmailLoader: DataLoader<string, IUser>
+	
+	deviceByIdLoader: DataLoader<string, IDevice>
+	deviceBySecretLoader: DataLoader<string, IDevice>
+	
+	firmwareByIdLoader: DataLoader<string, IFirmware>
+	firmwareByUniqueVersionLoader: DataLoader<string, IFirmware>
+	
+	measurementByIdLoader: DataLoader<string, IMeasurement>
+}
+
+const createDataLoaders = (): IDataLoaders => {
+	const userByIdLoader: DataLoader<string, IUser> = new DataLoader(userIds =>
+		User.find({ _id: { $in: userIds.map(id => mongoose.Types.ObjectId(id)) } })
 			.populate('devicesOwning')
 			.populate('devicesManaging')
 			.then(users => {
-				let usersById = {}
+				let usersById: Object = {}
 				for (const user of users) {
 					usersById[user._id] = user
 					userByEmailLoader.prime(user.email, user)
@@ -22,12 +36,12 @@ const createDataLoaders = () => {
 			}),
 	)
 
-	const userByEmailLoader = new DataLoader(emails =>
+	const userByEmailLoader: DataLoader<string, IUser> = new DataLoader(emails =>
 		User.find({ email: { $in: emails } })
 			.populate('devicesOwning')
 			.populate('devicesManaging')
 			.then(users => {
-				let usersByEmail = {}
+				let usersByEmail: Object = {}
 				for (const user of users) {
 					usersByEmail[user.email] = user
 					userByIdLoader.prime(user.id, user)
@@ -38,15 +52,15 @@ const createDataLoaders = () => {
 			}),
 	)
 
-	const deviceByIdLoader = new DataLoader(deviceIds =>
-		Device.find({ _id: { $in: deviceIds } })
+	const deviceByIdLoader: DataLoader<string, IDevice> = new DataLoader(deviceIds =>
+		Device.find({ _id: { $in: deviceIds.map(id => mongoose.Types.ObjectId(id)) } })
 			.populate('owner')
 			.populate('managers')
 			.populate('installedFirmware')
 			.then(devices => {
-				let devicesById = {}
+				let devicesById: Object = {}
 				for (const device of devices) {
-					devicesById[device._id] = device
+					devicesById[device.id] = device
 					deviceBySecretLoader.prime(device.secret, device)
 				}
 
@@ -55,7 +69,7 @@ const createDataLoaders = () => {
 			}),
 	)
 
-	const deviceBySecretLoader = new DataLoader(secrets =>
+	const deviceBySecretLoader: DataLoader<string, IDevice> = new DataLoader(secrets =>
 		Device.find({ secret: { $in: secrets } })
 			.populate('owner')
 			.populate('managers')
@@ -72,7 +86,7 @@ const createDataLoaders = () => {
 			}),
 	)
 
-	const firmwareByIdLoader = new DataLoader(firmwareIds =>
+	const firmwareByIdLoader: DataLoader<string, IFirmware> = new DataLoader(firmwareIds =>
 		Firmware.find({ _id: { $in: firmwareIds } }).then(firmwares => {
 			let firmwaresById = {}
 			for (const firmware of firmwares) {
@@ -90,8 +104,8 @@ const createDataLoaders = () => {
 		}),
 	)
 
-	const firmwareByUniqueVersionLoader = new DataLoader(uniqueVersions => {
-		// uniqueVersion = `${target}+${version}`, i.e. `DEVICE+v4.2.5`
+	const firmwareByUniqueVersionLoader: DataLoader<string, IFirmware> = new DataLoader(uniqueVersions => {
+		// uniqueVersion = `${target}+${version}`, e.g. `DEVICE+v4.2.5`
 		let uniqueVersionTuples = [] // [{target, version: {major, minor, patch}}]
 
 		for (const uniqueVersionString of uniqueVersions) {
@@ -126,7 +140,7 @@ const createDataLoaders = () => {
 			})
 	})
 
-	const measurementByIdLoader = new DataLoader(measurementIds =>
+	const measurementByIdLoader: DataLoader<string, IMeasurement> = new DataLoader(measurementIds =>
 		Measurement.find({ _id: { $in: measurementIds } })
 			.populate('device')
 			.then(measurements => {
@@ -153,4 +167,4 @@ const createDataLoaders = () => {
 	}
 }
 
-module.exports = createDataLoaders
+export default createDataLoaders

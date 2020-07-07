@@ -1,8 +1,7 @@
-const { gql, withFilter } = require('apollo-server-express')
+import { gql } from 'apollo-server-express'
 
-const Measurement = require('../../models/measurement')
 
-const typeDefs = gql`
+export const typeDefs = gql`
 	type Measurement {
 		id: ID!
 		device: Device!
@@ -27,7 +26,7 @@ const typeDefs = gql`
 	}
 `
 
-const MeasurementResolver = {
+export const MeasurementResolver = {
 	device: async (measurement, args, context) => {
 		const { measurementByIdLoader } = context
 
@@ -66,14 +65,6 @@ const MeasurementResolver = {
 	},
 }
 
-const subscriptionResolvers = {}
-const queryResolvers = {}
-const mutationResolvers = {}
-
-module.exports = {
-	typeDefs,
-	subscriptionResolvers,
-	queryResolvers,
-	mutationResolvers,
-	MeasurementResolver,
-}
+export const subscriptionResolvers = {}
+export const queryResolvers = {}
+export const mutationResolvers = {}

@@ -1,15 +1,15 @@
-const { gql } = require('apollo-server-express')
+import { gql, ApolloServerExpressConfig } from 'apollo-server-express'
 
-const { context, onConnect } = require('./context')
+import { context, onConnect } from './context'
 
-const { scalarDefs, scalarResolvers } = require('./scalars')
+import { scalarDefs, scalarResolvers } from './scalars'
 
-const authSchema = require('./schema/auth')
-const userSchema = require('./schema/user')
-const deviceSchema = require('./schema/device')
-const firmwareSchema = require('./schema/firmware')
-const measurementSchema = require('./schema/measurement')
-const ledStripSchema = require('./schema/led-strip')
+import * as authSchema from './schema/auth'
+import * as userSchema from './schema/user'
+import * as deviceSchema from './schema/device'
+import * as firmwareSchema from './schema/firmware'
+import * as measurementSchema from './schema/measurement'
+import * as ledStripSchema from './schema/led-strip'
 
 const rootTypeDefs = gql`
 	type RootSubscription {
@@ -96,7 +96,7 @@ const rootTypeDefs = gql`
 	}
 `
 
-const rootSchema = {
+const rootSchema: ApolloServerExpressConfig = {
 	typeDefs: [
 		scalarDefs,
 		authSchema.typeDefs,
@@ -143,4 +143,4 @@ const rootSchema = {
 	},
 }
 
-module.exports = rootSchema
+export default rootSchema

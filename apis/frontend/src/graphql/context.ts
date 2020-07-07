@@ -1,21 +1,39 @@
-const {
-	getUserByToken,
-	getDeviceByToken,
+import {
 	getTokenPayload,
 	getAuthTypeByToken,
-} = require('../lib/token')
-const createDataLoaders = require('../dataloaders')
+} from '../lib/token'
+import createDataLoaders, { IDataLoaders } from '../dataloaders'
+import { IUser } from '../models/user'
+import { IDevice } from '../models/device'
 
-const context = async ({ req, res, connection }) => {
+export interface IContext extends IDataLoaders {
+	req: Express.Request
+	res: Express.Response
+	clientIp: string
+	user?: IUser
+	device?: IDevice
+	isDeploying: boolean
+	isAuth: boolean
+	authType?: string
+	accessToken?: string
+}
+
+export const context = async ({ req, res, connection }): Promise<IContext> => {
 	let context = {
 		...createDataLoaders(),
 		req,
 		res,
 		//                     ,-- for HTTP           ,-- for WS
 		clientIp: (req && req.ip) || connection.remoteAddress,
+		isDeploying: false,
+		isAuth: false,
+		authType: undefined,
+		accessToken: undefined,
+		user: null,
+		device: null,
 	}
 
-	let accessToken
+	let accessToken: string
 
 	// HTTP authentication:
 	try {
@@ -70,8 +88,10 @@ const context = async ({ req, res, connection }) => {
 // This gets fired on every websocket connect-event ( = Subscription )
 // What is returned gets added to connection.context in the above
 // context function, and is thus added to context
-const onConnect = async (connectionParams, webSocket) => {
-	let context = {}
+export const onConnect = async (connectionParams, webSocket) => {
+	let context = {
+		accessToken: undefined
+	}
 
 	if (connectionParams.authToken) {
 		context.accessToken = connectionParams.authToken
@@ -80,7 +100,3 @@ const onConnect = async (connectionParams, webSocket) => {
 	return context
 }
 
-module.exports = {
-	context,
-	onConnect,
-}

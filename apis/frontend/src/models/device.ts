@@ -1,14 +1,32 @@
-const mongoose = require('mongoose')
-const { Schema } = mongoose
-const bcryptPlugin = require('mongoose-bcrypt')
-const SHA256 = require('crypto-js/sha256')
-
-const { DEPLOY_KEY } = process.env
+import mongoose, { Schema, Document, Model } from 'mongoose'
+import { IUser } from './user'
+import { IFirmware } from './firmware'
+import bcryptPlugin from 'mongoose-bcrypt'
 
 const { semanticVersionSchema } = require('./_schemas')
 
 //* ------------------ LED_STRIP -------------------
-const ledStripSchema = new Schema(
+declare interface ILedStrip extends Document {
+	// Properties
+	id: string
+	name: string
+	brightness: number
+	color: {
+		hue: number
+		saturation: number
+	}
+	animation: {
+		type: string
+		speed: number
+	}
+
+	// Virtuals:
+	hasOwner: boolean
+	hasPin: boolean
+}
+
+
+const ledStripSchema: Schema<ILedStrip> = new Schema(
 	{
 		name: {
 			type: String,
@@ -56,7 +74,13 @@ const ledStripSchema = new Schema(
 )
 
 //* ----------------- DEVICE_TYPE ------------------
-const deviceTypeSchema = new Schema(
+export interface IDeviceType extends mongoose.Types.Subdocument {
+	// Properties:
+	model: string
+	version: Object
+}
+
+const deviceTypeSchema: Schema<IDeviceType> = new Schema(
 	{
 		model: {
 			type: String,
@@ -71,7 +95,49 @@ const deviceTypeSchema = new Schema(
 )
 
 //* ------------------- DEVICE ---------------------
-const deviceSchema = new Schema(
+export interface IDevice extends Document {
+	// Properties:
+	id: string
+	mac: string
+	secret: string
+	name: string
+	pin: string
+	type: IDeviceType
+	installedFirmware: IFirmware['_id']
+	
+	isConnected: boolean
+	lastSeenAt: Date
+
+	owner: IUser['_id']
+	managers: Array<IUser['_id']>
+	
+	ledStrips: Array<ILedStrip>
+	ledStripsAreSynced: boolean
+	
+	sunset: {
+		startedAt: Date
+		endingAt: Date
+	}
+	sunrise: {
+		isActive: boolean
+		startingAt: {
+			hour: number
+			minute: number
+		}
+	}
+
+	// Virtuals:
+	hasOwner: boolean
+	hasPin: boolean
+
+	// Methods:
+	verifyPin(pin: string): Promise<boolean>
+}
+export interface IDeviceModel extends Model<IDevice> {
+	// Statics:
+}
+
+const deviceSchema: Schema<IDevice> = new Schema(
 	{
 		mac: {
 			// MAC Address of default network interface
@@ -100,7 +166,6 @@ const deviceSchema = new Schema(
 			required: true,
 		},
 		name: String,
-		ledStrips: [ledStripSchema],
 		isConnected: {
 			type: Boolean,
 			required: true,
@@ -172,4 +237,4 @@ deviceSchema.virtual('hasPin').get(function () {
 
 deviceSchema.plugin(bcryptPlugin)
 
-module.exports = mongoose.model('Device', deviceSchema)
+export default mongoose.model<IDevice, IDeviceModel>('Device', deviceSchema)

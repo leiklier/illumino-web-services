@@ -1,7 +1,22 @@
-const mongoose = require('mongoose')
-const { Schema } = mongoose
+import mongoose, { Document, Schema, Model } from 'mongoose'
+import { IDevice } from './device'
 
-const measurementSchema = new Schema(
+export interface IMeasurement extends Document {
+	// Properties
+	device: IDevice['_id']
+	type: string
+	environment: string
+	value: number
+	
+	
+}
+
+export interface IMeasurementModel extends Model<IMeasurement> {
+	// Statics: 
+	findLatestMeasurements(device: IDevice): Promise<Array<IMeasurement>>
+}
+
+const measurementSchema: Schema<IMeasurement> = new Schema(
 	{
 		device: {
 			type: Schema.Types.ObjectId,
@@ -27,8 +42,8 @@ const measurementSchema = new Schema(
 	},
 )
 
-measurementSchema.statics.findLatestMeasurements = async function(device) {
-	let measurements = await this.aggregate([
+measurementSchema.statics.findLatestMeasurements = async function(device: IDevice): Promise<Array<IMeasurement>> {
+	let measurements: Array<IMeasurement> = await this.aggregate([
 		{
 			$match: {
 				device: device._id,
@@ -63,11 +78,8 @@ measurementSchema.statics.findLatestMeasurements = async function(device) {
 
 	// Moving id back to _id:
 	for (const [i, measurement] of measurements.entries()) {
-		measurements[i] = {
-			...measurement,
-			_id: measurement.id,
-			id: measurement.id.toString(),
-		}
+		measurements[i]._id = measurement.id
+		measurements[i].id = measurement.id.toString()
 	}
 
 	return measurements
@@ -77,4 +89,4 @@ measurementSchema.statics.findLatestMeasurements = async function(device) {
 // and also querying min/max of a certain type
 measurementSchema.index({ device: 1, type: 1, environment: 1, createdAt: 1 })
 
-module.exports = mongoose.model('Measurement', measurementSchema)
+export default mongoose.model<IMeasurement, IMeasurementModel>('Measurement', measurementSchema)

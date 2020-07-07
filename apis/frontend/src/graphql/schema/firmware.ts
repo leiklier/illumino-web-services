@@ -1,10 +1,10 @@
-const { gql, withFilter } = require('apollo-server-express')
+import { gql, withFilter } from 'apollo-server-express'
 
-const logger = require('../../logger')
+import logger from '../../logger'
 
-const Firmware = require('../../models/firmware')
+import Firmware from '../../models/firmware'
 
-const typeDefs = gql`
+export const typeDefs = gql`
 	input FirmwareInput {
 		target: DeviceModel!
 		name: String!
@@ -24,7 +24,7 @@ const typeDefs = gql`
 	}
 `
 
-const FirmwareResolver = {
+export const FirmwareResolver = {
 	target: async (firmware, args, context) => {
 		const { firmwareByIdLoader } = context
 
@@ -87,46 +87,40 @@ const FirmwareResolver = {
 	},
 }
 
-const subscriptionResolvers = {}
-const mutationResolvers = {}
-
-mutationResolvers.publishFirmware = async (obj, { firmwareInput }, context) => {
-	const { clientIp } = context
-	const { target, name, description, version, binary } = firmwareInput
-	const { createReadStream, filename, mimetype, encoding } = await binary
-
-	const firmware = new Firmware({
-		target,
-		name,
-		description,
-		version: { string: version },
-	})
-
-	// TODO: Verify mimetype and encoding to match hex, etc
-
-	const readStream = createReadStream()
-	await firmware.writeBinary(filename, readStream)
-	readStream.close()
-	await firmware.save()
-
-	logger.info(
-		`Firmware with version ${version} for ${target} has been published`,
-		{
-			target: 'FIRMWARE',
-			event: 'PUBLISH_SUCCEEDED',
-			meta: {
-				clientIp,
+export const subscriptionResolvers = {}
+export const mutationResolvers = {
+	publishFirmware: async (obj, { firmwareInput }, context) => {
+		const { clientIp } = context
+		const { target, name, description, version, binary } = firmwareInput
+		const { createReadStream, filename, mimetype, encoding } = await binary
+	
+		const firmware = new Firmware({
+			target,
+			name,
+			description,
+			version: { string: version },
+		})
+	
+		// TODO: Verify mimetype and encoding to match hex, etc
+	
+		const readStream = createReadStream()
+		await firmware.writeBinary(filename, readStream)
+		readStream.close()
+		await firmware.save()
+	
+		logger.info(
+			`Firmware with version ${version} for ${target} has been published`,
+			{
+				target: 'FIRMWARE',
+				event: 'PUBLISH_SUCCEEDED',
+				meta: {
+					clientIp,
+				},
 			},
-		},
-	)
-
-	// TODO: Should return the firmware, and not boolean
-	return true
+		)
+	
+		// TODO: Should return the firmware, and not boolean
+		return true
+	}
 }
 
-module.exports = {
-	typeDefs,
-	subscriptionResolvers,
-	mutationResolvers,
-	FirmwareResolver,
-}

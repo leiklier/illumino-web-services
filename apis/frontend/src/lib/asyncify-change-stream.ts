@@ -4,7 +4,7 @@
 // element is the `changeEvent` object returned by the native
 // MongoDB driver (https://docs.mongodb.com/manual/changeStreams/)
 
-function asyncifyChangeStream(changeStream) {
+export default function asyncifyChangeStream(changeStream) {
 	const pullQueue = []
 	const pushQueue = []
 	let done = false
@@ -44,7 +44,7 @@ function asyncifyChangeStream(changeStream) {
 		next: async () => {
 			if (done) return Promise.resolve({ done, value: undefined })
 			const value = await pullValue()
-			console.log('ITERATOR')
+
 			return {
 				done,
 				value,
@@ -64,5 +64,3 @@ function asyncifyChangeStream(changeStream) {
 		}
 	}
 }
-
-module.exports = asyncifyChangeStream

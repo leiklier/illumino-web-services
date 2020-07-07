@@ -1,9 +1,23 @@
-const mongoose = require('mongoose')
-const bcryptPlugin = require('mongoose-bcrypt')
+import mongoose, { Document, Types, Schema } from 'mongoose'
+import { IDevice } from './device'
+import bcryptPlugin from 'mongoose-bcrypt'
 
-const { Schema } = mongoose
+export interface IUser extends Document {
+	// Properties:
+	email: string
+	password: string
+	roles: Array<string>
+	firstName: string
+	lastName: string
+	devicesOwning: Array<IDevice['_id']>
+	devicesManaging: Array<IDevice['_id']>
 
-const userSchema = new Schema(
+	// Virtuals:
+	isAdmin: boolean
+	isRoot: boolean
+}
+
+const userSchema: Schema<IUser> = new Schema(
 	{
 		email: {
 			type: String,
@@ -57,4 +71,4 @@ userSchema.virtual('isRoot').get(function() {
 
 userSchema.plugin(bcryptPlugin)
 
-module.exports = mongoose.model('User', userSchema)
+export default mongoose.model<IUser>('User', userSchema)

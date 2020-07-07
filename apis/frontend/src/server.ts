@@ -1,26 +1,30 @@
-require('dotenv').config()
-const path = require('path')
+declare var global: any;
+
+import dotenv from 'dotenv'
+dotenv.config()
+
+import path from 'path'
 global.appRoot = path
 	.resolve(__dirname)
 	.substring(0, path.resolve(__dirname).lastIndexOf('/'))
 
-const http = require('http')
-const express = require('express')
-const cookieParser = require('cookie-parser')
-const bodyParser = require('body-parser')
-const { ApolloServer } = require('apollo-server-express')
-const mongoose = require('mongoose')
+import http from 'http'
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import bodyParser from 'body-parser'
+import { ApolloServer } from 'apollo-server-express'
+import mongoose from 'mongoose'
 
 const { PORT } = process.env
 
-const logger = require('./logger')
-const graphqlSchema = require('./graphql/root-schema')
+import logger from './logger'
+import graphqlSchema from './graphql/root-schema'
 
 const app = express()
 app.use(cookieParser())
 app.use(bodyParser.json())
 
-const server = new ApolloServer({
+const server: ApolloServer = new ApolloServer({
 	...graphqlSchema,
 	introspection: true,
 })
@@ -32,7 +36,7 @@ server.applyMiddleware({
 	},
 })
 
-const httpServer = http.createServer(app)
+const httpServer: http.Server = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
 // NB: The application is utilizing change streams,
@@ -46,6 +50,7 @@ mongoose
 		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/illumino?retryWrites=true&w=majority`,
 		{
 			useNewUrlParser: true,
+			useUnifiedTopology: true,
 			// Each `changeStream` requires a new connection,
 			// so we need a really large `poolSize` to cover this demand.
 			// Read more here:

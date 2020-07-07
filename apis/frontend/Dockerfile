@@ -4,6 +4,7 @@
 FROM node:12-slim as base
 
 ENV NODE_ENV production
+ENV PATH=/app/node_modules/.bin:$PATH
 
 ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
@@ -51,21 +52,20 @@ EXPOSE $PORT 9229
 
 # Install devDependencies
 ENV NODE_ENV development
-ENV PATH=/app/node_modules/.bin:$PATH
+COPY --chown=node:node tsconfig.json ./
 RUN yarn install --only=development
 
 # NB: Notice that no application is bundled!
 # This has to be done in Kubernetes as a bind mount
 
 # Restart on file changes
-CMD ["nodemon", "--expose-gc", "--inspect=0.0.0.0:9229",  "./src/server.js"]
-
+CMD nodemon --watch src --exec node --inspect=0.0.0.0:9229 -r ts-node/register/transpile-only src/server.ts
 
 
 
 # ---- STAG IMAGE ----
 # Staging image is identical to the
-# developmennt image except that it is
+# development image except that it is
 # run behind an ingress, and thus
 # requires a different CORS header
 FROM dev as stag
@@ -101,4 +101,4 @@ COPY --chown=node:node . .
 # node cannot be PID1
 ENTRYPOINT ["/tini", "--"]
 
-CMD ["node", "./src/server.js"]
+CMD ts-node ./src/server.ts

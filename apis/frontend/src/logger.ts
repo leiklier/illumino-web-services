@@ -1,8 +1,9 @@
-const fs = require('fs')
-const util = require('util')
-const { createLogger, format, transports } = require('winston')
-const Transport = require('winston-transport')
-const Event = require('./models/event')
+declare var global: any
+
+import fs from 'fs'
+import { createLogger, format, transports } from 'winston'
+import Transport from 'winston-transport'
+import Event from './models/event'
 
 const logDir = `${global.appRoot}/log`
 
@@ -33,12 +34,9 @@ const logger = createLogger({
 	transports: [
 		new transports.Console({
 			format: format.simple(),
-			json: false,
 		}),
-		new MongooseTransport(),
+		new MongooseTransport({}),
 	],
 })
 
-
-
-module.exports = logger
+export default logger

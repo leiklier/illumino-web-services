@@ -1,10 +1,8 @@
-const doAsync = require('doasync')
-const mongoose = require('mongoose')
-const { Schema } = mongoose
+import doAsync from 'doasync'
+import mongoose , { Document, Types, Schema, Model } from 'mongoose'
 const db = mongoose.connection
-const { createModel } = require('mongoose-gridfs')
-
-const { semanticVersionSchema } = require('./_schemas')
+import { createModel } from 'mongoose-gridfs'
+import { semanticVersionSchema, ISemanticVersion } from './_schemas'
 
 let Binary
 db.once('open', () => {
@@ -13,7 +11,31 @@ db.once('open', () => {
 	})
 })
 
-const firmwareSchema = new Schema(
+export interface IFirmware extends Document {
+	// Properties
+	target: string
+	version: ISemanticVersion
+	name: string
+	description: string
+	binary: Types.ObjectId
+
+	// Virtuals
+	uniqueVersion: string
+	
+	// Methods
+	writeBinary(filename: string, readStream: any): void
+	getBinaryReadStream(): Promise<any>
+	
+	
+}
+
+export interface IFirmwareModel extends Model<IFirmware> {
+	// Statics
+	isLatest(firmware: IFirmware): Promise<boolean>
+	findLatestFirmware(target: string): IFirmware
+}
+
+const firmwareSchema: Schema<IFirmware> = new Schema(
 	{
 		//* -------------------------------------------------
 		//* target and version should together form a unique
@@ -82,7 +104,7 @@ firmwareSchema.virtual('uniqueVersion').get(function() {
 	return `${this.target}+${this.version.string}`
 })
 
-firmwareSchema.statics.isLatest = async function(firmware) {
+firmwareSchema.statics.isLatest = async function(firmware: IFirmware) {
 	const latestFirmware = await this.findOne({ target: firmware.target }).sort({
 		// descending
 		'version.major': -1,
@@ -94,7 +116,7 @@ firmwareSchema.statics.isLatest = async function(firmware) {
 	return latestFirmware.id === firmware.id
 }
 
-firmwareSchema.statics.findLatestFirmware = async function(target) {
+firmwareSchema.statics.findLatestFirmware = async function(target: string) {
 	const latestFirmware = await this.findOne({ target }).sort({
 		// descending
 		'version.major': -1,
@@ -121,4 +143,4 @@ firmwareSchema.index(
 	{ unique: true },
 )
 
-module.exports = mongoose.model('Firmware', firmwareSchema)
+export default mongoose.model<IFirmware, IFirmwareModel>('Firmware', firmwareSchema)

@@ -8,8 +8,8 @@
 // becomes
 // { ledStrips: { '0': { brightness: 0.5216498465714235 } } }
 
-function expandDotkeyedObject(dotKeyedObject) {
-	function expandNestedObject(object, keys, value) {
+export function expandDotkeyedObject(dotKeyedObject: object): object {
+	function expandNestedObject(object: object, keys: Array<string>, value: any) {
 		if (keys.length === 1) {
 			return object[keys[0]] = value
 		}
@@ -23,15 +23,11 @@ function expandDotkeyedObject(dotKeyedObject) {
 	}
 
 	const nestedObject = {}
-	for (dotKey in dotKeyedObject) {
+	for (const dotKey in dotKeyedObject) {
 		const value = dotKeyedObject[dotKey]
 		let keys = dotKey.split('.')
 		expandNestedObject(nestedObject, keys, value)
 	}
 
 	return nestedObject
-}
-
-module.exports = {
-	expandDotkeyedObject,
 }
