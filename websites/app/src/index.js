@@ -3,7 +3,7 @@
  * This is the main entry file for Reactjs
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import ReactDOM from 'react-dom'
 
 import { ApolloClient } from 'apollo-client'
@@ -41,9 +41,54 @@ if (process.env.NODE_ENV === 'production') {
 
 const Root = () => {
 	const accessToken = useSelector(store => store.auth.accessToken)
+	const apolloClient = useMemo(() => {
+		const uploadLink = createUploadLink({
+			uri: process.env.FRONTEND_API_HTTP_ENDPOINT,
+			credentials: 'include',
+		})
+	
+		const authLink = setContext((_, { headers }) => {
+			return {
+				headers: {
+					...headers,
+					Authorization: accessToken ? `Bearer ${accessToken}` : '',
+				},
+			}
+		})
+	
+		const wsLink = new WebSocketLink({
+			uri: process.env.FRONTEND_API_WS_ENDPOINT,
+			options: {
+				reconnect: true,
+				connectionParams: {
+					authToken: accessToken ? accessToken : '',
+				},
+			},
+		})
+	
+		const link = split(
+			// split based on operation type
+			({ query }) => {
+				const definition = getMainDefinition(query)
+				return (
+					definition.kind === 'OperationDefinition' &&
+					definition.operation === 'subscription'
+				)
+			},
+			wsLink,
+			authLink.concat(uploadLink),
+		)
+	
+		const client = new ApolloClient({
+			link,
+			cache: new InMemoryCache(),
+		})
+	
+		return client
+	}, [accessToken])
 
 	return (
-		<ApolloProvider client={createApolloClient(accessToken)}>
+		<ApolloProvider key={accessToken} client={apolloClient}>
 			<Router>
 				<Route path="/:secret?" component={App} />
 			</Router>
@@ -60,48 +105,5 @@ ReactDOM.render(
 	document.getElementById('root'),
 )
 
-function createApolloClient(accessToken) {
-	const uploadLink = createUploadLink({
-		uri: process.env.FRONTEND_API_HTTP_ENDPOINT,
-		credentials: 'include',
-	})
-
-	const authLink = setContext((_, { headers }) => {
-		return {
-			headers: {
-				...headers,
-				Authorization: accessToken ? `Bearer ${accessToken}` : '',
-			},
-		}
-	})
-
-	const wsLink = new WebSocketLink({
-		uri: process.env.FRONTEND_API_WS_ENDPOINT,
-		options: {
-			reconnect: true,
-			connectionParams: {
-				authToken: accessToken ? accessToken : '',
-			},
-		},
-	})
-
-	const link = split(
-		// split based on operation type
-		({ query }) => {
-			const definition = getMainDefinition(query)
-			return (
-				definition.kind === 'OperationDefinition' &&
-				definition.operation === 'subscription'
-			)
-		},
-		wsLink,
-		authLink.concat(uploadLink),
-	)
-
-	const client = new ApolloClient({
-		link,
-		cache: new InMemoryCache(),
-	})
-
-	return client
-}
+// TODO: Properly shut down the client:
+// https://github.com/apollographql/apollo-client/issues/6195
