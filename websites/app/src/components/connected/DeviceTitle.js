@@ -14,8 +14,11 @@ import IsDisconnectedIndicator from './IsDisconnectedIndicator'
 const DEVICE_QUERY = gql`
 	query getDevice($secret: String!) {
 		device(secret: $secret) {
-			secret
+			id
 			name
+            type {
+                model
+            }
 		}
 	}
 `
@@ -23,8 +26,11 @@ const DEVICE_QUERY = gql`
 const DEVICE_SUBSCRIPTION = gql`
 	subscription onDeviceUpdated($secret: String!) {
 		device(secret: $secret) {
-			secret
+			id
 			name
+            type {
+                model
+            }
 		}
 	}
 `
@@ -59,7 +65,7 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
         onCompleted: () => {
             // Remove accessToken after
             // removing refreshToken in order
-            // to avoid race around condition:
+            // to avoid race condition:
             dispatch(clearSelectedSecret())
             dispatch(clearAccessToken())
         }
@@ -67,9 +73,16 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
 
     const titleText = useMemo(() => {
         const dataIsFetched = data && data.device
-        if (!dataIsFetched) return 'IllumiNode'
+        if (!dataIsFetched) return 'Loading...'
+        if (!data.device.name) {
+            switch(data.device.type.model) {
+                case 'ILLUMINODE': return 'IllumiNode'
+                case 'ILLUMINODE_PLUS': return 'IllumiNode⁺'
+                default: return 'Device' 
+            }
+        }
 
-        return data.device.name ? data.device.name : data.device.secret
+        return data.device.name
     }, [data])
 
     const actions = [
