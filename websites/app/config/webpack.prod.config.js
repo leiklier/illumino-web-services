@@ -4,7 +4,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const Visualizer = require('webpack-visualizer-plugin')
-const workboxPlugin = require('workbox-webpack-plugin')
 // Configs
 const baseConfig = require('./webpack.base.config')
 
@@ -28,11 +27,6 @@ const prodConfig = env => {
 				new MiniCssExtractPlugin(),
 				new OptimizeCssAssetsPlugin(),
 				new Visualizer({ filename: './statistics.html' }),
-				new workboxPlugin.GenerateSW({
-					swDest: 'sw.js',
-					clientsClaim: true,
-					skipWaiting: true,
-				}),
 			],
 		},
 	])
