@@ -1,0 +1,7 @@
+.container {
+    margin-right: 0.5rem;
+    width: 2.25rem; /* Has to match with IsDisconnectedIndicator */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}

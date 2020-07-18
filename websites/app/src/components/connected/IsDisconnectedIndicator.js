@@ -93,8 +93,9 @@ const IsDisconnectedIndicator = ({ secret }) => {
 
 
     const containerStyle = useSpring({
-        width: isConnected ? '0rem' : '2.25rem',
-        marginRight: isConnected ? '0rem' : '0.5rem',
+        minWidth: isConnected ? '0rem' : '2.25rem',
+        maxWidth: isConnected ? '0rem' : '2.25rem',
+        opacity: isConnected ? 0 : 1,
     })
 
 

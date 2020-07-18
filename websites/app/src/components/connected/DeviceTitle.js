@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { FaCog, FaSync, FaSignOutAlt } from 'react-icons/fa'
 import gql from 'graphql-tag'
 import { useQuery, useLazyQuery } from '@apollo/react-hooks'
@@ -9,7 +9,7 @@ import {
 } from '../../store/actions'
 
 import TitleWithActions from '../pure/TitleWithActions'
-import IsDisconnectedIndicator from './IsDisconnectedIndicator'
+import DeviceThumbnail from './DeviceThumbnail'
 
 const DEVICE_QUERY = gql`
 	query getDevice($secret: String!) {
@@ -104,10 +104,10 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
     ]
 
     return (
-        <TitleWithActions actions={actions} {...passthroughProps}>
-            <IsDisconnectedIndicator secret={secret} />
-            <div>{titleText}</div>
-        </TitleWithActions>
+            <TitleWithActions actions={actions} {...passthroughProps}>
+                <DeviceThumbnail secret={secret} />
+                <div>{titleText}</div>
+            </TitleWithActions>
     )
 }
 
