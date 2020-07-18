@@ -12,12 +12,14 @@ import Device, { IDevice } from '../../models/device'
 import Measurement from '../../models/measurement'
 
 import * as error from '../errors'
+import { IContext } from '../context'
 
 export const typeDefs = gql`
 	type Device {
 		id: ID!
 		secret: String! 
 		name: String
+		environment: DeviceEnvironment!
 		owner: User
 		managers: [User!]!
 
@@ -41,6 +43,13 @@ export const typeDefs = gql`
 
 		sunset: Sunset! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 		sunrise: Sunrise! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+	}
+
+	enum DeviceEnvironment {
+		BEDROOM
+		LIVINGROOM
+		GARAGE
+		KITCHEN
 	}
 
 	type DeviceType {
@@ -93,6 +102,15 @@ export const DeviceResolver = {
 			return null
 		}
 		return deviceFound.name
+	},
+	environment: async (device, args, context) => {
+		const { deviceByIdLoader } = context
+
+		const deviceFound = await deviceByIdLoader.load(device.id)
+		if (!deviceFound) {
+			return null
+		}
+		return deviceFound.environment
 	},
 	owner: async (device, args, context) => {
 		const { deviceByIdLoader } = context
@@ -412,14 +430,25 @@ export const mutationResolvers = {
 		return { id: device.id }
 	},
 
-	setDeviceName: async (obj, { secret, name }, context) => {
-		const { deviceBySecretLoader } = context
-		const device = await deviceBySecretLoader.load(secret)
+	setDeviceName: async (obj, { secret, name }, ctx: IContext) => {
+		const device = await ctx.deviceBySecretLoader.load(secret)
 		if (!device) {
 			throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
 		}
 	
 		device.name = name
+		await device.save()
+	
+		return { id: device.id }
+	},
+
+	setDeviceEnvironment: async (obj, { secret, environment }, ctx: IContext) => {
+		const device = await ctx.deviceBySecretLoader.load(secret)
+		if (!device) {
+			throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+		}
+	
+		device.environment = environment
 		await device.save()
 	
 		return { id: device.id }
@@ -470,6 +499,4 @@ export const mutationResolvers = {
 		await device.save()
 		return device
 	},
-
-
 }

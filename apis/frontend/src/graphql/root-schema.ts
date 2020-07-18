@@ -73,12 +73,16 @@ const rootTypeDefs = gql`
 		updateSunrise(secret: String!, startingAt: TimeInput!, isActive: Boolean!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
 
+
 		claimDevice(secret: String!): Device! @requiresAuth(acceptsOnly: USER)
 
 		setDevicePin(secret: String!, pin: PIN!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
 		setDeviceName(secret: String!, name: String!): Device!
+			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
+		
+		setDeviceEnvironment(secret: String!, environment: DeviceEnvironment!): Device!
 			@requiresAuth(acceptsOnly: [SELF, OWNER, ADMIN])
 
 		grantAdmin(email: String!): User! @requiresAuth(acceptsOnly: ROOT)

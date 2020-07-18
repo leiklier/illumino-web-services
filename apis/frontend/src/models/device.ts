@@ -101,6 +101,7 @@ export interface IDevice extends Document {
 	mac: string
 	secret: string
 	name: string
+	environment: string
 	pin: string
 	type: IDeviceType
 	installedFirmware: IFirmware['_id']
@@ -145,16 +146,22 @@ const deviceSchema: Schema<IDevice> = new Schema(
 			required: true,
 			unique: true,
 		},
+		secret: {
+			type: String,
+			required: true,
+		},
+		name: String,
+		environment: {
+			type: String,
+			required: true,
+			default: 'Bedroom'
+		},
 		pin: {
 			// 6 digit number, used to unlock Device
 			// optional sec-feature for `loginDevice`
 			// GraphQL query
 			type: String,
 			bcrypt: true,
-		},
-		secret: {
-			type: 'string',
-			required: true,
 		},
 		type: {
 			type: deviceTypeSchema,
@@ -165,7 +172,6 @@ const deviceSchema: Schema<IDevice> = new Schema(
 			ref: 'Firmware',
 			required: true,
 		},
-		name: String,
 		isConnected: {
 			type: Boolean,
 			required: true,
