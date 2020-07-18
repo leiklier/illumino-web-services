@@ -10,6 +10,7 @@ import {
 
 import TitleWithActions from '../pure/TitleWithActions'
 import DeviceThumbnail from './DeviceThumbnail'
+import DeviceSettingsModal from '../connected/modals/DeviceSettings'
 
 const DEVICE_QUERY = gql`
 	query getDevice($secret: String!) {
@@ -42,6 +43,8 @@ const LOGOUT = gql`
 `
 
 const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
+    const [settingsModalIsOpen, setSettingsModalIsOpen] = useState(false)
+
     const dispatch = useDispatch()
     const { subscribeToMore, data } = useQuery(DEVICE_QUERY, {
         variables: { secret }
@@ -89,7 +92,7 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
         {
             name: 'settings',
             Icon: FaCog,
-            execute: () => console.log('Opening settings...'),
+            execute: () => setSettingsModalIsOpen(true),
         },
         {
             name: 'update',
@@ -104,10 +107,20 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
     ]
 
     return (
+        <>
+
             <TitleWithActions actions={actions} {...passthroughProps}>
                 <DeviceThumbnail secret={secret} />
                 <div>{titleText}</div>
             </TitleWithActions>
+            
+            { settingsModalIsOpen ?
+                <DeviceSettingsModal 
+                    secret={secret}
+                    onClose={() => setSettingsModalIsOpen(false)} 
+                /> : ''
+            }
+        </>
     )
 }
 
