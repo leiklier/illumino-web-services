@@ -13,11 +13,13 @@ const TextInput = ({ label, maxLength, value, onInput }) => {
 				transform: 'translate(0, 0rem)',
 				fontSize: '0.9rem',
 				top: '-0.9rem',
+				color: 'rgb(255, 255, 255, 0.55)'
 			} :
 			{
 				transform: 'translate(0, 1.2rem)',
 				fontSize: '1.2rem',
 				top: '-1.2rem',
+				color: 'rgb(255, 255, 255, 0.7)'
 			}
 	)
 

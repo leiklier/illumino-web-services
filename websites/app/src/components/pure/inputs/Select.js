@@ -155,7 +155,10 @@ const Select = ({
 			>
 				{label ? <div className={styles.label}>{label}</div> : ''}
 				<animated.div
-					style={optionsContainerStyle}
+					style={{
+						...optionsContainerStyle,
+						fontSize: font==='seven-segment' ? '2rem' : '1.5rem',
+					}}
 					className={classNames({
 						[styles.optionsContainer]: true,
 						[styles.optionsContainer__horizontal]: !vertical,

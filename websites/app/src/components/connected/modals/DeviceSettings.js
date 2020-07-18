@@ -1,7 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { animated, useTrail } from 'react-spring'
-import { FaTimes } from 'react-icons/fa'
+import { FaTimes, FaSync } from 'react-icons/fa'
 import BasicModal from '../../pure/modals/Basic'
+
+// TEMP:
+import LedStripGeometryInput from '../../pure/inputs/LedStripGeometry'
 
 import ConnectedDeviceNameInput from '../inputs/DeviceName'
 import ConnectedDeviceEnvironmentInput from '../inputs/DeviceEnvironment'
@@ -34,6 +37,14 @@ const DeviceSettingsModal = ({ secret, isOpen, onClose }) => {
 // of BasicModal would unmount while `trail` continues to 
 // update).
 function SettingsContent({ secret, isOpen }) {
+    const [geometry, setGeometry] = useState({
+        TOP: 20,
+        RIGHT: 59,
+        LEFT: 30,
+        BOTTOM: 20,
+        START_CORNER: 'BOTTOM_RIGHT',
+        ROTATION: 'CCW',
+    })
     const settingsItems = [
         <h2>General</h2>,
         <GhostInput>
@@ -42,12 +53,19 @@ function SettingsContent({ secret, isOpen }) {
         <GhostInput>
             <ConnectedDeviceEnvironmentInput secret={secret} />
         </GhostInput>,
+        <UpdateAvailableAlert secret={secret} />,
+        <h2>Dimensions</h2>,
+        <LedStripGeometryInput
+            ledStripName="TOP"
+            value={geometry}
+            onInput={setGeometry}
+        />
     ]
 
     const trail = useTrail(settingsItems.length, {
         opacity: isOpen ? 1 : 0,
-        top: isOpen ? '0px' : '120px',
-        from: {opacity: 0, top: '120px'},
+        top: isOpen ? '0vh' : '100vh',
+        from: {opacity: 0, top: '100vh'},
     })
 
     return(
@@ -55,7 +73,7 @@ function SettingsContent({ secret, isOpen }) {
             {trail.map((style, index) => (
                 <animated.div
                     key={index}
-                    style={style}
+                    style={{ ...style, width: '100%' }}
                 >
                     {settingsItems[index]}
                 </animated.div>
@@ -67,6 +85,17 @@ function SettingsContent({ secret, isOpen }) {
 function GhostInput({ children }) {
     return (
         <div className={styles.ghostInput}>{children}</div>
+    )
+}
+
+function UpdateAvailableAlert({ secret }) {
+    return (
+        <div className={styles.updateAvailableAlert}>
+            <div><FaSync size={24} /></div>
+            <div>
+                New update available! Scheduled <b>tonight 3:00</b> (<u>update now</u>).
+            </div>
+        </div>
     )
 }
 

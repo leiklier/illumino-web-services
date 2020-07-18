@@ -14,3 +14,16 @@
 	border-radius: 1rem;
     margin-bottom: 0.75rem;
 }
+
+.updateAvailableAlert {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.updateAvailableAlert div:first-child {
+    margin: 0 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

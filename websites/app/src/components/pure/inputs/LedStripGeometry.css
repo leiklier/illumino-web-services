@@ -1,0 +1,78 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.middle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 6rem;
+}
+
+.preview {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 1rem;
+}
+
+.previewCircle {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    background: #fff;
+    border-radius: 50%;
+    height: 1.2rem;
+    width: 1.2rem;
+}
+
+.previewCircle__top {
+    left: calc(50% - 0.6rem);
+    top: -0.6rem;
+}
+.previewCircle__right {
+    right: -0.6rem;
+    top: calc(50% - 0.6rem);
+}
+.previewCircle__bottom {
+    left: calc(50% - 0.6rem);
+    bottom: -0.6rem;
+}
+.previewCircle__left {
+    left: -0.6rem;
+    top: calc(50% - 0.6rem);
+}
+
+.ledStripName {
+    font-size: 1.8rem;
+}
+
+.instructions {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.input__horizontal {
+    width: 9.5rem;
+}
+.input__horizontal > * {
+    width: 100%;
+}
+
+.input__vertical {
+    height: 8.5rem;
+}
+.input__vertical > * {
+    height: 100%;
+}

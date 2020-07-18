@@ -42,11 +42,9 @@
 	align-items: center;
 }
 .optionsContainer__horizontal {
-	font-size: 1.5rem;
 	flex-direction: row;
 }
 .optionsContainer__vertical {
-	font-size: 2rem;
 	flex-direction: column;
 }
 
