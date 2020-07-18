@@ -114,12 +114,11 @@ const ConnectedDeviceTitle = ({ secret, ...passthroughProps }) => {
                 <div>{titleText}</div>
             </TitleWithActions>
             
-            { settingsModalIsOpen ?
-                <DeviceSettingsModal 
-                    secret={secret}
-                    onClose={() => setSettingsModalIsOpen(false)} 
-                /> : ''
-            }
+            <DeviceSettingsModal 
+                secret={secret}
+                isOpen={settingsModalIsOpen}
+                onClose={() => setSettingsModalIsOpen(false)} 
+            />
         </>
     )
 }
