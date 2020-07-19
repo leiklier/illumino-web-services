@@ -21,8 +21,6 @@
     justify-content: center;
     height: 100%;
     border-width: 3px;
-    border-style: solid;
-    border-radius: 1rem;
 }
 
 .previewCircle {
@@ -39,18 +37,18 @@
 
 .previewCircle__top {
     left: calc(50% - 0.6rem);
-    top: -0.6rem;
+    top: calc(-0.6rem  - 1.5px);
 }
 .previewCircle__right {
-    right: -0.6rem;
+    right: calc(-0.6rem  - 1.5px);
     top: calc(50% - 0.6rem);
 }
 .previewCircle__bottom {
     left: calc(50% - 0.6rem);
-    bottom: -0.6rem;
+    bottom: calc(-0.6rem  - 1.5px);
 }
 .previewCircle__left {
-    left: -0.6rem;
+    left: calc(-0.6rem  - 1.5px);
     top: calc(50% - 0.6rem);
 }
 

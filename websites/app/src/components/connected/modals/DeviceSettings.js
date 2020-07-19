@@ -38,12 +38,13 @@ const DeviceSettingsModal = ({ secret, isOpen, onClose }) => {
 // update).
 function SettingsContent({ secret, isOpen }) {
     const [geometry, setGeometry] = useState({
-        TOP: 20,
-        RIGHT: 59,
-        LEFT: 30,
-        BOTTOM: 20,
-        START_CORNER: 'BOTTOM_RIGHT',
-        ROTATION: 'CCW',
+        dimensions: {
+            top: 20,
+            right: 59,
+            left: 30,
+            //bottom: 20,
+        },
+        startCorner: 'bottomRight',
     })
     const settingsItems = [
         <h2>General</h2>,
@@ -54,6 +55,7 @@ function SettingsContent({ secret, isOpen }) {
             <ConnectedDeviceEnvironmentInput secret={secret} />
         </GhostInput>,
         <UpdateAvailableAlert secret={secret} />,
+        
         <h2>Dimensions</h2>,
         <LedStripGeometryInput
             ledStripName="TOP"
@@ -93,7 +95,7 @@ function UpdateAvailableAlert({ secret }) {
         <div className={styles.updateAvailableAlert}>
             <div><FaSync size={24} /></div>
             <div>
-                New update available! Scheduled <b>tonight 3:00</b> (<u>update now</u>).
+                New update available! Scheduled <b>tonight 3:00 AM</b> (<u>update now</u>).
             </div>
         </div>
     )
