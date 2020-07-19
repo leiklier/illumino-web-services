@@ -19,55 +19,32 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
     }, [value])
 
     const numbering = useMemo(() => {
+        // Find rotation ( CW / CCW ):
+        let isCW = false
         if(
             value.dimensions.top && value.dimensions.right && 
             value.dimensions.bottom && value.dimensions.left
         ) {
-            // All are set, so we are just numbering clockwise
-            // from startCorner:
-
-            const orderCW = ['top', 'right', 'bottom', 'left']
-            // const sidesInCorner = value.startCorner.split(/(?=[A-Z])/).map(v => v.toLowerCase())
-            let sideBeginningAt = 'top'
+            isCW = true
+        } else {
             switch(value.startCorner) {
-                case 'topRight': sideBeginningAt = 'right'; break
-                case 'bottomRight': sideBeginningAt = 'bottom'; break
-                case 'bottomLeft': sideBeginningAt = 'left'; break
-                case 'topLeft': sideBeginningAt = 'top'; break
+                case 'topRight': isCW = Boolean(value.dimensions.right); break
+                case 'bottomRight': isCW = Boolean(value.dimensions.bottom); break
+                case 'bottomLeft': isCW = Boolean(value.dimensions.left); break
+                case 'topLeft': isCW = Boolean(value.dimensions.top); break
             }
-
-            let order = []
-            for(let count = 0; count < orderCW.length; ++count) {
-                const idx = (orderCW.indexOf(sideBeginningAt) + count) % orderCW.length
-                order.push(orderCW[idx])
-            }
-
-            return order.reduce((obj, value, index) => ({
-                  ...obj,
-                  [value]: index + 1
-            }), {})
         }
 
-        // Assumes that we have a continuous path,
-        // and that the corner has one and only one
-        // side connected to it
-
-        // 1) Determine if orientation is CW or CCW:
-        let isCW = false
-        switch(value.startCorner) {
-            case 'topRight': isCW = Boolean(value.dimensions.right); break
-            case 'bottomRight': isCW = Boolean(value.dimensions.bottom); break
-            case 'bottomLeft': isCW = Boolean(value.dimensions.left); break
-            case 'topLeft': isCW = Boolean(value.dimensions.top); break
-        }
+        // Find out which side we are beginning at (which side should be nr. 1):
         let sideBeginningAt = 'top'
-            switch(value.startCorner) {
-                case 'topRight': sideBeginningAt = isCWW ? 'right' : 'top'; break
-                case 'bottomRight': sideBeginningAt = isCW ? 'bottom' : 'right'; break
-                case 'bottomLeft': sideBeginningAt = isCW ? 'left' : 'bottom'; break
-                case 'topLeft': sideBeginningAt = isCW ? 'top' : 'left'; break
-            }
+        switch(value.startCorner) {
+            case 'topRight': sideBeginningAt = isCW ? 'right' : 'top'; break
+            case 'bottomRight': sideBeginningAt = isCW ? 'bottom' : 'right'; break
+            case 'bottomLeft': sideBeginningAt = isCW ? 'left' : 'bottom'; break
+            case 'topLeft': sideBeginningAt = isCW ? 'top' : 'left'; break
+        }
 
+        // Add all sides available to an array sorted in right order:
         let orderInitial = []
         value.dimensions.top && orderInitial.push('top')
         value.dimensions.right && orderInitial.push('right')
@@ -75,16 +52,18 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
         value.dimensions.left && orderInitial.push('left')
         if(!isCW) orderInitial.reverse() // ( executes in-place )
 
+        // Create an array where first element is the side which should be nr. 1
         let order = []
         for(let count = 0; count < orderInitial.length; ++count) {
             const idx = (orderInitial.indexOf(sideBeginningAt) + count) % orderInitial.length
             order.push(orderInitial[idx])
         }
 
+        // Return an object on this form: { [side]: number }
         return order.reduce((obj, value, index) => ({
             ...obj,
             [value]: index + 1
-        }), {})
+        }), {}) 
     }, [value])
 
     const [previewStyle, previewCircleStyle] = useSprings(2, [
