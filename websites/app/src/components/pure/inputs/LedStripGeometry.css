@@ -4,12 +4,29 @@
     align-items: center;
 }
 
+
 .middle {
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 100%;
     height: 6rem;
+}
+
+.outside {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.startCornerButton {
+    flex-grow: 1;
+    display: flex;
+}
+
+.startCornerButtonText {
+    align-self: center;
 }
 
 .preview {

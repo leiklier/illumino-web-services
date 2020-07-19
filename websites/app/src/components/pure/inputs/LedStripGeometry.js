@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { animated, useSprings } from 'react-spring'
+import { animated, useSprings, useSpring } from 'react-spring'
+import {
+    BsArrowUpRight,
+    BsArrowDownRight,
+    BsArrowDownLeft,
+    BsArrowUpLeft,
+} from 'react-icons/bs'
 import SelectInput from './Select'
 import styles from './LedStripGeometry.css'
 
@@ -100,22 +106,42 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
 
     return (
         <div className={styles.container}>
-            <div
-                style={{ visibility: value.dimensions.top ?
-                        'visibile' : 'hidden'
-                }}
-                className={styles.input__horizontal}
-            >
-                <SelectInput
-                    font="seven-segment"
-                    value={value.dimensions.top}
-                    options={options}
-                    onInput={newTopValue => onInput({
+            <div className={styles.outside}>
+                <StartCornerButton
+                    corner="topLeft"
+                    startCorner={value.startCorner}
+                    dimensions={value.dimensions}
+                    onClick={() => onInput({
                         ...value,
-                        dimensions: {
-                            ...value.dimensions,
-                            top: newTopValue,
-                        },
+                        startCorner: 'topLeft'
+                    })}
+                />
+                <div
+                    style={{ visibility: value.dimensions.top ?
+                        'visibile' : 'hidden'
+                    }}
+                    className={styles.input__horizontal}
+                    >
+                    <SelectInput
+                        font="seven-segment"
+                        value={value.dimensions.top}
+                        options={options}
+                        onInput={newTopValue => onInput({
+                            ...value,
+                            dimensions: {
+                                ...value.dimensions,
+                                top: newTopValue,
+                            },
+                        })}
+                        />
+                </div>
+                <StartCornerButton
+                    corner="topRight"
+                    startCorner={value.startCorner}
+                    dimensions={value.dimensions}
+                    onClick={() => onInput({
+                        ...value,
+                        startCorner: 'topRight'
                     })}
                 />
             </div>
@@ -192,7 +218,6 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                             {numbering['left']}
                         </animated.div> : ''
                     }
-
                     <div className={styles.ledStripName}>{ ledStripName }</div>
                     <div className={styles.instructions}>
                         {valueHasChanged ?
@@ -223,26 +248,97 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                     />
                 </div>
             </div>
-            <div
-                style={{ visibility: value.dimensions.bottom ?
-                        'visibile' : 'hidden'
-                }}
-                className={styles.input__horizontal}
-            >
-                <SelectInput
-                    font="seven-segment"
-                    value={value.dimensions.bottom}
-                    options={options}
-                    onInput={newBottomValue => onInput({
+            <div className={styles.outside}>
+                <StartCornerButton
+                    corner="bottomLeft"
+                    startCorner={value.startCorner}
+                    dimensions={value.dimensions}
+                    onClick={() => onInput({
                         ...value,
-                        dimensions: {
-                            ...value.dimensions,
-                            bottom: newBottomValue,
-                        },
+                        startCorner: 'bottomLeft'
+                    })}
+                />
+                <div
+                    style={{ visibility: value.dimensions.bottom ?
+                            'visibile' : 'hidden'
+                    }}
+                    className={styles.input__horizontal}
+                >
+                    <SelectInput
+                        font="seven-segment"
+                        value={value.dimensions.bottom}
+                        options={options}
+                        onInput={newBottomValue => onInput({
+                            ...value,
+                            dimensions: {
+                                ...value.dimensions,
+                                bottom: newBottomValue,
+                            },
+                        })}
+                    />
+                </div>
+                <StartCornerButton
+                    corner="bottomRight"
+                    startCorner={value.startCorner}
+                    dimensions={value.dimensions}
+                    onClick={() => onInput({
+                        ...value,
+                        startCorner: 'bottomRight'
                     })}
                 />
             </div>
         </div>
+    )
+}
+
+function StartCornerButton({ dimensions, corner, startCorner, onClick }) {
+    const { vertical, horizontal } = useMemo(() => {
+        // { vertical: 'top' / 'bottom', horizontal: 'left' / 'right' }:
+        const [vertical, horizontal] = corner.split(/(?=[A-Z])/).map(v => v.toLowerCase())
+        return { vertical, horizontal }
+    }, [corner])
+
+    const isVisible = useMemo(() => {
+        if(dimensions.top && dimensions.right &&
+            dimensions.bottom && dimensions.left) return true
+
+        if(dimensions[vertical] && !dimensions[horizontal]) return true
+        if(dimensions[horizontal] && !dimensions[vertical]) return true
+        
+        return false
+    }, [dimensions, vertical, horizontal])
+
+    const Icon = useMemo(() => {
+        switch(corner) {
+            case 'topRight': return BsArrowDownLeft
+            case 'bottomRight': return BsArrowUpLeft
+            case 'bottomLeft': return BsArrowUpRight
+            case 'topLeft': return BsArrowDownRight
+        }
+    }, [corner])
+
+    const style = useSpring({
+        color: corner === startCorner ? 'rgba(250, 81, 81, 1)' : 'rgba(255, 255, 255, 0.3)'
+    })
+    return (
+        <animated.div
+            onClick={onClick}
+            style={{
+                ...style,
+                visibility: isVisible ? 'visible' : 'hidden',
+                flexDirection: horizontal === 'right' ? 'row' : 'row-reverse',
+            }}
+            className={styles.startCornerButton}
+        >
+            <div 
+                style={{
+                    alignSelf: vertical === 'bottom' ? 'flex-start' : 'flex-end',
+                }}
+            >
+                <Icon size={24}/>
+            </div>
+            <div className={styles.startCornerButtonText}>START</div>
+        </animated.div>
     )
 }
 
