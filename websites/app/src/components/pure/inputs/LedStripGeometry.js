@@ -63,23 +63,34 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
         return order.reduce((obj, value, index) => ({
             ...obj,
             [value]: index + 1
-        }), {}) 
+        }), {})
     }, [value])
+
+    function numberingToColor(numbering) {
+        switch(numbering) {
+            case 1: return 'rgb(250, 81, 81)'   // RED
+            case 2: return 'rgb(62, 255, 62)'   // GREEN
+            case 3: return 'rgb(71, 71, 252)'   // BLUE
+            case 4: return 'rgb(255, 255, 110)' // YELLOW
+
+            default: return 'rgba(255, 255, 255, 0.7)'
+        }
+    }
 
     const [previewStyle, previewCircleStyle] = useSprings(2, [
         // previewStyle
         {
             borderTopColor: valueHasChanged ? 
-                                'rgb(71, 71, 252)' : // BLUE
+                                numberingToColor(numbering['top']) :
                                 'rgba(255, 255, 255, 0.7)', // white
             borderRightColor: valueHasChanged ? 
-                                'rgb(255, 255, 110)' : // YELLOW
+                                numberingToColor(numbering['right']) :
                                 'rgba(255, 255, 255, 0.7)', // white
             borderBottomColor: valueHasChanged ? 
-                                'rgb(62, 255, 62)' : // GREEN
+                                numberingToColor(numbering['bottom']) :
                                 'rgba(255, 255, 255, 0.7)', // white
             borderLeftColor: valueHasChanged ? 
-                                'rgb(250, 81, 81)' : // GREEN
+                                numberingToColor(numbering['left']) :
                                 'rgba(255, 255, 255, 0.7)', // white   
         },
         // previewCircleStyle
@@ -89,22 +100,25 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
 
     return (
         <div className={styles.container}>
-            {value.dimensions.top ?
-                <div className={styles.input__horizontal}>
-                    <SelectInput
-                        font="seven-segment"
-                        value={value.dimensions.top}
-                        options={options}
-                        onInput={newTopValue => onInput({
-                            ...value,
-                            dimensions: {
-                                ...value.dimensions,
-                                top: newTopValue,
-                            },
-                        })}
-                    />
-                </div> : ''
-            }
+            <div
+                style={{ visibility: value.dimensions.top ?
+                        'visibile' : 'hidden'
+                }}
+                className={styles.input__horizontal}
+            >
+                <SelectInput
+                    font="seven-segment"
+                    value={value.dimensions.top}
+                    options={options}
+                    onInput={newTopValue => onInput({
+                        ...value,
+                        dimensions: {
+                            ...value.dimensions,
+                            top: newTopValue,
+                        },
+                    })}
+                />
+            </div>
             <div className={styles.middle}>
                 <div
                     style={{ visibility: value.dimensions.left ?
@@ -209,22 +223,25 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                     />
                 </div>
             </div>
-            {value.dimensions.bottom ?
-                <div className={styles.input__horizontal}>
-                    <SelectInput
-                        font="seven-segment"
-                        value={value.dimensions.bottom}
-                        options={options}
-                        onInput={newBottomValue => onInput({
-                            ...value,
-                            dimensions: {
-                                ...value.dimensions,
-                                bottom: newBottomValue,
-                            },
-                        })}
-                    />
-                </div> : ''
-            }
+            <div
+                style={{ visibility: value.dimensions.bottom ?
+                        'visibile' : 'hidden'
+                }}
+                className={styles.input__horizontal}
+            >
+                <SelectInput
+                    font="seven-segment"
+                    value={value.dimensions.bottom}
+                    options={options}
+                    onInput={newBottomValue => onInput({
+                        ...value,
+                        dimensions: {
+                            ...value.dimensions,
+                            bottom: newBottomValue,
+                        },
+                    })}
+                />
+            </div>
         </div>
     )
 }
