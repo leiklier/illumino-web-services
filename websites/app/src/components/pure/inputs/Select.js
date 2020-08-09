@@ -21,6 +21,7 @@ const Select = ({
 	options, // [{ value: any, name: String }]
 	onInput,
 	vertical,
+	hideButtons,
 }) => {
 	if (!onInput) onInput = () => { }
 
@@ -107,7 +108,7 @@ const Select = ({
 			to: vertical ?
 				{ top: -1 * displayIndex * 100 + '%' } :
 				{ left: -1 * displayIndex * 100 + '%' },
-			config: immediate ? config.stiff : config.gentle,
+			config: immediate ? config.stiff : config.default,
 			immediate: false,
 		})
 	}, [displayIndex])
@@ -131,20 +132,22 @@ const Select = ({
 				[styles.container__vertical]: vertical,
 			})}
 		>
-			<animated.div
-				style={arrowBackwardStyle}
-				onClick={handleSelectPrevious}
-				className={classNames({
-					[styles.arrow]: true,
-					[styles.arrow__medium]: size === 'lg',
-					[styles.arrow__small]: size !==  'lg',
-				})}
-			>
-				{
-					vertical ?
-					<FaChevronUp size={32} /> : <FaChevronLeft size={32} />
-				}
-			</animated.div>
+			{!hideButtons ? 
+				<animated.div
+					style={arrowBackwardStyle}
+					onClick={handleSelectPrevious}
+					className={classNames({
+						[styles.arrow]: true,
+						[styles.arrow__medium]: size === 'lg',
+						[styles.arrow__small]: size !==  'lg',
+					})}
+				>
+					{
+						vertical ?
+						<FaChevronUp size={32} /> : <FaChevronLeft size={32} />
+					}
+				</animated.div> : ''
+			}
 			<div
 				ref={contentRef}
 				className={classNames({
@@ -176,20 +179,22 @@ const Select = ({
 					)}
 				</animated.div>
 			</div>
-			<animated.div
-				style={arrowForwardStyle}
-				onClick={handleSelectNext}
-				className={classNames({
-					[styles.arrow]: true,
-					[styles.arrow__medium]: size === 'lg',
-					[styles.arrow__small]: size !==  'lg',
-				})}
-			>
-				{
-					vertical ?
-						<FaChevronDown size={32} /> : <FaChevronRight size={32} /> 
-				}
-			</animated.div>
+			{!hideButtons ?
+				<animated.div
+					style={arrowForwardStyle}
+					onClick={handleSelectNext}
+					className={classNames({
+						[styles.arrow]: true,
+						[styles.arrow__medium]: size === 'lg',
+						[styles.arrow__small]: size !==  'lg',
+					})}
+				>
+					{
+						vertical ?
+							<FaChevronDown size={32} /> : <FaChevronRight size={32} /> 
+					}
+				</animated.div> : ''
+			}
 		</div >
 	)
 }
