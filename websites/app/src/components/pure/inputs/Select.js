@@ -170,6 +170,7 @@ const Select = ({
 							key={option.value}
 							font={font}
 							vertical={vertical}
+							centered={!vertical && !label}
 							option={option}
 						/>
 					)}
@@ -193,7 +194,7 @@ const Select = ({
 	)
 }
 
-function Option({ font, vertical, option }) {
+function Option({ centered, font, vertical, option}) {
 	return (
 		<div
 			className={classNames({
@@ -201,7 +202,10 @@ function Option({ font, vertical, option }) {
 				[styles.option__horizontal]: !vertical,
 				[styles.option__vertical]: vertical,
 			})}
-			style={font ? { fontFamily: font } : {}}
+			style={{
+				fontFamily: font ? font : undefined,
+				justifyContent: centered ? 'center' : 'flex-start'
+			}}
 		>
 			<span>{option.name}</span>
 		</div>
