@@ -1,16 +1,30 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import gql from 'graphql-tag'
+import { useQuery } from '@apollo/react-hooks'
 import { animated, useTrail } from 'react-spring'
 import { FaTimes, FaSync } from 'react-icons/fa'
+
 import BasicModal from '../../pure/modals/Basic'
-
-// TEMP:
-import LedStripGeometryInput from '../../pure/inputs/LedStripGeometry'
-
+import SelectInput from '../../pure/inputs/Select'
+import MultiToggle from '../../pure/inputs/MultiToggle'
+import ConnectedLedStripGeometryInput from '../../connected/inputs/LedStripGeometry'
 import ConnectedDeviceNameInput from '../inputs/DeviceName'
 import ConnectedDeviceEnvironmentInput from '../inputs/DeviceEnvironment'
 
 import * as Semantic from '../../pure/layouts/Semantic'
 import styles from './DeviceSettings.css'
+
+const LED_STRIPS_QUERY = gql`
+    query getLedStrips($secret: String!) {
+        device(secret: $secret) {
+            id
+            ledStrips {
+                id
+                name
+            }
+        }
+    }
+`
 
 const DeviceSettingsModal = ({ secret, isOpen, onClose }) => {
     return(
@@ -37,15 +51,19 @@ const DeviceSettingsModal = ({ secret, isOpen, onClose }) => {
 // of BasicModal would unmount while `trail` continues to 
 // update).
 function SettingsContent({ secret, isOpen }) {
-    const [geometry, setGeometry] = useState({
-        dimensions: {
-            top: 20,
-            right: 59,
-            left: 30,
-            //bottom: 20,
-        },
-        startCorner: 'bottomRight',
+    const [ledStripIndex, setLedStripIndex] = useState(0)
+    const { data: ledStripsData } = useQuery(LED_STRIPS_QUERY, {
+        variables: { secret },
     })
+    
+    const ledStrips = useMemo(() => {
+        const dataIsFetched = ledStripsData && ledStripsData.device && ledStripsData.device.ledStrips
+        if(!dataIsFetched) return []
+
+        return ledStripsData.device.ledStrips
+    }, [ledStripsData])
+
+
     const settingsItems = [
         <h2>General</h2>,
         <GhostInput>
@@ -55,13 +73,38 @@ function SettingsContent({ secret, isOpen }) {
             <ConnectedDeviceEnvironmentInput secret={secret} />
         </GhostInput>,
         <UpdateAvailableAlert secret={secret} />,
+        <SectionSpacer />,
         
-        <h2>Dimensions</h2>,
-        <LedStripGeometryInput
-            ledStripName="TOP"
-            value={geometry}
-            onInput={setGeometry}
+        <div className={styles.subHeader}>
+            <h2>Dimensions</h2>
+            {ledStrips.length ?
+                <MultiToggle
+                    key={ledStrips}
+                    value={ledStripIndex}
+                    onInput={setLedStripIndex}
+                    options={ledStrips.map((ledStrip, index) => ({
+                        name: ledStrip.name,
+                        value: index,
+                    }))}
+                /> : ''
+            }
+        </div>,
+        <SelectInput
+            value={ledStripIndex}
+            onInput={setLedStripIndex}
+            hideButtons
+            disableSwipe
+            options={ledStrips.map((ledStrip, index) => ({
+                name: (
+                        <ConnectedLedStripGeometryInput
+                            secret={secret}
+                            ledStripIndex={index}
+                        />
+                    ),
+                value: index,
+            }))}
         />
+        ,
     ]
 
     const trail = useTrail(settingsItems.length, {
@@ -84,6 +127,10 @@ function SettingsContent({ secret, isOpen }) {
     )
 }
 
+function SectionSpacer() {
+    return <div className={styles.sectionSpacer} />
+}
+
 function GhostInput({ children }) {
     return (
         <div className={styles.ghostInput}>{children}</div>
@@ -95,7 +142,7 @@ function UpdateAvailableAlert({ secret }) {
         <div className={styles.updateAvailableAlert}>
             <div><FaSync size={24} /></div>
             <div>
-                New update available! Scheduled <b>tonight 3:00 AM</b> (<u>update now</u>).
+                New update available! Scheduled <b>tonight at 3 AM</b> (<u>update now</u>).
             </div>
         </div>
     )
