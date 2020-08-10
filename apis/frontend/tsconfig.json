@@ -2,14 +2,26 @@
 	"compilerOptions": {
 		"target": "es6",
 		"module": "commonjs",
-		"outDir": "dist",
+		"moduleResolution": "node",
+		"lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
+		"outDir": "./dist",
 		"sourceMap": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"typeRoots": ["node_modules/@types"],
+		"removeComments": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true
 	},
 	"include": [
-		"src/**/*.ts"
+		"src/**/*.*"
 	],
 	"exclude": [
 		"node_modules"
