@@ -11,8 +11,8 @@ import styles from './LedStripGeometry.css'
 
 const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
     const options = [...Array(200).keys()].map(value => ({
-		name: value,
-		value: value,
+		name: value + 1,
+		value: value + 1,
     }))
     
     const [valueHasChanged, setValueHasChanged] = useState(false)
@@ -41,7 +41,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
             }
         }
 
-        // Find out which side we are beginning at (which side should be nr. 1):
+        // Find out which side we are beginning at (which side should be no. 1):
         let sideBeginningAt = 'top'
         switch(value.startCorner) {
             case 'topRight': sideBeginningAt = isCW ? 'right' : 'top'; break
@@ -58,7 +58,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
         value.dimensions.left && orderInitial.push('left')
         if(!isCW) orderInitial.reverse() // ( executes in-place )
 
-        // Create an array where first element is the side which should be nr. 1
+        // Create an array where first element is the side which should be no. 1
         let order = []
         for(let count = 0; count < orderInitial.length; ++count) {
             const idx = (orderInitial.indexOf(sideBeginningAt) + count) % orderInitial.length
@@ -118,7 +118,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                 />
                 <div
                     style={{ visibility: value.dimensions.top ?
-                        'visibile' : 'hidden'
+                        'visible' : 'hidden'
                     }}
                     className={styles.input__horizontal}
                     >
@@ -148,7 +148,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
             <div className={styles.middle}>
                 <div
                     style={{ visibility: value.dimensions.left ?
-                            'visibile' : 'hidden'
+                            'visible' : 'hidden'
                     }}
                     className={styles.input__vertical}
                 >
@@ -186,38 +186,42 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                     }}
                     className={styles.preview}
                 >
-                    {value.dimensions.top ?
-                        <animated.div
-                            style={previewCircleStyle}
-                            className={styles.previewCircle+' '+styles.previewCircle__top}
-                        >
-                            {numbering['top']}
-                        </animated.div> : ''
-                    }
-                    {value.dimensions.right ?
-                        <animated.div
-                            style={previewCircleStyle}
-                            className={styles.previewCircle+' '+styles.previewCircle__right}
-                        >
-                            {numbering['right']}
-                        </animated.div> : ''
-                    }
-                    {value.dimensions.bottom ?
-                        <animated.div
-                            style={previewCircleStyle}
-                            className={styles.previewCircle+' '+styles.previewCircle__bottom}
-                        >
-                            {numbering['bottom']}
-                        </animated.div> : ''
-                    }
-                    {value.dimensions.left ?
-                        <animated.div
-                            style={previewCircleStyle}
-                            className={styles.previewCircle+' '+styles.previewCircle__left}
-                        >
-                            {numbering['left']}
-                        </animated.div> : ''
-                    }
+                    <animated.div
+                        style={{
+                            display: value.dimensions.top ? undefined : 'none',
+                            ...previewCircleStyle,
+                        }}
+                        className={styles.previewCircle+' '+styles.previewCircle__top}
+                    >
+                        {numbering['top']}
+                    </animated.div>
+                    <animated.div
+                        style={{
+                            display: value.dimensions.right ? undefined : 'none',
+                            ...previewCircleStyle,
+                        }}
+                        className={styles.previewCircle+' '+styles.previewCircle__right}
+                    >
+                        {numbering['right']}
+                    </animated.div>
+                    <animated.div
+                        style={{
+                            display: value.dimensions.bottom ? undefined : 'none',
+                            ...previewCircleStyle,
+                        }}
+                        className={styles.previewCircle+' '+styles.previewCircle__bottom}
+                    >
+                        {numbering['bottom']}
+                    </animated.div>
+                    <animated.div
+                        style={{
+                            display: value.dimensions.left ? undefined : 'none',
+                            ...previewCircleStyle,
+                        }}
+                        className={styles.previewCircle+' '+styles.previewCircle__left}
+                    >
+                        {numbering['left']}
+                    </animated.div>
                     <div className={styles.ledStripName}>{ ledStripName }</div>
                     <div className={styles.instructions}>
                         {valueHasChanged ?
@@ -229,7 +233,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
 
                 <div
                     style={{ visibility: value.dimensions.right ?
-                            'visibile' : 'hidden'
+                            'visible' : 'hidden'
                     }}
                     className={styles.input__vertical}
                 >
@@ -260,7 +264,7 @@ const LedStripGeometryInput = ({ ledStripName, value, onInput }) => {
                 />
                 <div
                     style={{ visibility: value.dimensions.bottom ?
-                            'visibile' : 'hidden'
+                            'visible' : 'hidden'
                     }}
                     className={styles.input__horizontal}
                 >
@@ -337,7 +341,7 @@ function StartCornerButton({ dimensions, corner, startCorner, onClick }) {
             >
                 <Icon size={24}/>
             </div>
-            <div className={styles.startCornerButtonText}>START</div>
+            <div className={styles.startCornerButtonText}>CABLE</div>
         </animated.div>
     )
 }
