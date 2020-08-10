@@ -22,6 +22,7 @@ const Select = ({
 	onInput,
 	vertical,
 	hideButtons,
+	disableSwipe,
 }) => {
 	if (!onInput) onInput = () => { }
 
@@ -47,6 +48,8 @@ const Select = ({
 	const [contentRef, { width: contentWidth, height: contentHeight }] = useDimensions()
 
 	const bindDrag = useDrag(({ down: isTouching, movement: [mx, my] }) => {
+		if(disableSwipe) return
+
 		if (!isTouching) {
 			if (!indexDiff) return
 
