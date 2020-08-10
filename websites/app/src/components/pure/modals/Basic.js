@@ -5,7 +5,7 @@ import styles from './Basic.css'
 const BasicModal = ({ isOpen, children }) => {
     const transition = useTransition(isOpen, null, {
         from: { opacity: 0, backdropFilter: 'blur(0px)' },
-        enter: { opacity: 1, backdropFilter: 'blur(12px)' },
+        enter: { opacity: 1, backdropFilter: 'blur(14px)' },
         leave: { opacity: 0, backdropFilter: 'blur(0px)' },
         config: config.stiff,
     })
