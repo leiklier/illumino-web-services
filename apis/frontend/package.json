@@ -3,11 +3,6 @@
 	"version": "v0.1.0",
 	"private": true,
 	"main": "src/server.js",
-	"scripts": {
-		"start": "NODE_ENV=production node --inspect=0.0.0.0 ./src/server.js",
-		"dev": "NODE_ENV=development nodemon .",
-		"test": "NODE_ENV=test jest --coverage"
-	},
 	"repository": "https://github.com/leiklier/ambientalarm-api.git",
 	"author": "Leik Lima-Eriksen <leik.lima-eriksen@lyse.net>",
 	"license": "MIT",
@@ -40,7 +35,7 @@
 	"devDependencies": {
 		"eslint": "^7.3.0",
 		"eslint-plugin-import": "^2.21.2",
-		"nodemon": "^1.18.11",
-		"prettier": "^1.17.0"
+		"prettier": "^1.17.0",
+		"ts-node-dev": "^1.0.0-pre.56"
 	}
 }

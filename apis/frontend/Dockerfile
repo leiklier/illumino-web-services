@@ -59,7 +59,7 @@ RUN yarn install --only=development
 # This has to be done in Kubernetes as a bind mount
 
 # Restart on file changes
-CMD nodemon --watch src --exec node --inspect=0.0.0.0:9229 -r ts-node/register/transpile-only src/server.ts
+CMD ts-node-dev --respawn --inspect=0.0.0.0:9229 src/server.ts
 
 
 
