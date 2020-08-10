@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 
-import { IUser } from '../models/user'
-import { IDevice } from '../models/device'
+import { User } from '../entities/User'
+import { Device } from '../entities/Device'
 
 
 export interface IToken {
@@ -21,7 +21,7 @@ export interface IToken {
 	exp: number
 }
 
-export const getRefreshTokenByUser = (user: IToken["payload"]["user"], authType: string): string => {
+export const getRefreshTokenByUser = (user: User, authType: string): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -35,11 +35,11 @@ export const getRefreshTokenByUser = (user: IToken["payload"]["user"], authType:
 			},
 			exp: Math.floor(expiresAt / 1000),
 		},
-		process.env.JWT_SECRET,
+		process.env.JWT_SECRET!,
 	)
 }
 
-export const getAccessTokenByUser = (user: IToken["payload"]["user"], authType: string): string => {
+export const getAccessTokenByUser = (user: User, authType: string): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 10 // 10 days
 	return jwt.sign(
 		{
@@ -53,20 +53,11 @@ export const getAccessTokenByUser = (user: IToken["payload"]["user"], authType: 
 			},
 			exp: Math.floor(expiresAt / 1000),
 		},
-		process.env.JWT_SECRET,
+		process.env.JWT_SECRET!,
 	)
 }
 
-/**
- * This function creates a signed JWT with a payload containing
- * the `deviceId` of the `device` provided as input. The
- * token returned is used in e.g. auth. purpose: REFRESH
- *
- * @param {Device} device - The Device that should be wrapped in a token
- * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
- * @return {string} The JSON Web Token
- */
-export const getRefreshTokenByDevice = (device: IToken["payload"]["device"], authType: string): string => {
+export const getRefreshTokenByDevice = (device: Device, authType: string): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -81,20 +72,11 @@ export const getRefreshTokenByDevice = (device: IToken["payload"]["device"], aut
 			},
 			exp: Math.floor(expiresAt / 1000),
 		},
-		process.env.JWT_SECRET,
+		process.env.JWT_SECRET!,
 	)
 }
 
-/**
- * This function creates a signed JWT with a payload containing
- * the `deviceId` of the `device` provided as input. The
- * token returned is used in e.g. auth. purpose: REFRESH
- *
- * @param {Device} device - The Device that should be wrapped in a token
- * @param {string} authType - What type of credentials was provided, e.g. 'pin', 'authKey'
- * @return {string} The JSON Web Token
- */
-export const getAccessTokenByDevice = (device: IToken["payload"]["device"], authType: string): string => {
+export const getAccessTokenByDevice = (device: Device, authType: string): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
 	return jwt.sign(
 		{
@@ -109,14 +91,14 @@ export const getAccessTokenByDevice = (device: IToken["payload"]["device"], auth
 			},
 			exp: Math.floor(expiresAt / 1000),
 		},
-		process.env.JWT_SECRET,
+		process.env.JWT_SECRET!,
 	)
 }
 
 
 export const tokenIsValid = (token: string): boolean => {
 	try {
-		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET)
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!)
 		if (!decryptedToken) return false
 		return true
 	} catch (err) {
@@ -126,7 +108,7 @@ export const tokenIsValid = (token: string): boolean => {
 
 export const getTokenPayload = (token: string) : IToken['payload'] | null => {
 	try {
-		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) as IToken
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!) as IToken
 		const tokenPayload = decryptedToken.payload
 		return tokenPayload
 	} catch (err) {
@@ -140,14 +122,14 @@ export const getTokenExpiration = (token: string) : number => {
 	return decodedToken.exp * 1000
 }
 
-export const getAuthTypeByToken = (token: string) : string => {
+export const getAuthTypeByToken = (token: string) : string | undefined => {
 	try {
-		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET) as IToken
+		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!) as IToken
 		const tokenPayload = decryptedToken.payload
 
 		return tokenPayload.authType
 	} catch (err) {
 		// Token did invalidate
-		return null
+		return undefined
 	}
 }

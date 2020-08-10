@@ -8,19 +8,19 @@ export class Device {
     readonly id: ObjectId
 
     @Field() 
-    @Property()
+    @Property({ required: true })
     mac: string
 
     @Field()
-    @Property()
+    @Property({ required: true })
     secret: string
 
     @Field({ nullable: true})
-    @Property()
+    @Property({ required: true })
     name?: string
 
     @Property()
-    pin: string
+    pin?: string
 }
 
 export const DeviceModel = getModelForClass(Device)

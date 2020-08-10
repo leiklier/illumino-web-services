@@ -18,9 +18,12 @@ import bodyParser from 'body-parser'
 
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
+import { context } from './context'
 
 import ObjectIdScalar from './scalars/object-id'
 
+import AuthResolver from './resolvers/auth'
+import UserResolver from './resolvers/user'
 import DeviceResolver from './resolvers/device'
 
 const { PORT } = process.env
@@ -33,7 +36,7 @@ const { PORT } = process.env
 
 async function main() {
 	const schema = await buildSchema({
-		resolvers: [DeviceResolver],
+		resolvers: [AuthResolver, UserResolver, DeviceResolver],
 		scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }],
 	})
 
@@ -57,6 +60,7 @@ async function main() {
 	
 	const server: ApolloServer = new ApolloServer({
 		schema,
+		context,
 		introspection: true,
 	})
 	server.applyMiddleware({
@@ -71,7 +75,7 @@ async function main() {
 	server.installSubscriptionHandlers(httpServer)
 	
 	httpServer.listen(PORT, () => {
-		console.log(`Server started on port ${PORT}.`)
+		console.log(`🚀 Server started on port ${PORT}.`)
 	})
 }
 
