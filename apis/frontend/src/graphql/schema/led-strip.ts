@@ -4,6 +4,38 @@ import { IContext } from '../context'
 import * as error from '../errors'
 
 export const typeDefs = gql`
+	type Dimensions {
+		top: Int
+		right: Int
+		bottom: Int
+		left: Int
+	}
+
+	input DimensionsInput {
+		top: Int
+		right: Int
+		bottom: Int
+		left: Int
+	}
+	
+	type Geometry {
+		dimensions: Dimensions!
+		startCorner: Corner!
+	}
+
+	enum Corner {
+		topRight
+		bottomRight
+		bottomLeft
+		topLeft
+	}
+
+	input GeometryInput {
+		dimensions: DimensionsInput!
+		startCorner: Corner!
+	}
+
+
 	type Color {
 		hue: Float!
 		saturation: Float!
@@ -30,6 +62,7 @@ export const typeDefs = gql`
 	type LedStrip {
 		id: ID!
 		name: String!
+		geometry: Geometry!
 		brightness: Float!
 		color: Color!
 		animation: Animation!
@@ -73,6 +106,27 @@ export const queryResolvers = {
 }
 
 export const mutationResolvers = {
+	setGeometryOnLedStrip: async (
+		obj,
+		{secret, ledStripIndex, geometry},
+		ctx: IContext
+	) => {
+		const device = await ctx.deviceBySecretLoader.load(secret)
+		if (!device) {
+			throw new ApolloError(error.DEVICE_DOES_NOT_EXIST)
+		}
+
+		const ledStrip = device.ledStrips[ledStripIndex]
+		if (!ledStrip) {
+			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
+		}
+
+		ledStrip.geometry = geometry
+		await device.save()
+
+		return ledStrip
+	},
+
 	setBrightnessOnLedStrip: async (
 		obj,
 		{ secret, ledStripIndex, brightness },

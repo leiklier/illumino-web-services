@@ -34,6 +34,12 @@ const rootTypeDefs = gql`
 	}
 
 	type RootMutation {
+		setGeometryOnLedStrip(
+			secret: String!
+			ledStripIndex: Int!
+			geometry: GeometryInput!
+		): LedStrip! @requiresAuth(acceptsOnly: [SELF, OWNER, MANAGER])
+
 		setBrightnessOnLedStrip(
 			secret: String!
 			ledStripIndex: Int!

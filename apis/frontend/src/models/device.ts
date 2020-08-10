@@ -3,13 +3,22 @@ import { IUser } from './user'
 import { IFirmware } from './firmware'
 import bcryptPlugin from 'mongoose-bcrypt'
 
-const { semanticVersionSchema } = require('./_schemas')
+import { semanticVersionSchema } from './_schemas'
 
 //* ------------------ LED_STRIP -------------------
 declare interface ILedStrip extends Document {
 	// Properties
 	id: string
 	name: string
+	geometry: {
+		dimensions: {
+			top?: number
+			right?: number
+			bottom?: number
+			left?: number
+		}
+		startCorner: string
+	}
 	brightness: number
 	color: {
 		hue: number
@@ -31,6 +40,28 @@ const ledStripSchema: Schema<ILedStrip> = new Schema(
 		name: {
 			type: String,
 			default: 'Primary',
+		},
+		geometry: {
+			dimensions: {
+				top: {
+					type: Number,
+					default: 50,
+				},
+				right: {
+					type: Number,
+					default: 50,
+				},
+				bottom: Number,
+				left: {
+					type: Number,
+					default: 50,
+				},
+			},
+			startCorner: {
+				type: String,
+				required: true,
+				default: 'bottomLeft',
+			}
 		},
 		brightness: {
 			type: Number,
