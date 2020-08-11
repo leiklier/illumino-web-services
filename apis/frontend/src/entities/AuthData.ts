@@ -1,4 +1,5 @@
 import { InterfaceType, ObjectType, Field } from 'type-graphql'
+import { User } from './User'
 import { Device } from './Device'
 
 @InterfaceType()
@@ -10,9 +11,13 @@ export abstract class IAuthData {
 }
 
 @ObjectType({ implements: IAuthData })
-export class DeviceAuthData implements IAuthData {
-    accessToken: string
-    
+export class UserAuthData extends IAuthData {
+    @Field(() => User)
+    user: User
+}
+
+@ObjectType({ implements: IAuthData })
+export class DeviceAuthData extends IAuthData {
     @Field(() => Device)
     device: Device
-}
+}      

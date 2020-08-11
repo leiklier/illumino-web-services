@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken'
 import { User } from '../entities/User'
 import { Device } from '../entities/Device'
 
-export enum authType {
-	pin = 'pin'
+export enum AuthType {
+	pin = 'pin',
+	password = 'password'
 }
 
 export interface IToken {
@@ -18,13 +19,13 @@ export interface IToken {
 			mac: string
 			secret: string
 		}
-		authType: authType
+		authType: AuthType
 		purpose: 'REFRESH' | 'ACCESS'
 	}
 	exp: number
 }
 
-export const getRefreshTokenByUser = (user: User, authType: string): string => {
+export const getRefreshTokenByUser = (user: User, authType: AuthType): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -42,7 +43,7 @@ export const getRefreshTokenByUser = (user: User, authType: string): string => {
 	)
 }
 
-export const getAccessTokenByUser = (user: User, authType: string): string => {
+export const getAccessTokenByUser = (user: User, authType: AuthType): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 10 // 10 days
 	return jwt.sign(
 		{
@@ -60,7 +61,7 @@ export const getAccessTokenByUser = (user: User, authType: string): string => {
 	)
 }
 
-export const getRefreshTokenByDevice = (device: Device, authType: string): string => {
+export const getRefreshTokenByDevice = (device: Device, authType: AuthType): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -79,7 +80,7 @@ export const getRefreshTokenByDevice = (device: Device, authType: string): strin
 	)
 }
 
-export const getAccessTokenByDevice = (device: Device, authType: string): string => {
+export const getAccessTokenByDevice = (device: Device, authType: AuthType): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
 	return jwt.sign(
 		{
