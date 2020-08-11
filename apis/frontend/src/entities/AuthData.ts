@@ -4,20 +4,18 @@ import { Device } from './Device'
 
 @InterfaceType()
 export abstract class IAuthData {
-    @Field()
-    accessToken: string
-
-
+	@Field()
+	accessToken: string
 }
 
 @ObjectType({ implements: IAuthData })
 export class UserAuthData extends IAuthData {
-    @Field(() => User)
-    user: User
+	@Field(() => User)
+	user: User
 }
 
 @ObjectType({ implements: IAuthData })
 export class DeviceAuthData extends IAuthData {
-    @Field(() => Device)
-    device: Device
-}      
+	@Field(() => Device)
+	device: Device
+}

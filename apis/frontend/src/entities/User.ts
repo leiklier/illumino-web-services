@@ -3,45 +3,44 @@ import { prop as Property, getModelForClass } from '@typegoose/typegoose'
 import { ObjectId } from 'mongodb'
 
 export enum UserRole {
-    USER = 'USER',
-    ADMIN = 'ADMIN',
-    ROOT = 'ROOT'
+	USER = 'USER',
+	ADMIN = 'ADMIN',
+	ROOT = 'ROOT',
 }
 
 registerEnumType(UserRole, {
-    name: 'UserRole',
-    description: 'UserRole describes which permissions a User has in the API',
+	name: 'UserRole',
+	description: 'UserRole describes which permissions a User has in the API',
 })
 
 @ObjectType({ description: 'People who have signed up with their email' })
 export class User {
-    @Field(() => ID)
-    readonly id: ObjectId
+	@Field(() => ID)
+	readonly id: ObjectId
 
-    @Field()
-    @Property()
-    email: string
+	@Field()
+	@Property({ required: true, unique: true })
+	email: string
 
-    @Property({ required: true })
-    password: string
+	@Property({ required: true })
+	password: string
 
-    @Field(() => [UserRole])
-    @Property({
-        required: true,
-        default: [UserRole.USER],
-        enum: UserRole,
-        type: String
-    })
-    roles: UserRole[]
+	@Field(() => [UserRole])
+	@Property({
+		required: true,
+		default: [UserRole.USER],
+		enum: UserRole,
+		type: String,
+	})
+	roles: UserRole[]
 
-    @Field()
-    @Property()
-    firstName: string
+	@Field()
+	@Property()
+	firstName: string
 
-    @Field()
-    @Property()
-    lastName: string
-
+	@Field()
+	@Property()
+	lastName: string
 }
 
 export const UserModel = getModelForClass(User)

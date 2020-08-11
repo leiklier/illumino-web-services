@@ -6,51 +6,51 @@ import { LedStrip } from './LedStrip'
 import { User } from './User'
 
 export enum DeviceEnvironment {
-    BEDROOM = 'BEDROOM',
-    LIVINGROOM = 'LIVINGROOM',
-    GARAGE = 'GARAGE',
-    KITCHEN = 'KITCHEN',
+	BEDROOM = 'BEDROOM',
+	LIVINGROOM = 'LIVINGROOM',
+	GARAGE = 'GARAGE',
+	KITCHEN = 'KITCHEN',
 }
 
 registerEnumType(DeviceEnvironment, {
-    name: 'DeviceEnvironment',
-    description: 'Environment in which a Device can be mounted'
+	name: 'DeviceEnvironment',
+	description: 'Environment in which a Device can be mounted',
 })
 
-@ObjectType({ description: "A physical device of the Illumino Family" })
+@ObjectType({ description: 'A physical device of the Illumino Family' })
 export class Device {
-    @Field(()=> ID)
-    readonly id: ObjectId
+	@Field(() => ID)
+	readonly id: ObjectId
 
-    @Property({ required: true, unique: true })
-    mac: string
+	@Property({ required: true, unique: true })
+	mac: string
 
-    @Field()
-    @Property({ required: true, unique: true })
-    secret: string
-    
-    @Property()
-    pin?: string
+	@Field()
+	@Property({ required: true, unique: true })
+	secret: string
 
-    @Field(() => User, { nullable: true })
-    @Property({ type: () => User })
-    owner?: Ref<User>
+	@Property()
+	pin?: string
 
-    @Field({ nullable: true})
-    @Property({ required: true })
-    name?: string
+	@Field(() => User, { nullable: true })
+	@Property({ type: () => User })
+	owner?: Ref<User>
 
-    @Field()
-    @Property({ required: true, default: false })
-    isConnected: boolean
+	@Field({ nullable: true })
+	@Property()
+	name?: string
 
-    @Field(() => DeviceEnvironment)
-    @Property({ required: true, enum: DeviceEnvironment })
-    environment: DeviceEnvironment
+	@Field()
+	@Property({ required: true, default: false })
+	isConnected: boolean
 
-    @Field(() => [LedStrip])
-    @Property({ type: LedStrip })
-    ledStrips: LedStrip[]
+	@Field(() => DeviceEnvironment)
+	@Property({ required: true, enum: DeviceEnvironment })
+	environment: DeviceEnvironment
+
+	@Field(() => [LedStrip])
+	@Property({ type: LedStrip })
+	ledStrips: LedStrip[]
 }
 
 export const DeviceModel = getModelForClass(Device)
