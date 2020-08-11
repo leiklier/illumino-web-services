@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken'
 import { User } from '../entities/User'
 import { Device } from '../entities/Device'
 
+export enum authType {
+	pin = 'pin'
+}
 
 export interface IToken {
 	payload: {
@@ -15,7 +18,7 @@ export interface IToken {
 			mac: string
 			secret: string
 		}
-		authType: string // TODO
+		authType: authType
 		purpose: 'REFRESH' | 'ACCESS'
 	}
 	exp: number

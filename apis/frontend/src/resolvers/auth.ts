@@ -22,6 +22,22 @@ class LoginDeviceInput {
 @Resolver()
 export default class AuthResolver {
 
+    @Query()
+    logout(
+        @Ctx('req') req: Context['req'],
+        @Ctx('res') res: Context['res'],
+    ): Boolean {
+        const refreshToken = req.cookies['refresh-token']
+        if(!refreshToken) return false
+
+        res.cookie('refresh-token', null, {
+            maxAge: 1,
+            httpOnly: true,
+        })
+
+        return true
+    }
+
     @Query(() => DeviceAuthData)
     async loginDevice(
         @Args() { secret, pin }: LoginDeviceInput,
