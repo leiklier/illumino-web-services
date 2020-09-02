@@ -17,10 +17,10 @@ registerEnumType(AnimationType, {
 @ObjectType({ description: 'The animation properties of a LedStrip' })
 export class Animation {
 	@Field(() => AnimationType)
-	@Property({ required: true, enum: AnimationType })
-	type: AnimationType
+	@Property({ enum: AnimationType })
+	type!: AnimationType
 
 	@Field(() => Float)
-	@Property({ required: true })
-	speed: number
+	@Property()
+	speed!: number
 }

@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb'
 
 import { LedStrip } from './LedStrip'
 import { User } from './User'
+import { Sunset } from './Sunset'
+import { Sunrise } from './Sunrise'
 
 export enum DeviceEnvironment {
 	BEDROOM = 'BEDROOM',
@@ -20,20 +22,20 @@ registerEnumType(DeviceEnvironment, {
 @ObjectType({ description: 'A physical device of the Illumino Family' })
 export class Device {
 	@Field(() => ID)
-	readonly id: ObjectId
+	readonly id!: ObjectId
 
-	@Property({ required: true, unique: true })
-	mac: string
+	@Property({ unique: true })
+	mac!: string
 
 	@Field()
-	@Property({ required: true, unique: true })
-	secret: string
+	@Property({ unique: true })
+	secret!: string
 
 	@Property()
 	pin?: string
 
 	@Field(() => User, { nullable: true })
-	@Property({ type: () => User })
+	@Property({ ref: User })
 	owner?: Ref<User>
 
 	@Field({ nullable: true })
@@ -41,16 +43,25 @@ export class Device {
 	name?: string
 
 	@Field()
-	@Property({ required: true, default: false })
-	isConnected: boolean
+	@Property({ default: false })
+	isConnected!: boolean
 
 	@Field(() => DeviceEnvironment)
-	@Property({ required: true, enum: DeviceEnvironment })
-	environment: DeviceEnvironment
+	@Property({ enum: DeviceEnvironment, default: DeviceEnvironment.LIVINGROOM })
+	environment!: DeviceEnvironment
 
 	@Field(() => [LedStrip])
 	@Property({ type: LedStrip })
-	ledStrips: LedStrip[]
+	ledStrips!: LedStrip[]
+
+	@Field(() => Sunset)
+	@Property({ type: Sunset })
+	sunset!: Sunset
+
+	@Field(() => Sunrise)
+	@Property({ type: Sunrise })
+	sunrise!: Sunrise
+
 }
 
 export const DeviceModel = getModelForClass(Device)

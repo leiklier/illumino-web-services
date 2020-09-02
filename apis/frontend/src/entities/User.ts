@@ -19,20 +19,19 @@ export class User {
 	readonly id: ObjectId
 
 	@Field()
-	@Property({ required: true, unique: true })
-	email: string
+	@Property({ unique: true })
+	email!: string
 
-	@Property({ required: true })
-	password: string
+	@Property()
+	password!: string
 
 	@Field(() => [UserRole])
 	@Property({
-		required: true,
 		default: [UserRole.USER],
 		enum: UserRole,
 		type: String,
 	})
-	roles: UserRole[]
+	roles!: UserRole[]
 
 	@Field()
 	@Property()

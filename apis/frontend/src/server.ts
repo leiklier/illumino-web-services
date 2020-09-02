@@ -1,4 +1,4 @@
-declare var global: any;
+declare var global: any
 
 import dotenv from 'dotenv'
 dotenv.config()
@@ -7,7 +7,7 @@ import path from 'path'
 global.appRoot = path
 	.resolve(__dirname)
 	.substring(0, path.resolve(__dirname).lastIndexOf('/'))
-	
+
 import mongoose from 'mongoose'
 import { ObjectId } from 'mongodb'
 
@@ -25,6 +25,7 @@ import ObjectIdScalar from './scalars/object-id'
 import AuthResolver from './resolvers/auth'
 import UserResolver from './resolvers/user'
 import DeviceResolver from './resolvers/device'
+import LedStripResolver from './resolvers/led-strip'
 
 const { PORT } = process.env
 
@@ -36,28 +37,27 @@ const { PORT } = process.env
 
 async function main() {
 	const schema = await buildSchema({
-		resolvers: [AuthResolver, UserResolver, DeviceResolver],
+		resolvers: [AuthResolver, UserResolver, DeviceResolver, LedStripResolver],
 		scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }],
 	})
 
-	await mongoose
-		.connect(
-			`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/illumino?retryWrites=true&w=majority`,
-			{
-				useNewUrlParser: true,
-				useUnifiedTopology: true,
-				// Each `changeStream` requires a new connection,
-				// so we need a really large `poolSize` to cover this demand.
-				// Read more here:
-				// https://stackoverflow.com/questions/48411897/severe-performance-drop-with-mongodb-change-streams
-				poolSize: 1000,
-			},
-		)
+	await mongoose.connect(
+		`mongodb+srv://dbUser:7w8u4hivR8QPB4bQ@illumino-p68vt.mongodb.net/illumino?retryWrites=true&w=majority`,
+		{
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+			// Each `changeStream` requires a new connection,
+			// so we need a really large `poolSize` to cover this demand.
+			// Read more here:
+			// https://stackoverflow.com/questions/48411897/severe-performance-drop-with-mongodb-change-streams
+			poolSize: 1000,
+		},
+	)
 
 	const app = express()
 	app.use(cookieParser())
 	app.use(bodyParser.json())
-	
+
 	const server: ApolloServer = new ApolloServer({
 		schema,
 		context,
@@ -70,10 +70,10 @@ async function main() {
 			credentials: true,
 		},
 	})
-		
+
 	const httpServer: http.Server = http.createServer(app)
 	server.installSubscriptionHandlers(httpServer)
-	
+
 	httpServer.listen(PORT, () => {
 		console.log(`🚀 Server started on port ${PORT}.`)
 	})
@@ -82,7 +82,7 @@ async function main() {
 function getCorsOriginsFromEnv() {
 	const { ACCESS_CONTROL_ALLOW_ORIGIN: corsString } = process.env
 	if (!corsString) return false
-	
+
 	const corsOrigins = String(corsString).split(';')
 	return corsOrigins
 }
