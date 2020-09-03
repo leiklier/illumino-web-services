@@ -5,36 +5,40 @@ import { getTokenPayload, getAuthTypeByToken } from './lib/token'
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer'
 
 export interface Context {
-    req: Request,
-    res: Response
-    clientIp: string
+	req: Request
+	res: Response
+	clientIp: string
 
-    user?: User | null
-    device?: Device | null
+	user?: User | null
+	device?: Device | null
 
-    isAuth: boolean
-    isDeploying: boolean
-    authType?: string
+	isAuth: boolean
+	isDeploying: boolean
+	authType?: string
 
-    accessToken?: string
+	accessToken?: string
 }
 
-export async function context({ req, res, connection }: ExpressContext): Promise<Context> {
-    let context: Context = {
-        req,
-        res,
-        //                     ,-- for HTTP
-        clientIp: (req && req.ip),
+export async function context({
+	req,
+	res,
+	connection,
+}: ExpressContext): Promise<Context> {
+	let context: Context = {
+		req,
+		res,
+		//                     ,-- for HTTP
+		clientIp: req && req.ip,
 
-        isAuth: false,
-        isDeploying: false,
-    }
+		isAuth: false,
+		isDeploying: false,
+	}
 
-    let accessToken: string | undefined
+	let accessToken: string | undefined
 
-    // HTTP authentication:
+	// HTTP authentication:
 	try {
-		// Format of header Authorization: <type> <content>
+		// Format of header Authorization: <authType> <authContent>
 		const authHeader = req.headers.authorization!
 		const [authType, authContent] = authHeader.split(' ')
 
@@ -64,12 +68,13 @@ export async function context({ req, res, connection }: ExpressContext): Promise
 	}
 
 	if (accessToken) {
-        const tokenPayload = getTokenPayload(accessToken)
-		if (tokenPayload && tokenPayload.user) {
-			context.user = await UserModel.findOne({ id: tokenPayload.user.id })
+		const tokenPayload = getTokenPayload(accessToken)
+		console.log({ tokenPayload })
+		if (tokenPayload?.user) {
+			context.user = await UserModel.findById(tokenPayload.user.id)
 		}
-		if (tokenPayload && tokenPayload.device) {
-            context.device = await DeviceModel.findOne({ id: tokenPayload.device.id })
+		if (tokenPayload?.device) {
+			context.device = await DeviceModel.findById(tokenPayload.device.id)
 		}
 
 		context.authType = getAuthTypeByToken(accessToken)

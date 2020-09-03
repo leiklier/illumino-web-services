@@ -7,44 +7,44 @@ import bcrypt from 'bcrypt'
 
 @InputType()
 class NewUserInput {
-    @Field()
-    firstName: string
+	@Field()
+	firstName: string
 
-    @Field()
-    lastName: string
+	@Field()
+	lastName: string
 
-    @Field()
-    @IsEmail()
-    email: string
+	@Field()
+	@IsEmail()
+	email: string
 
-    @Field()
-    @Length(8)
-    password: string
+	@Field()
+	@Length(8)
+	password: string
 }
 
 @Resolver()
 export default class UserResolver {
-    @Query(() => User)
-    async user( @Arg('email') email: string ): Promise<User> {
-        return (await UserModel.findOne({ email }))!
-    }
+	@Query(() => User)
+	async user(@Arg('email') email: string): Promise<User> {
+		return (await UserModel.findOne({ email }))!
+	}
 
-    @Mutation(() => User)
-    async createUser(
-        @Arg('userInput') { firstName, lastName, email, password }: NewUserInput
-    ): Promise<User> {
-        const emailIsTaken = !!(await UserModel.findOne({ email }))
-        if(emailIsTaken) throw new ApolloError(error.USER_DOES_ALREADY_EXIST)
+	@Mutation(() => User)
+	async createUser(
+		@Arg('userInput') { firstName, lastName, email, password }: NewUserInput,
+	): Promise<User> {
+		const emailIsTaken = !!(await UserModel.findOne({ email }))
+		if (emailIsTaken) throw new ApolloError(error.USER_DOES_ALREADY_EXIST)
 
-        const hashedPassword  = await bcrypt.hash(password, 12)
+		const hashedPassword = await bcrypt.hash(password, 12)
 
-        const user = await UserModel.create({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword
-        } as User)
+		const user = await UserModel.create({
+			firstName,
+			lastName,
+			email,
+			password: hashedPassword,
+		} as User)
 
-        return user
-    }
+		return user
+	}
 }

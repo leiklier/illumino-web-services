@@ -1,5 +1,7 @@
 declare var global: any
 
+import 'reflect-metadata'
+
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -25,6 +27,7 @@ import ObjectIdScalar from './scalars/object-id'
 import AuthResolver from './resolvers/auth'
 import UserResolver from './resolvers/user'
 import DeviceResolver from './resolvers/device'
+import SunsetResolver from './resolvers/sunset'
 import LedStripResolver from './resolvers/led-strip'
 
 const { PORT } = process.env
@@ -37,7 +40,13 @@ const { PORT } = process.env
 
 async function main() {
 	const schema = await buildSchema({
-		resolvers: [AuthResolver, UserResolver, DeviceResolver, LedStripResolver],
+		resolvers: [
+			AuthResolver,
+			UserResolver,
+			DeviceResolver,
+			SunsetResolver,
+			LedStripResolver,
+		],
 		scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }],
 	})
 

@@ -1,6 +1,15 @@
-import { Resolver, Query, Args, ArgsType, Field, Ctx, Int } from 'type-graphql'
+import {
+	Resolver,
+	Query,
+	Args,
+	ArgsType,
+	Field,
+	Ctx,
+	Int,
+	Mutation,
+} from 'type-graphql'
 import { DeviceAuthData, UserAuthData } from '../entities/AuthData'
-import { DeviceModel } from '../entities/Device'
+import { DeviceModel, Device } from '../entities/Device'
 import { IsUserAlreadyExist } from '../validators/IsUserAlreadyExist'
 import { IsDeviceAlreadyExist } from '../validators/IsDeviceAlreadyExist'
 import * as error from '../errors'
@@ -19,7 +28,7 @@ import { IsEmail, Length } from 'class-validator'
 import { UserModel } from '../entities/User'
 
 @ArgsType()
-class LoginUserInput {
+class AuthUserArgs {
 	@Field()
 	@IsEmail()
 	@IsUserAlreadyExist()
@@ -30,23 +39,20 @@ class LoginUserInput {
 }
 
 @ArgsType()
-class LoginDeviceInput {
+class AuthDeviceArgs {
 	@Field()
 	@Length(12, 12)
 	@IsDeviceAlreadyExist()
 	secret: string
 
-	@Field(() => Int, { nullable: true })
+	@Field(returns => Int, { nullable: true })
 	pin?: number
 }
 
 @Resolver()
 export default class AuthResolver {
 	@Query()
-	logout(
-		@Ctx('req') req: Context['req'],
-		@Ctx('res') res: Context['res'],
-	): Boolean {
+	logout(@Ctx() { req, res }: Context): Boolean {
 		const refreshToken = req.cookies['refresh-token']
 		if (!refreshToken) return false
 
@@ -60,7 +66,7 @@ export default class AuthResolver {
 
 	@Query(() => UserAuthData)
 	async loginUser(
-		@Args() { email, password }: LoginUserInput,
+		@Args() { email, password }: AuthUserArgs,
 		@Ctx('res') res: Context['res'],
 	): Promise<UserAuthData> {
 		const user = (await UserModel.findOne({ email }))!
@@ -87,7 +93,7 @@ export default class AuthResolver {
 
 	@Query(() => DeviceAuthData)
 	async loginDevice(
-		@Args() { secret, pin }: LoginDeviceInput,
+		@Args() { secret, pin }: AuthDeviceArgs,
 		@Ctx('res') res: Context['res'],
 	): Promise<DeviceAuthData> {
 		const device = (await DeviceModel.findOne({ secret }))!
@@ -97,7 +103,7 @@ export default class AuthResolver {
 		}
 
 		if (device.pin) {
-			const pinIsCorrect = await bcrypt.compare(pin, device.pin)
+			const pinIsCorrect = await bcrypt.compare(pin?.toString(), device.pin)
 			if (!pinIsCorrect) {
 				throw new ApolloError(error.PIN_IS_INCORRECT)
 			}
@@ -116,5 +122,17 @@ export default class AuthResolver {
 			accessToken,
 			device,
 		}
+	}
+
+	@Mutation(() => Device)
+	async setDevicePin(@Args() { secret, pin }: AuthDeviceArgs): Promise<Device> {
+		const device = (await DeviceModel.findOne({ secret }))!
+
+		const hashedPin = await bcrypt.hash(pin, 12)
+
+		device.pin = hashedPin
+
+		await device.save()
+		return device
 	}
 }
