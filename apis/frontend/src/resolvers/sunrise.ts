@@ -1,15 +1,23 @@
-import { Resolver, Mutation, Args, Arg } from 'type-graphql'
+import { Resolver, Mutation, Args, Arg, ArgsType, Field } from 'type-graphql'
 import { Time as TimeInput } from '../entities/Time'
-import { Device, DeviceModel } from '../entities/Device'
-import { ExistingDeviceArgs } from './device'
+import { Device, DeviceModel, DeviceArgs } from '../entities/Device'
+import { AssertDeviceExists } from '../validators/AssertDeviceExists'
+
+@ArgsType()
+class SunriseArgs extends DeviceArgs {
+	@Field()
+	isActive!: boolean
+
+	@Field()
+	startingAt!: TimeInput
+}
 
 @Resolver()
 export default class SunriseResolver {
 	@Mutation(() => Device)
+	@AssertDeviceExists()
 	async updateSunrise(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('isActive') isActive: boolean,
-		@Arg('startingAt') startingAt: TimeInput,
+		@Args() { secret, isActive, startingAt }: SunriseArgs,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 

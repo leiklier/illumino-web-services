@@ -1,121 +1,109 @@
-import { Resolver, Args, Query, Arg, Int, Mutation } from 'type-graphql'
-import { LedStrip } from '../entities/LedStrip'
-import { ExistingDeviceArgs } from './device'
-import { DeviceModel, Device } from '../entities/Device'
+import {
+	Resolver,
+	Args,
+	Query,
+	Arg,
+	Mutation,
+	UseMiddleware,
+} from 'type-graphql'
+import { LedStrip, LedStripArgs } from '../entities/LedStrip'
+import { DeviceModel, Device, DeviceArgs } from '../entities/Device'
 import { Geometry as GeometryInput } from '../entities/Geometry'
 import { Color as ColorInput } from '../entities/Color'
-import * as error from '../errors'
-import { ApolloError } from 'apollo-server-express'
 import { AnimationType } from '../entities/Animation'
+import { AssertLedStripExists } from '../validators/AssertLedStripExists'
+import { AssertDeviceExists } from '../validators/AssertDeviceExists'
+import { Auth, Relation } from '../middlewares/auth'
 
 @Resolver()
 export default class LedStripResolver {
-	@Query(() => LedStrip)
+	@Query(returns => LedStrip)
+	@AssertLedStripExists()
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	async ledStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 	): Promise<LedStrip> {
 		const device = (await DeviceModel.findOne({ secret }))!
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
-
-		return ledStrip
+		return device.ledStrips[ledStripIndex]
 	}
 
-	@Query(() => [LedStrip])
-	async ledStrips(@Args() { secret }: ExistingDeviceArgs): Promise<LedStrip[]> {
+	@Query(returns => [LedStrip])
+	@AssertDeviceExists()
+	async ledStrips(@Args() { secret }: DeviceArgs): Promise<LedStrip[]> {
 		const device = (await DeviceModel.findOne({ secret }))!
 		return device.ledStrips
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@AssertLedStripExists()
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	async setGeometryOnLedStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('geometry') geometry: GeometryInput,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
+		device.ledStrips[ledStripIndex].geometry = geometry
 
-		ledStrip.geometry = geometry
 		await device.save()
 		return device
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertLedStripExists()
 	async setBrightnessOnLedStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('brightness') brightness: number,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
+		device.ledStrips[ledStripIndex].brightness = brightness
 
-		ledStrip.brightness = brightness
 		await device.save()
 		return device
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertLedStripExists()
 	async setColorOnLedStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('color') color: ColorInput,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
+		device.ledStrips[ledStripIndex].color = color
 
-		ledStrip.color = color
 		await device.save()
 		return device
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@AssertLedStripExists()
 	async setAnimationTypeOnLedStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('animationType') animationType: AnimationType,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
+		device.ledStrips[ledStripIndex].animation.type = animationType
 
-		ledStrip.animation.type = animationType
 		await device.save()
 		return device
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertLedStripExists()
 	async setAnimationSpeedOnLedStrip(
-		@Args() { secret }: ExistingDeviceArgs,
-		@Arg('ledStripIndex', () => Int) ledStripIndex: number,
+		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('animationSpeed') animationSpeed: number,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
 
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
+		device.ledStrips[ledStripIndex].animation.speed = animationSpeed
 
-		ledStrip.animation.speed = animationSpeed
 		await device.save()
 		return device
 	}

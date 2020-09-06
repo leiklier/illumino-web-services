@@ -4,25 +4,19 @@ import {
 	Arg,
 	FieldResolver,
 	Root,
-	Field,
-	ArgsType,
 	Args,
 	Mutation,
 	UseMiddleware,
 } from 'type-graphql'
-import { Device, DeviceModel, DeviceEnvironment } from '../entities/Device'
+import {
+	Device,
+	DeviceModel,
+	DeviceEnvironment,
+	DeviceArgs,
+} from '../entities/Device'
 import { UserModel, User } from '../entities/User'
-import { IsDeviceAlreadyExist } from '../validators/IsDeviceAlreadyExist'
-import { Length } from 'class-validator'
 import { Auth, Relation } from '../middlewares/auth'
-
-@ArgsType()
-export class ExistingDeviceArgs {
-	@Field()
-	@Length(12, 12)
-	@IsDeviceAlreadyExist()
-	secret: string
-}
+import { AssertDeviceExists } from '../validators/AssertDeviceExists'
 
 @Resolver(of => Device)
 export default class DeviceResolver {
@@ -32,14 +26,16 @@ export default class DeviceResolver {
 	}
 
 	@Query(returns => Device)
-	async device(@Arg('secret') secret: string): Promise<Device> {
+	@AssertDeviceExists()
+	async device(@Args() { secret }: DeviceArgs): Promise<Device> {
 		return (await DeviceModel.findOne({ secret }))!
 	}
 
-	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertDeviceExists()
 	async setDeviceName(
-		@Args() { secret }: ExistingDeviceArgs,
+		@Args() { secret }: DeviceArgs,
 		@Arg('name') name: string,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
@@ -51,8 +47,10 @@ export default class DeviceResolver {
 	}
 
 	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertDeviceExists()
 	async setDeviceEnvironment(
-		@Args() { secret }: ExistingDeviceArgs,
+		@Args() { secret }: DeviceArgs,
 		@Arg('environment') environment: DeviceEnvironment,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!

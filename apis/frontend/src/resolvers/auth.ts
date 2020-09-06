@@ -5,13 +5,11 @@ import {
 	ArgsType,
 	Field,
 	Ctx,
-	Int,
 	Mutation,
 } from 'type-graphql'
 import { DeviceAuthData, UserAuthData } from '../entities/AuthData'
-import { DeviceModel, Device } from '../entities/Device'
-import { IsUserAlreadyExist } from '../validators/IsUserAlreadyExist'
-import { IsDeviceAlreadyExist } from '../validators/IsDeviceAlreadyExist'
+import { DeviceModel, Device, DeviceArgs } from '../entities/Device'
+import { AssertDeviceExists } from '../validators/AssertDeviceExists'
 import * as error from '../errors'
 import { ApolloError } from 'apollo-server-express'
 import bcrypt from 'bcrypt'
@@ -24,28 +22,18 @@ import {
 	getRefreshTokenByUser,
 } from '../lib/token'
 import { Context } from '../context'
-import { IsEmail, Length } from 'class-validator'
-import { UserModel } from '../entities/User'
+import { UserModel, UserArgs } from '../entities/User'
+import { AssertUserExists } from '../validators/AssertUserExists'
 
 @ArgsType()
-class AuthUserArgs {
-	@Field()
-	@IsEmail()
-	@IsUserAlreadyExist()
-	email: string
-
+class AuthUserArgs extends UserArgs {
 	@Field()
 	password: string
 }
 
 @ArgsType()
-class AuthDeviceArgs {
-	@Field()
-	@Length(12, 12)
-	@IsDeviceAlreadyExist()
-	secret: string
-
-	@Field(returns => Int, { nullable: true })
+class AuthDeviceArgs extends DeviceArgs {
+	@Field({ nullable: true })
 	pin?: number
 }
 
@@ -64,7 +52,8 @@ export default class AuthResolver {
 		return true
 	}
 
-	@Query(() => UserAuthData)
+	@Query(returns => UserAuthData)
+	@AssertUserExists()
 	async loginUser(
 		@Args() { email, password }: AuthUserArgs,
 		@Ctx('res') res: Context['res'],
@@ -91,7 +80,8 @@ export default class AuthResolver {
 		}
 	}
 
-	@Query(() => DeviceAuthData)
+	@Query(returns => DeviceAuthData)
+	@AssertDeviceExists()
 	async loginDevice(
 		@Args() { secret, pin }: AuthDeviceArgs,
 		@Ctx('res') res: Context['res'],

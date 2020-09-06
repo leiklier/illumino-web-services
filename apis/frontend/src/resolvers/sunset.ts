@@ -1,20 +1,17 @@
-import { Resolver, Mutation, Int, Args, ArgsType, Field } from 'type-graphql'
-import { DeviceModel, Device } from '../entities/Device'
-import * as error from '../errors'
-import { ApolloError } from 'apollo-server-express'
-import { IsDeviceAlreadyExist } from '../validators/IsDeviceAlreadyExist'
-import { Length } from 'class-validator'
+import {
+	Resolver,
+	Mutation,
+	Args,
+	ArgsType,
+	Field,
+	UseMiddleware,
+} from 'type-graphql'
+import { DeviceModel, Device, DeviceArgs } from '../entities/Device'
+import { Auth, Relation } from '../middlewares/auth'
+import { AssertDeviceExists } from '../validators/AssertDeviceExists'
 
 @ArgsType()
-class SunsetArgs {
-	@Field()
-	@Length(12, 12)
-	@IsDeviceAlreadyExist()
-	secret!: string
-
-	@Field(() => Int, { nullable: true })
-	ledStripIndex!: number
-
+class SunsetArgs extends DeviceArgs {
 	@Field()
 	startedAt!: Date
 
@@ -24,16 +21,13 @@ class SunsetArgs {
 
 @Resolver()
 export default class SunsetResolver {
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertDeviceExists()
 	async startSunset(
-		@Args() { secret, ledStripIndex, startedAt, endingAt }: SunsetArgs,
+		@Args() { secret, startedAt, endingAt }: SunsetArgs,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
-
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
 
 		device.sunset = { startedAt, endingAt }
 
@@ -41,16 +35,13 @@ export default class SunsetResolver {
 		return device
 	}
 
-	@Mutation(() => Device)
+	@Mutation(returns => Device)
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
+	@AssertDeviceExists()
 	async stopSunset(
-		@Args() { secret, ledStripIndex, startedAt, endingAt }: SunsetArgs,
+		@Args() { secret, startedAt, endingAt }: SunsetArgs,
 	): Promise<Device> {
 		const device = (await DeviceModel.findOne({ secret }))!
-
-		const ledStrip = device.ledStrips[ledStripIndex]
-		if (!ledStrip) {
-			throw new ApolloError(error.LED_STRIP_DOES_NOT_EXIST)
-		}
 
 		device.sunset = { startedAt, endingAt }
 

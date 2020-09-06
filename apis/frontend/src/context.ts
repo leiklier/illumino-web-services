@@ -69,7 +69,7 @@ export async function context({
 
 	if (accessToken) {
 		const tokenPayload = getTokenPayload(accessToken)
-		console.log({ tokenPayload })
+
 		if (tokenPayload?.user) {
 			context.user = await UserModel.findById(tokenPayload.user.id)
 		}

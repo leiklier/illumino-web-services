@@ -1,6 +1,14 @@
-import { ObjectType, Field, ID, registerEnumType } from 'type-graphql'
+import { ObjectType, Field, ID, registerEnumType, ArgsType } from 'type-graphql'
 import { prop as Property, getModelForClass } from '@typegoose/typegoose'
 import { ObjectId } from 'mongodb'
+import { IsEmail } from 'class-validator'
+
+@ArgsType()
+export class UserArgs {
+	@Field()
+	@IsEmail()
+	email: string
+}
 
 export enum UserRole {
 	USER = 'USER',
