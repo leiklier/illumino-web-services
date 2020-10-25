@@ -77,7 +77,7 @@ export async function context({
 			context.device = await DeviceModel.findById(tokenPayload.device.id)
 		}
 
-		context.authType = getAuthTypeByToken(accessToken)
+		context.authType = getAuthTypeByToken(accessToken) || undefined
 	}
 
 	if (context.user || context.device || context.isDeploying)

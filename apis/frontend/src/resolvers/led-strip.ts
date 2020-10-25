@@ -50,8 +50,8 @@ export default class LedStripResolver {
 	}
 
 	@Mutation(returns => Device)
-	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	@AssertLedStripExists()
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	async setBrightnessOnLedStrip(
 		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('brightness') brightness: number,
@@ -81,6 +81,7 @@ export default class LedStripResolver {
 
 	@Mutation(returns => Device)
 	@AssertLedStripExists()
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	async setAnimationTypeOnLedStrip(
 		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('animationType') animationType: AnimationType,
@@ -94,8 +95,8 @@ export default class LedStripResolver {
 	}
 
 	@Mutation(returns => Device)
-	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	@AssertLedStripExists()
+	@UseMiddleware(Auth({ accepts: [Relation.SELF] }))
 	async setAnimationSpeedOnLedStrip(
 		@Args() { secret, ledStripIndex }: LedStripArgs,
 		@Arg('animationSpeed') animationSpeed: number,

@@ -6,8 +6,9 @@ import {
 	Field,
 	Ctx,
 	Mutation,
+	Int,
 } from 'type-graphql'
-import { DeviceAuthData, UserAuthData } from '../entities/AuthData'
+import { DeviceAuthData, IAuthData, UserAuthData } from '../entities/AuthData'
 import { DeviceModel, Device, DeviceArgs } from '../entities/Device'
 import { AssertDeviceExists } from '../validators/AssertDeviceExists'
 import * as error from '../errors'
@@ -20,6 +21,8 @@ import {
 	AuthType,
 	getAccessTokenByUser,
 	getRefreshTokenByUser,
+	getTokenPayload,
+	getAuthTypeByToken,
 } from '../lib/token'
 import { Context } from '../context'
 import { UserModel, UserArgs } from '../entities/User'
@@ -33,12 +36,56 @@ class AuthUserArgs extends UserArgs {
 
 @ArgsType()
 class AuthDeviceArgs extends DeviceArgs {
-	@Field({ nullable: true })
+	@Field(type => Int, { nullable: true })
 	pin?: number
 }
 
 @Resolver()
 export default class AuthResolver {
+	@Query()
+	hasRefreshToken(@Ctx('req') req: Context['req']): Boolean {
+		const refreshToken = req.cookies['refresh-token']
+		return refreshToken ? true : false
+	}
+
+	@Query(returns => IAuthData)
+	async accessToken(
+		@Ctx('req') req: Context['req'],
+	): Promise<UserAuthData | DeviceAuthData> {
+		const refreshToken = req.cookies['refresh-token']
+		const payload = getTokenPayload(refreshToken)
+
+		const purpose = payload?.purpose
+		const userId = payload?.user?.id
+		const deviceId = payload?.device?.id
+		const authType = getAuthTypeByToken(refreshToken)
+
+		if (purpose !== 'REFRESH' || !authType)
+			throw new ApolloError(error.NOT_AUTHENTICATED)
+
+		if (userId) {
+			const user = (await UserModel.findById(userId))!
+			const accessToken = getAccessTokenByUser(user, authType)
+
+			return {
+				user,
+				accessToken,
+			} // returns UserAuthData
+		}
+
+		if (deviceId) {
+			const device = (await DeviceModel.findById(deviceId))!
+			const accessToken = getAccessTokenByDevice(device, authType)
+
+			return {
+				device,
+				accessToken,
+			} // returns DeviceAuthData
+		}
+
+		throw new ApolloError(error.NOT_AUTHENTICATED)
+	}
+
 	@Query()
 	logout(@Ctx() { req, res }: Context): Boolean {
 		const refreshToken = req.cookies['refresh-token']

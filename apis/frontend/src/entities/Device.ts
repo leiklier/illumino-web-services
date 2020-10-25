@@ -14,7 +14,6 @@ import { User } from './User'
 import { Sunset } from './Sunset'
 import { Sunrise } from './Sunrise'
 import { Auth, Relation } from '../middlewares/auth'
-import { Measurement } from './Measurement'
 import { Length } from 'class-validator'
 
 @ArgsType()
@@ -51,6 +50,9 @@ export class Device {
 	@Property()
 	pin?: string
 
+	@Field()
+	hasPin!: boolean
+
 	@Field(type => User, { nullable: true })
 	@Property({ ref: User })
 	owner?: Ref<User>
@@ -62,6 +64,10 @@ export class Device {
 	@Field()
 	@Property({ default: false })
 	isConnected!: boolean
+
+	@Field(type => Date)
+	@Property()
+	lastSeenAt: Date
 
 	@Field(type => DeviceEnvironment)
 	@Property({ enum: DeviceEnvironment, default: DeviceEnvironment.LIVINGROOM })
@@ -81,9 +87,6 @@ export class Device {
 	@Field(type => Sunrise)
 	@Property({ type: Sunrise })
 	sunrise!: Sunrise
-
-	@Field(type => Measurement)
-	latestMeasurements: Measurement[]
 }
 
 export const DeviceModel = getModelForClass(Device)

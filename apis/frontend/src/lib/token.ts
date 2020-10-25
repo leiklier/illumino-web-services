@@ -5,7 +5,7 @@ import { Device } from '../entities/Device'
 
 export enum AuthType {
 	pin = 'pin',
-	password = 'password'
+	password = 'password',
 }
 
 export interface IToken {
@@ -25,7 +25,10 @@ export interface IToken {
 	exp: number
 }
 
-export const getRefreshTokenByUser = (user: User, authType: AuthType): string => {
+export const getRefreshTokenByUser = (
+	user: User,
+	authType: AuthType,
+): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -43,7 +46,10 @@ export const getRefreshTokenByUser = (user: User, authType: AuthType): string =>
 	)
 }
 
-export const getAccessTokenByUser = (user: User, authType: AuthType): string => {
+export const getAccessTokenByUser = (
+	user: User,
+	authType: AuthType,
+): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 10 // 10 days
 	return jwt.sign(
 		{
@@ -61,7 +67,10 @@ export const getAccessTokenByUser = (user: User, authType: AuthType): string => 
 	)
 }
 
-export const getRefreshTokenByDevice = (device: Device, authType: AuthType): string => {
+export const getRefreshTokenByDevice = (
+	device: Device,
+	authType: AuthType,
+): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
 	return jwt.sign(
 		{
@@ -80,7 +89,10 @@ export const getRefreshTokenByDevice = (device: Device, authType: AuthType): str
 	)
 }
 
-export const getAccessTokenByDevice = (device: Device, authType: AuthType): string => {
+export const getAccessTokenByDevice = (
+	device: Device,
+	authType: AuthType,
+): string => {
 	const expiresAt: number = Date.now() + 1000 * 60 * 60 * 2 // 2 hours
 	return jwt.sign(
 		{
@@ -99,7 +111,6 @@ export const getAccessTokenByDevice = (device: Device, authType: AuthType): stri
 	)
 }
 
-
 export const tokenIsValid = (token: string): boolean => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!)
@@ -110,7 +121,7 @@ export const tokenIsValid = (token: string): boolean => {
 	}
 }
 
-export const getTokenPayload = (token: string) : IToken['payload'] | null => {
+export const getTokenPayload = (token: string): IToken['payload'] | null => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!) as IToken
 		const tokenPayload = decryptedToken.payload
@@ -121,12 +132,12 @@ export const getTokenPayload = (token: string) : IToken['payload'] | null => {
 	}
 }
 
-export const getTokenExpiration = (token: string) : number => {
+export const getTokenExpiration = (token: string): number => {
 	const decodedToken = jwt.decode(token) as IToken
 	return decodedToken.exp * 1000
 }
 
-export const getAuthTypeByToken = (token: string) : string | undefined => {
+export const getAuthTypeByToken = (token: string): AuthType | null => {
 	try {
 		const decryptedToken = jwt.verify(token, process.env.JWT_SECRET!) as IToken
 		const tokenPayload = decryptedToken.payload
@@ -134,6 +145,6 @@ export const getAuthTypeByToken = (token: string) : string | undefined => {
 		return tokenPayload.authType
 	} catch (err) {
 		// Token did invalidate
-		return undefined
+		return null
 	}
 }
